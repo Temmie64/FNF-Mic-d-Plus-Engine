@@ -203,10 +203,11 @@ class PauseSubState extends MusicBeatSubstate
 			iconBG.alpha = 0;
 			FlxTween.tween(iconBG, {x: 0,y: 0,alpha: 1}, 0.8, {ease: FlxEase.quadOut});
 
-			if (!PlayState.instance.opponentChart)
+			/*if (!PlayState.instance.opponentChart)
 				icon = new HealthIcon(PlayState.instance.dad.healthIcon);
 			else
-				icon = new HealthIcon(PlayState.instance.boyfriend.healthIcon);
+				icon = new HealthIcon(PlayState.instance.boyfriend.healthIcon);*/
+			icon = new HealthIcon(PlayState.instance.dad.healthIcon);
 			iconanimation();
 			icon.setGraphicSize(Std.int(icon.width * 1.7));
 			icon.antialiasing = ClientPrefs.globalAntialiasing;
