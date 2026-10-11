@@ -321,7 +321,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if (chartEditorSave.data.customNextGridColors == null || chartEditorSave.data.customNextGridColors.length < 2)
 			chartEditorSave.data.customNextGridColors = ['5F5F5F', '4A4A4A'];
 		if (chartEditorSave.data.extendEventValues == null)
-	    chartEditorSave.data.extendEventValues = false;
+	        chartEditorSave.data.extendEventValues = false;
 
 		changeTheme(chartEditorSave.data.theme != null ? chartEditorSave.data.theme : DEFAULT, false);
 
@@ -804,6 +804,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var backupLimit:Int = 10;
 
 	var lastBeatHit:Int = 0;
+	var lastInfoSecond:Int = -1;
+	var lastInfoSection:Int = -1;
+	var lastInfoBeat:Int = -1;
+	var lastInfoStep:Int = -1;
+	var lastInfoQuant:Int = -1;
+	var lastInfoSelection:Int = -1;
 
 	override function update(elapsed:Float)
 	{
@@ -1944,14 +1950,21 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		if (Conductor.songPosition != lastTime || forceDataUpdate)
 		{
-			var curTime:String = FlxStringUtil.formatTime(Conductor.songPosition / 1000, true);
-			var songLength:String = (FlxG.sound.music != null) ? FlxStringUtil.formatTime(FlxG.sound.music.length / 1000, true) : '???';
-			var str:String = '$curTime / $songLength' + '\n\nSection: $curSec' + '\nBeat: $curBeat' + '\nStep: $curStep' + '\n\nBeat Snap: ${curQuant} / 16'
-				+ '\nSelected: ${selectedNotes.length}';
-
-			if (str != infoText.text)
+			var infoSecond:Int = Std.int(Conductor.songPosition / 1000);
+			if (forceDataUpdate || infoSecond != lastInfoSecond || curSec != lastInfoSection || curBeat != lastInfoBeat || curStep != lastInfoStep
+				|| curQuant != lastInfoQuant || selectedNotes.length != lastInfoSelection)
 			{
-				infoText.text = str;
+				lastInfoSecond = infoSecond;
+				lastInfoSection = curSec;
+				lastInfoBeat = curBeat;
+				lastInfoStep = curStep;
+				lastInfoQuant = curQuant;
+				lastInfoSelection = selectedNotes.length;
+
+				var curTime:String = FlxStringUtil.formatTime(Conductor.songPosition / 1000, true);
+				var songLength:String = (FlxG.sound.music != null) ? FlxStringUtil.formatTime(FlxG.sound.music.length / 1000, true) : '???';
+				infoText.text = '$curTime / $songLength' + '\n\nSection: $curSec' + '\nBeat: $curBeat' + '\nStep: $curStep'
+					+ '\n\nBeat Snap: ${curQuant} / 16' + '\nSelected: ${selectedNotes.length}';
 				if (infoText.autoSize)
 					infoText.autoSize = false;
 			}
@@ -2444,7 +2457,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			{
 				Assets.cache.clear(key);
 				Paths.currentTrackedSounds.remove(key);
-				Paths.localTrackedAssets.remove(key);
+				Paths.forgetAsset(key);
 			}
 		}
 
@@ -5925,34 +5938,31 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		var chartData:String = PsychJsonPrinter.print(PlayState.SONG, ['sectionNotes', 'events']);
 		if (canQuickSave && Song.chartPath != null)
 		{
-			#if mobile
-			var chartName:String = Paths.formatToSongPath(PlayState.SONG.song) + '.json';
-			StorageUtil.saveContent(chartName, chartData);
-			saveSongMetaForEditor();
-			#else
-			File.saveContent(Song.chartPath, chartData);
-			saveSongMetaForEditor();
-			showOutput('Chart saved successfully to: ${Song.chartPath}');
-			#end
+			try
+			{
+				File.saveContent(Song.chartPath, chartData);
+				saveSongMetaForEditor();
+				showOutput('Chart saved successfully to: ${Song.chartPath}');
+			}
+			catch (e:Dynamic)
+			{
+				showOutput('Error on saving chart to ${Song.chartPath}: ${Std.string(e)}', true);
+			}
 		}
 		else
 		{
 			var chartName:String = Paths.formatToSongPath(PlayState.SONG.song) + '.json';
 			if (Song.chartPath != null)
 				chartName = Song.chartPath.substr(Song.chartPath.lastIndexOf('/')).trim();
-			#if mobile
-			StorageUtil.saveContent(chartName, chartData);
-			saveSongMetaForEditor();
-			#else
 			fileDialog.save(chartName, chartData, function()
 			{
 				var newPath:String = fileDialog.path;
-				Song.chartPath = newPath.replace('\\', '/');
+				if (newPath != null && !newPath.startsWith('/document/'))
+					Song.chartPath = newPath.replace('\\', '/');
 				saveSongMetaForEditor();
 				reloadNotesDropdowns();
 				showOutput('Chart saved successfully to: $newPath');
 			}, null, function() showOutput('Error on saving chart!', true));
-			#end
 		}
 	}
 

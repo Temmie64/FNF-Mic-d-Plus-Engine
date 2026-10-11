@@ -16,16 +16,12 @@ class Alphabet extends FlxSpriteGroup
 	public var text(default, set):String;
 
 	public var bold:Bool = false;
-	public var cShaped:Bool = false;
 	public var letters:Array<AlphaCharacter> = [];
 
 	public var isMenuItem:Bool = false;
 	public var targetY:Int = 0;
-	public var targetX:Int = 0;
 	public var changeX:Bool = true;
 	public var changeY:Bool = true;
-
-	public var itemType:String = "";
 
 	public var alignment(default, set):Alignment = LEFT;
 	public var scaleX(default, set):Float = 1;
@@ -170,16 +166,14 @@ class Alphabet extends FlxSpriteGroup
 
 	override function update(elapsed:Float)
 	{
-		var scaledY = FlxMath.remapToRange(targetY, 0, 1, 0, 1.3);
 		if (isMenuItem)
 		{
-			var lerpVal:Float = FlxMath.bound(elapsed * 9.6, 0, 1);
-			if(changeX)
-				x = FlxMath.lerp(x, (targetY * distancePerItem.x) + startPosition.x, lerpVal);
-			if(changeY)
-				y = FlxMath.lerp(y, (targetY * 1.3 * distancePerItem.y) + startPosition.y, lerpVal);
+			var lerpVal:Float = Math.exp(-elapsed * 9.6);
+			if (changeX)
+				x = FlxMath.lerp((targetY * distancePerItem.x) + startPosition.x, x, lerpVal);
+			if (changeY)
+				y = FlxMath.lerp((targetY * 1.3 * distancePerItem.y) + startPosition.y, y, lerpVal);
 		}
-
 		super.update(elapsed);
 	}
 

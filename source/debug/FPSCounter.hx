@@ -15,6 +15,8 @@ import haxe.Http;
 import haxe.Json;
 import states.MainMenuState;
 import backend.BuildInfo;
+import backend.MemoryUtil.MemoryStats;
+import backend.Native;
 import backend.ThreadUtil;
 import backend.ui.md3.NetworkCheckToast;
 #if windows
@@ -108,11 +110,17 @@ class FPSCounter extends Sprite
 	private var cachedCurrentState:String = "Unknown";
 
 	private var lastCacheUpdateTime:Float = 0.0;
+	private var cachedMemoryStats:Null<MemoryStats> = null;
+	private var lastMemoryStatsUpdateTime:Float = -9999.0;
+	private var gcCollectionsPerSecond:Float = 0.0;
+	private var gcTimePercent:Float = 0.0;
 
 	/**
 		Text update throttling to reduce overhead in debug mode.
 	**/
 	private var cachedStaticText:String = ""; // Cached static text (OS, commit, etc.).
+	private var graphicsLabel:String = "OpenGL Unknown";
+	private var audioLabel:String = "Unable to detect";
 
 	/**
 		Frame timing used to track delay and stutter.
@@ -134,6 +142,7 @@ class FPSCounter extends Sprite
 	@:noCompletion private var frameTimesTotal:Float = 0;
 	@:noCompletion private var deltaTimeout:Float = 0.0;
 	@:noCompletion private static inline final TEXT_UPDATE_MS:Float = 125.0;
+	@:noCompletion private static inline final MEMORY_STATS_UPDATE_SECONDS:Float = 0.25;
 
 	public var os:String = '';
 
@@ -159,6 +168,8 @@ class FPSCounter extends Sprite
 		positionFPS(x, y);
 
 		currentFPS = 0;
+		graphicsLabel = Native.getOpenGLLabel();
+		audioLabel = Native.getOpenALSoftVersion();
 
 		for (i in 0...8)
 		{
@@ -251,11 +262,11 @@ class FPSCounter extends Sprite
 		{
 			setBox(index++,
 				Std.string(currentFPS)
-				+ ' FPS\nDelay: '
+				+ ' FPS - Delay: '
 				+ formatFloat(frameTimeMs, 1)
 				+ ' / '
 				+ formatFloat(avgFrameTimeMs, 1)
-				+ ' ms\nGC: '
+				+ ' ms - GC: '
 				+ currentMemoryStr
 				+ ' / '
 				+ peakMemoryStr,
@@ -267,10 +278,39 @@ class FPSCounter extends Sprite
 
 		if (debugLevel >= 3)
 		{
-			var memoryDebug:String = 'GC Heap: ' + currentMemoryStr + '\nPeak: ' + peakMemoryStr;
+			var memoryStats:MemoryStats = getCachedMemoryStats();
+			var memoryDebug:String = 'GC Live: ' + currentMemoryStr + '\nGC Current: '
+				+ flixel.util.FlxStringUtil.formatBytes(memoryStats.gcCurrent)
+				+ '\nPeak Live: ' + peakMemoryStr;
 			if (backend.MemoryUtil.supportsTaskMem())
-				memoryDebug += '\nTask Memory: ' + flixel.util.FlxStringUtil.formatBytes(taskMemory);
+				memoryDebug += '\nTask Memory: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.taskMemory);
 			setBox(index++, memoryDebug, true);
+
+			if (debugLevel >= 4)
+			{
+				var gcDebug:String = memoryStats.rootGCStatsAvailable
+					? 'GC Runs: ' + memoryStats.gcCollections
+						+ '\nPause last/max: ' + formatFloat(memoryStats.gcLastDurationMs, 2)
+						+ ' / ' + formatFloat(memoryStats.gcMaxDurationMs, 2) + ' ms'
+						+ '\nThread wait last/max: ' + formatFloat(memoryStats.gcLastThreadWaitMs, 2)
+						+ ' / ' + formatFloat(memoryStats.gcMaxThreadWaitMs, 2) + ' ms'
+						+ '\nTotal GC: ' + formatFloat(memoryStats.gcTotalDurationMs, 1) + ' ms'
+						+ '\nRate/load: ' + formatFloat(gcCollectionsPerSecond, 2) + '/s / '
+						+ formatFloat(gcTimePercent, 2) + '%'
+						+ '\nLast GC: ' + formatGCType(memoryStats.gcLastFlags)
+						+ ' | freed ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcLastReclaimedBytes)
+						+ '\nFreed total: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcTotalReclaimedBytes)
+					: 'GC runtime stats: unavailable (stock hxcpp)';
+				gcDebug += '\nReserved: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcReserved)
+					+ ' | Large: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcLarge)
+					+ '\nHeap growth: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.allocationGrowth);
+				gcDebug += '\nGC Policy: ' + backend.MemoryManager.lastCollectionDecision
+					+ '\nScheduler backoff: x' + backend.MemoryManager.collectionBackoff;
+				if (backend.MemoryManager.collectionPending)
+					gcDebug += '\nPending: ' + backend.MemoryManager.pendingCollectionReason
+						+ ' (' + backend.MemoryManager.pendingReleasedAssets + ' assets)';
+				setBox(index++, gcDebug, true);
+			}
 
 			var commitText:String = BuildInfo.githubDevBuild && BuildInfo.commit.length > 0 ? BuildInfo.shortCommit() : lastCommit;
 			var buildDebug:String = os.substring(1) + '\nCommit: ' + commitText;
@@ -289,7 +329,10 @@ class FPSCounter extends Sprite
 		}
 
 		if (debugLevel >= 4)
-			setBox(index++, 'Plus Engine v' + MainMenuState.plusEngineVersion + '\nPsych v' + MainMenuState.psychEngineVersion, true);
+			setBox(index++, 'OpenFL - ' + graphicsLabel
+				+ '\n' + audioLabel
+				+ '\nPlus Engine v' + MainMenuState.plusEngineVersion
+				+ '\nPsych v' + MainMenuState.psychEngineVersion, true);
 
 		hideUnusedBoxes(index);
 		layoutBoxes();
@@ -705,6 +748,48 @@ class FPSCounter extends Sprite
 			lastCacheUpdateTime = currentTime;
 			cachedCurrentState = getCurrentState();
 		}
+	}
+
+	private function getCachedMemoryStats():MemoryStats
+	{
+		var now:Float = Timer.stamp();
+		var previous:Null<MemoryStats> = cachedMemoryStats;
+		var elapsed:Float = now - lastMemoryStatsUpdateTime;
+		if (previous == null || elapsed >= MEMORY_STATS_UPDATE_SECONDS)
+		{
+			var next:MemoryStats = backend.MemoryUtil.getMemoryStats();
+			if (previous != null && next.rootGCStatsAvailable && elapsed > 0)
+			{
+				var collectionDelta:Int = next.gcCollections - previous.gcCollections;
+				var durationDelta:Float = next.gcTotalDurationMs - previous.gcTotalDurationMs;
+				gcCollectionsPerSecond = Math.max(0, collectionDelta / elapsed);
+				gcTimePercent = Math.max(0, durationDelta / (elapsed * 1000.0) * 100.0);
+			}
+			else
+			{
+				gcCollectionsPerSecond = 0;
+				gcTimePercent = 0;
+			}
+
+			cachedMemoryStats = next;
+			lastMemoryStatsUpdateTime = now;
+			return next;
+		}
+
+		return previous;
+	}
+
+	private static function formatGCType(flags:Int):String
+	{
+		if ((flags & 8) != 0)
+			return 'compact';
+		if ((flags & 4) != 0)
+			return 'generational';
+		if ((flags & 1) != 0)
+			return 'major';
+		if ((flags & 2) != 0)
+			return 'full';
+		return flags == 0 ? 'none yet' : 'minor';
 	}
 
 	// Función optimizada para contar notas sin reflection costosa
