@@ -8,8 +8,7 @@ Create:
 Temmie64
 
 ### Plus Engine:
-LeninAsto
-sirthegamercoder 
+LeninAsto and sirthegamercoder 
 
 ### Mic'd Up:
 Verwex 
