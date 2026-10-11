@@ -158,7 +158,7 @@ class PauseSubState extends MusicBeatSubstate
 		bg.scrollFactor.set();
 		add(bg);
 
-		if (!ClientPrefs.lowQuality)
+		if (!ClientPrefs.data.lowQuality)
 		{
 			pausebg = new FlxSprite().loadGraphic(Paths.image('Beat/pausemenubg'));
 			pausebg.color = 0xFF1E1E1E;
@@ -819,7 +819,7 @@ class PauseSubState extends MusicBeatSubstate
 		if (playSound)
 			FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 	}
-	
+
 	public function iconanimation()
 	{
 		if (PlayState.instance.healthBar.percent > 85)
