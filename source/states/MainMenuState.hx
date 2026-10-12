@@ -27,7 +27,7 @@ class MainMenuState extends MusicBeatState
 	public static var isOpt(get, never):String;
 	public static var psychEngineVersion(get, never):String; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
-	public static var curColumn:MainMenuColumn = MainMenuColumn.CENTER;
+	//public static var curColumn:MainMenuColumn = MainMenuColumn.CENTER;
 
 	static function get_isOpt():String
 	#if OPT_VER
