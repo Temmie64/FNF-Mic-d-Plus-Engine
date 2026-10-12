@@ -16,7 +16,7 @@ import flixel.math.FlxMath;
 
 using StringTools;
 
-class PlaySelection extends MusicBeatState
+class PlaySelectionState extends MusicBeatState
 {
 	public static var curSelected:Int = 0;
 
