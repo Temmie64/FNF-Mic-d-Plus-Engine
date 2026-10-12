@@ -165,7 +165,7 @@ class PauseSubState extends MusicBeatSubstate
 			pausebg.scrollFactor.set();
 			pausebg.updateHitbox();
 			pausebg.screenCenter();
-			pausebg.antialiasing = ClientPrefs.globalAntialiasing;
+			pausebg.antialiasing = ClientPrefs.data.antialiasing;
 			add(pausebg);
 			pausebg.x += 200;
 			pausebg.y -= 200;
@@ -177,7 +177,7 @@ class PauseSubState extends MusicBeatSubstate
 			pausebg1.scrollFactor.set();
 			pausebg1.updateHitbox();
 			pausebg1.screenCenter();
-			pausebg1.antialiasing = ClientPrefs.globalAntialiasing;
+			pausebg1.antialiasing =ClientPrefs.data.antialiasing;
 			add(pausebg1);
 			pausebg1.x -= 150;
 			pausebg1.y += 150;
@@ -196,7 +196,7 @@ class PauseSubState extends MusicBeatSubstate
 			iconBG.scrollFactor.set();
 			iconBG.updateHitbox();
 			iconBG.screenCenter();
-			iconBG.antialiasing = ClientPrefs.globalAntialiasing;
+			iconBG.antialiasing = ClientPrefs.data.antialiasing;
 			add(iconBG);
 			iconBG.x += 100;
 			iconBG.y += 100;
@@ -208,9 +208,13 @@ class PauseSubState extends MusicBeatSubstate
 			else
 				icon = new HealthIcon(PlayState.instance.boyfriend.healthIcon);*/
 			icon = new HealthIcon(PlayState.instance.dad.healthIcon);
-			iconanimation();
+			final healthPercent:Float = FlxMath.bound(PlayState.instance.healthBar.percent / 100, 0, 1);
+			if (icon.isAnimated)
+				icon.updateIconState(healthPercent);
+			else if (icon.animation.curAnim != null)
+				icon.animation.curAnim.curFrame = healthPercent > 0.85 ? 1 : (healthPercent < 0.2 ? 2 : 0);
 			icon.setGraphicSize(Std.int(icon.width * 1.7));
-			icon.antialiasing = ClientPrefs.globalAntialiasing;
+			icon.antialiasing = ClientPrefs.data.antialiasing;
 			icon.x = FlxG.width - 230;
 			icon.y = FlxG.height - 180;
 			icon.flipX = true;
@@ -821,17 +825,6 @@ class PauseSubState extends MusicBeatSubstate
 			FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 	}
 
-	public function iconanimation()
-	{
-		if (PlayState.instance.healthBar.percent > 85)
-			icon.animation.curAnim.curFrame = 1;
-		else if (PlayState.instance.healthBar.percent < 20)
-			icon.animation.curAnim.curFrame = 2;
-		else
-			icon.animation.curAnim.curFrame = 0;
-	}
-
 	public function rebuildMenu():Void
 		regenMenu();
 }
-
