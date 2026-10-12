@@ -67,9 +67,9 @@ class MainMenuState extends MusicBeatState
 		#end
 	}
 
-	var menuItems:FlxTypedGroup<FlxSprite>;
-	private var camGame:FlxCamera;
-	private var camAchievement:FlxCamera;
+	//var menuItems:FlxTypedGroup<FlxSprite>;
+	public var camGame:FlxCamera;
+	public var camAchievement:FlxCamera;
 	
 	var optionShit:Array<String> = [
 		'play',
@@ -161,7 +161,7 @@ class MainMenuState extends MusicBeatState
 		
 		// magenta.scrollFactor.set();
 
-		menuItems = new FlxTypedGroup<FlxSprite>();
+		menuItems = new PlusMainMenuItemGroup();
 		add(menuItems);
 
 		var scale:Float = 1;
@@ -431,5 +431,18 @@ class MainMenuState extends MusicBeatState
 			}
 		});
 		DiscordClient.changePresence("Main Menu: " + optionShit[curSelected].toUpperCase(), null);
+	}
+}
+
+class PlusMainMenuItemGroup extends FlxTypedGroup<FlxSprite>
+{
+	public function new()
+	{
+		super();
+	}
+
+	public function addItem(id:String, item:FlxSprite):FlxSprite
+	{
+		return add(item);
 	}
 }
