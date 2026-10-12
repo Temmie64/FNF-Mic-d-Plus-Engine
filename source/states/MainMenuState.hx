@@ -82,7 +82,7 @@ class MainMenuState extends MusicBeatState
 	var side:FlxSprite;
 	var camFollow:FlxObject;
 
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Main_Checker'), 0.2, 0.2, true, true);
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Main_Checker'), 0.2, true, true);
 	var gradientBar:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
 
 	var camLerp:Float = 0.1;
