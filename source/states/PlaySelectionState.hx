@@ -140,13 +140,13 @@ class PlaySelectionState extends MusicBeatState
 		{
 			if (controls.UI_LEFT_P)
 			{
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				lxG.sound.play(Paths.sound('scrollMenu'));
 				changeItem(-1);
 			}
 
 			if (controls.UI_RIGHT_P)
 			{
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				lxG.sound.play(Paths.sound('scrollMenu'));
 				changeItem(1);
 			}
 
@@ -202,13 +202,13 @@ class PlaySelectionState extends MusicBeatState
 									FlxG.switchState(new NotAvalibleState());
 									DiscordClient.changePresence("Time to spice the game.",  null);
 								case 'marathon':
-										MusicBeatState.switchState(new MenuMarathon());
+										MusicBeatState.switchState(new NotAvalibleState());
 									DiscordClient.changePresence("I wanna make a marathon.",  null);
 								case 'survival':
-										MusicBeatState.switchState(new MenuSurvival());
+										MusicBeatState.switchState(new NotAvalibleState());
 									DiscordClient.changePresence("This feels like Total Drama Island already.",  null);
 								case 'endless':
-										MusicBeatState.switchState(new MenuEndless());
+										MusicBeatState.switchState(new NotAvalibleState());
 									DiscordClient.changePresence("Endless easy SMM2 moment.",  null);
 
 							}
