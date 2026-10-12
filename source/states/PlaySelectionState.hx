@@ -140,13 +140,13 @@ class PlaySelectionState extends MusicBeatState
 		{
 			if (controls.UI_LEFT_P)
 			{
-				lxG.sound.play(Paths.sound('scrollMenu'));
+				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeItem(-1);
 			}
 
 			if (controls.UI_RIGHT_P)
 			{
-				lxG.sound.play(Paths.sound('scrollMenu'));
+				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeItem(1);
 			}
 
