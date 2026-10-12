@@ -12,6 +12,21 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxGradient;
+
+import flixel.FlxG;
+import flixel.FlxSprite;
+import flixel.util.FlxTimer;
+import flixel.FlxCamera;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.math.FlxMath;
+import flixel.util.FlxColor;
+
+//useless
+import flixel.addons.transition.FlxTransitionableState;
+import flixel.input.keyboard.FlxKey;
+import lime.app.Application;
+import objects.AchievementPopup;
+
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -82,7 +97,7 @@ class MainMenuState extends MusicBeatState
 	var side:FlxSprite;
 	var camFollow:FlxObject;
 
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Main_Checker'), 0.2, true, true);
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Main_Checker'), 0.2, 0.2, true, true);
 	var gradientBar:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
 
 	var camLerp:Float = 0.1;
