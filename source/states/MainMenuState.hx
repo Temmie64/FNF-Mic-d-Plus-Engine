@@ -21,8 +21,51 @@ import flixel.util.FlxGradient;
 
 class MainMenuState extends MusicBeatState
 {
-	public static var psychEngineVersion:String = '0.7h'; //This is also used for Discord RPC
+	public static var fnfVersion:String = '0.2.8';
+	public static var plusEngineVersion:String = '1.3'; // Nothing interesting =)
+	public static var micUP:String = '2.0.3'; // Mic'd Up Engine version
+	public static var isOpt(get, never):String;
+	public static var psychEngineVersion(get, never):String; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
+	public static var curColumn:MainMenuColumn = MainMenuColumn.CENTER;
+
+	static function get_isOpt():String
+	#if OPT_VER
+		return "Optimized";
+	#else
+	    return "";
+	#end
+
+	static function get_psychEngineVersion():String
+	{
+		var suffix:String = isOpt;
+		return "1.0.4 (" + plusEngineVersion + ")" + (suffix.length > 0 ? " " + suffix : "");
+	}
+
+	public var allowMouse:Bool = true; // Turn this off to block mouse movement in menus
+
+	public var menuItems:PlusMainMenuItemGroup;
+	public var leftWatermarkText:FlxText;
+	public var leftItem:FlxSprite;
+	public var rightItem:FlxSprite;
+
+	inline function safeX(x:Float):Float
+	{
+		#if mobile
+		return MobileScaleMode.getHorizontalOffset() + x;
+		#else
+		return x;
+		#end
+	}
+
+	inline function safeWidth():Float
+	{
+		#if mobile
+		return MobileScaleMode.getSafeWidth();
+		#else
+		return FlxG.width;
+		#end
+	}
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	private var camGame:FlxCamera;
@@ -155,14 +198,19 @@ class MainMenuState extends MusicBeatState
 		FlxTween.tween(bg, {angle: 0}, 1.2, {ease: FlxEase.quartInOut});
 		FlxTween.tween(side, {alpha: 1}, 1, {ease: FlxEase.quartInOut});
 
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 44, 0, "Psych Engine v" + psychEngineVersion, 12);
-		versionShit.scrollFactor.set();
-		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		add(versionShit);
-		var versionShit:FlxText = new FlxText(12, FlxG.height - 24, 0, "Friday Night Funkin' v" + Application.current.meta.get('version'), 12);
-		versionShit.scrollFactor.set();
-		versionShit.setFormat("VCR OSD Mono", 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		add(versionShit);
+		var micUpVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 80 : 44), 0, "Mic'd Up v" + micUP, 12);
+		micUpVer.scrollFactor.set();
+		micUpVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(micUpVer);
+		var psychVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 64 : 44), 0, "Psych Engine v" + psychEngineVersion, 12);
+		psychVer.scrollFactor.set();
+		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(psychVer);
+		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0, "Friday Night Funkin' v" + fnfVersion, 12);
+		fnfVer.scrollFactor.set();
+		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		leftWatermarkText = fnfVer;
+		add(fnfVer);
 
 		// NG.core.calls.event.logEvent('swag').send();
 
