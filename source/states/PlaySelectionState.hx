@@ -154,8 +154,12 @@ class PlaySelectionState extends MusicBeatState
 			if (controls.BACK || FlxG.mouse.justPressedRight)
 			{
 				selectedSomethin = true;
-			FlxG.sound.play(Paths.sound('cancelMenu'));
+				FlxG.sound.play(Paths.sound('cancelMenu'));
+
+				#if DISCORD_ALLOWED
+				// Updating Discord Rich Presence
 				DiscordClient.changePresence("Back to the Main Menu.",  null);
+				#end				
 
 				FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
 				FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
@@ -169,7 +173,9 @@ class PlaySelectionState extends MusicBeatState
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 
+				#if DISCORD_ALLOWED
 				DiscordClient.changePresence("Selected: "+optionShit[curSelected].toUpperCase(),  null);
+				#end
 
 				menuItems.forEach(function(spr:FlxSprite)
 				{
@@ -195,22 +201,34 @@ class PlaySelectionState extends MusicBeatState
 							{
 								case 'week':
 										MusicBeatState.switchState(new StoryMenuState());
-									DiscordClient.changePresence("Going to select a week.",  null);
+										#if DISCORD_ALLOWED
+										DiscordClient.changePresence("Going to select a week.",  null);
+										#end
 								case 'freeplay':
 										MusicBeatState.switchState(new FreeplayState());
-									DiscordClient.changePresence("Am bored, so I freeplay.",  null);
+										#if DISCORD_ALLOWED
+										DiscordClient.changePresence("Am bored, so I freeplay.",  null);
+										#end
 								case 'modifier':
-									FlxG.switchState(new NotAvalibleState());
-									DiscordClient.changePresence("Time to spice the game.",  null);
+										FlxG.switchState(new NotAvalibleState());
+										#if DISCORD_ALLOWED
+										DiscordClient.changePresence("Time to spice the game.",  null);
+										#end
 								case 'marathon':
 										MusicBeatState.switchState(new NotAvalibleState());
-									DiscordClient.changePresence("I wanna make a marathon.",  null);
+										#if DISCORD_ALLOWED
+										DiscordClient.changePresence("I wanna make a marathon.",  null);
+										#end
 								case 'survival':
 										MusicBeatState.switchState(new NotAvalibleState());
-									DiscordClient.changePresence("This feels like Total Drama Island already.",  null);
+										#if DISCORD_ALLOWED
+										DiscordClient.changePresence("This feels like Total Drama Island already.",  null);
+										#end
 								case 'endless':
 										MusicBeatState.switchState(new NotAvalibleState());
-									DiscordClient.changePresence("Endless easy SMM2 moment.",  null);
+										#if DISCORD_ALLOWED
+										DiscordClient.changePresence("Endless easy SMM2 moment.",  null);
+										#end
 
 							}
 						});
@@ -252,6 +270,8 @@ class PlaySelectionState extends MusicBeatState
 			spr.updateHitbox();
 		});
 
+		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Play Selection: "+optionShit[curSelected].toUpperCase(),  null);
+		#end
 	}
 }
