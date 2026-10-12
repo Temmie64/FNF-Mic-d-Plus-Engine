@@ -42,7 +42,7 @@ class NotAvalibleState extends MusicBeatState
 		if (FlxG.keys.justPressed.ENTER)
 		{
 			leftState = true;
-			MusicBeatState.switchState(new PlaySelection());
+			MusicBeatState.switchState(new PlaySelectionState());
 		}
 
 		super.update(elapsed);

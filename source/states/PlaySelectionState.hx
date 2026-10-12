@@ -153,7 +153,7 @@ class PlaySelectionState extends MusicBeatState
 			if (controls.BACK || FlxG.mouse.justPressedRight)
 			{
 				selectedSomethin = true;
-			FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+			FlxG.sound.play(Paths.sound('cancelMenu'));
 				DiscordClient.changePresence("Back to the Main Menu.",  null);
 
 				FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
@@ -166,7 +166,7 @@ class PlaySelectionState extends MusicBeatState
 			if (controls.ACCEPT || FlxG.mouse.justPressed)
 			{
 				selectedSomethin = true;
-				FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('cancelMenu'));
 
 				DiscordClient.changePresence("Selected: "+optionShit[curSelected].toUpperCase(),  null);
 
