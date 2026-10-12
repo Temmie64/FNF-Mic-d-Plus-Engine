@@ -30,7 +30,8 @@ class PlaySelectionState extends MusicBeatState
 	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('MicUp/pBG_Main'));
 	//var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Play_Checker'), 0.2, 0.2, true, true);
 	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Play_Checker'), flixel.util.FlxAxes.XY);
-	var gradientBar:FlxSprite = new FlxSprite(0,0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
+	//var gradientBar:FlxSprite = new FlxSprite(0,0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
+	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFC461, 0xAAFBFF89], 1, 90, true);
 	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Play_Bottom'));
 
 	var camLerp:Float = 0.1;
@@ -55,7 +56,7 @@ class PlaySelectionState extends MusicBeatState
 		camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
 
-		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00ff0000, 0x55FFC461, 0xAAFBFF89], 1, 90, true); 
+		//gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00ff0000, 0x55FFC461, 0xAAFBFF89], 1, 90, true); 
 		gradientBar.y = FlxG.height - gradientBar.height;
 		add(gradientBar);
 		gradientBar.scrollFactor.set(0, 0);
