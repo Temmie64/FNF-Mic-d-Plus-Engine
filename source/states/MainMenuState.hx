@@ -12,6 +12,7 @@ import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxGradient;
+import flixel.util.FlxAxes;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
