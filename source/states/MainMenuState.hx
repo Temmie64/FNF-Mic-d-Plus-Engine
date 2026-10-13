@@ -76,7 +76,7 @@ class MainMenuState extends MusicBeatState
 	public var optionShit:Array<String> = ['play', #if MODS_ALLOWED 'mods', #end 'credits', 'options'];
 
 	public var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'achievements' #else null #end;
-	public var rightOption:String = '';
+	public var rightOption:String = null;
 
 	var magenta:FlxSprite;
 	var bg:FlxSprite;
@@ -158,19 +158,26 @@ class MainMenuState extends MusicBeatState
 		menuItems = new PlusMainMenuItemGroup();
 		add(menuItems);
 
+		var offset:Float = 108 - (Math.max(optionShit.length, 4) - 4) * 80;
 		for (num => option in optionShit)
 		{
-			var item:FlxSprite = createMenuItem(option, 0, (num * 140) + 90);
-			item.y += (4 - optionShit.length) * 70; // Offsets for when you have anything other than 4 items
-			item.screenCenter(X);
+			var item:FlxSprite = createMenuItem(option, 0, 40 + (num * 200) + offset);
+			item.x = item.width / 4 + (num * 180) - 30;
+			var scroll:Float = optionShit.length < 6 ? 0 : (optionShit.length - 4) * 0.135;
+			item.scrollFactor.set(0, scroll);
+			tweenMenuItemIn(item);
 		}
 
 		if (leftOption != null)
+		{
 			leftItem = createMenuItem(leftOption, safeX(60), 490);
+			tweenMenuItemIn(leftItem);
+		}
 		if (rightOption != null)
 		{
 			rightItem = createMenuItem(rightOption, safeX(safeWidth() - 60), 490);
 			rightItem.x -= rightItem.width;
+			tweenMenuItemIn(rightItem);
 		}
 
 		var buildLine:String = BuildInfo.versionLine();
@@ -298,6 +305,61 @@ class MainMenuState extends MusicBeatState
 		menuItem.ID = menuItems.length;
 		menuItems.add(menuItem);
 		return menuItem;
+	}
+
+	function tweenMenuItemIn(item:FlxSprite):Void
+	{
+		var targetX:Float = item.x;
+		item.x = -800;
+		FlxTween.tween(item, {x: targetX}, 1.3, {ease: FlxEase.expoInOut});
+	}
+
+	function tweenMenuItemOut(item:FlxSprite):Void
+	{
+		FlxTween.cancelTweensOf(item);
+		FlxTween.tween(item, {x: -600}, 0.6, {
+			ease: FlxEase.backIn,
+			onComplete: function(_:FlxTween) item.kill()
+		});
+	}
+
+	function switchMenuOption(option:String, item:FlxSprite):Void
+	{
+		switch (option)
+		{
+			case 'story_mode':
+				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('StoryMenuState', function() return new StoryMenuState()));
+			case 'freeplay':
+				MusicBeatState.switchState(FreeplayStateSelector.create());
+			case 'play':
+				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('PlaySelectionState', function() return new PlaySelectionState()));
+
+			#if MODS_ALLOWED
+			case 'mods':
+				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('ModsMenuState', function() return new ModsMenuState()));
+			#end
+
+			#if ACHIEVEMENTS_ALLOWED
+			case 'achievements':
+				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('AchievementsMenuState', function() return new AchievementsMenuState()));
+			#end
+
+			case 'credits':
+				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('CreditsState', function() return new CreditsState()));
+			case 'options':
+				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('OptionsState', function() return new OptionsState()));
+				OptionsState.onPlayState = false;
+				if (PlayState.SONG != null)
+				{
+					Reflect.setField(PlayState.SONG, 'arrowSkin', null);
+					Reflect.setField(PlayState.SONG, 'splashSkin', null);
+					PlayState.stageUI = 'normal';
+				}
+			default:
+				trace('Menu Item ${option} doesn\'t do anything');
+				selectedSomethin = false;
+				item.visible = true;
+		}
 	}
 
 	function loadMenuAtlasFromDisk(name:String):Null<FlxAtlasFrames>
@@ -486,6 +548,9 @@ class MainMenuState extends MusicBeatState
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
+				#if DISCORD_ALLOWED
+				DiscordClient.changePresence("Back to the Title Screen.", null);
+				#end
 				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('TitleState', function() return new TitleState()));
 			}
 			#if android
@@ -525,54 +590,27 @@ class MainMenuState extends MusicBeatState
 						item = rightItem;
 				}
 
-				FlxFlicker.flicker(item, 1, 0.06, false, false, function(flick:FlxFlicker)
-				{
-					switch (option)
-					{
-						case 'story_mode':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('StoryMenuState', function() return new StoryMenuState()));
-						case 'freeplay':
-							MusicBeatState.switchState(FreeplayStateSelector.create());
-						case 'play':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('PlaySelectionState', function() return new PlaySelectionState()));
-
-						#if MODS_ALLOWED
-						case 'mods':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('ModsMenuState', function() return new ModsMenuState()));
-						#end
-
-						#if ACHIEVEMENTS_ALLOWED
-						case 'achievements':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('AchievementsMenuState', function() return new AchievementsMenuState()));
-						#end
-
-						case 'credits':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('CreditsState', function() return new CreditsState()));
-						case 'options':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('OptionsState', function() return new OptionsState()));
-							OptionsState.onPlayState = false;
-							if (PlayState.SONG != null)
-							{
-								Reflect.setField(PlayState.SONG, 'arrowSkin', null);
-								Reflect.setField(PlayState.SONG, 'splashSkin', null);
-								PlayState.stageUI = 'normal';
-							}
-						default:
-							trace('Menu Item ${option} doesn\'t do anything');
-							selectedSomethin = false;
-							item.visible = true;
-					}
-				});
+				#if DISCORD_ALLOWED
+				DiscordClient.changePresence("Chosen: " + option.toUpperCase(), null);
+				#end
 
 				for (memb in menuItems)
 				{
-					if (memb == item)
+					if (memb == null || memb == item)
 						continue;
-
-					FlxTween.tween(memb, {alpha: 0}, 0.4, {ease: FlxEase.quadOut});
+					tweenMenuItemOut(memb);
 				}
+				if (leftItem != null && leftItem != item)
+					tweenMenuItemOut(leftItem);
+				if (rightItem != null && rightItem != item)
+					tweenMenuItemOut(rightItem);
+
 				FlxTween.tween(FlxG.camera, {zoom: 5}, 0.8, {ease: FlxEase.expoIn});
 				FlxTween.tween(bg, {angle: 45}, 0.8, {ease: FlxEase.expoIn});
+				new FlxTimer().start(0.35, function(_)
+				{
+					switchMenuOption(option, item);
+				});
 			}
 			else if (controls.justPressed('debug_1') || touchPad.buttonE.justPressed)
 			{
@@ -621,6 +659,15 @@ class MainMenuState extends MusicBeatState
 		selectedItem.centerOffsets();
 		camFollow.x = selectedItem.getGraphicMidpoint().x;
 		camFollow.y = selectedItem.getGraphicMidpoint().y;
+		#if DISCORD_ALLOWED
+		var selectedOption:String = switch (curColumn)
+		{
+			case MainMenuColumn.CENTER: optionShit[curSelected];
+			case MainMenuColumn.LEFT: leftOption;
+			case MainMenuColumn.RIGHT: rightOption;
+		};
+		DiscordClient.changePresence("Main Menu: " + selectedOption.toUpperCase(), null);
+		#end
 	}
 }
 

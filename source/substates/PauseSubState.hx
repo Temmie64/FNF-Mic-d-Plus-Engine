@@ -212,7 +212,7 @@ class PauseSubState extends MusicBeatSubstate
 			if (icon.isAnimated)
 				icon.updateIconState(healthPercent);
 			else if (icon.animation.curAnim != null)
-				icon.animation.curAnim.curFrame = healthPercent > 0.85 ? 1 : (healthPercent < 0.2 ? 2 : 0);
+				icon.animation.curAnim.curFrame = hasWinning && healthPercent > 0.8 ? 1 : (hasLosing && healthPercent < 0.2 ? 2 : 0);
 			icon.setGraphicSize(Std.int(icon.width * 1.7));
 			icon.antialiasing = ClientPrefs.data.antialiasing;
 			icon.x = FlxG.width - 230;

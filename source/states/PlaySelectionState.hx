@@ -25,7 +25,7 @@ class PlaySelectionState extends MusicBeatState
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
 
-	var optionShit:Array<String> = ['week', 'freeplay'];
+	var optionShit:Array<String> = ['week', 'freeplay', 'marathon', 'endless', 'survival', 'modifier'];
 	var camFollow:FlxObject;
 
 	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('MicUp/pBG_Main'));
@@ -42,6 +42,9 @@ class PlaySelectionState extends MusicBeatState
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.setDefaultDrawTarget(camGame, true);
+
+		//transIn = FlxTransitionableState.defaultTransIn;
+		//transOut = FlxTransitionableState.defaultTransOut;
 
 		persistentUpdate = persistentDraw = true;
 
@@ -158,9 +161,8 @@ class PlaySelectionState extends MusicBeatState
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 
 				#if DISCORD_ALLOWED
-				// Updating Discord Rich Presence
 				DiscordClient.changePresence("Back to the Main Menu.",  null);
-				#end				
+				#end
 
 				FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
 				FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
@@ -172,11 +174,9 @@ class PlaySelectionState extends MusicBeatState
 			if (controls.ACCEPT || FlxG.mouse.justPressed)
 			{
 				selectedSomethin = true;
-				FlxG.sound.play(Paths.sound('cancelMenu'));
+				FlxG.sound.play(Paths.sound('confirmMenu'));
 
-				#if DISCORD_ALLOWED
 				DiscordClient.changePresence("Selected: "+optionShit[curSelected].toUpperCase(),  null);
-				#end
 
 				menuItems.forEach(function(spr:FlxSprite)
 				{
@@ -213,7 +213,7 @@ class PlaySelectionState extends MusicBeatState
 								case 'modifier':
 										FlxG.switchState(new NotAvalibleState());
 										#if DISCORD_ALLOWED
-										DiscordClient.changePresence("Time to spice the game.",  null);
+										DiscordClient.changePresence("Going to the modifiers menu.",  null);
 										#end
 								case 'marathon':
 										MusicBeatState.switchState(new NotAvalibleState());
@@ -270,7 +270,6 @@ class PlaySelectionState extends MusicBeatState
 
 			spr.updateHitbox();
 		});
-
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Play Selection: "+optionShit[curSelected].toUpperCase(),  null);
 		#end
