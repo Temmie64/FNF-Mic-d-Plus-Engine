@@ -90,9 +90,18 @@ relax — progress doesn’t wait.
 * sirthegamercoder - Helper Programmer for Plus Engine
 * Autistic Lulu - Creator of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and author of several UIs and new features for its fork (thanks for letting me use your fork =D)
 
-## Original Credits:
+## Psych Engine Credits:
 * Shadow Mario - Main Programmer and Head of Psych Engine.
 * Riveren - Main Artist/Animator of Psych Engine.
+
+## Mic'd Up Credits:
+* Verwex - Main and Head of Mic'd Up.
+* KadeDev - Some of the Kade Engine features
+* Ash237 - Bugfixes, some features
+* Haya - Bugfixes, some features
+* TentaRJ - Chromakey mode
+* Rozebud - FPS+ features
+* Sector03 - Health Icons and Ranking Sprites.
 
 ## Mobile Credits:
 * Homura - Head Porter of Psych Engine Mobile.
