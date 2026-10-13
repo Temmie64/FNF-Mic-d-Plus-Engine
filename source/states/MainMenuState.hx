@@ -106,8 +106,8 @@ class MainMenuState extends MusicBeatState
 		DiscordClient.changePresence("In the Menus", null);
 		#end
 
-		transIn = FlxTransitionableState.defaultTransIn;
-		transOut = FlxTransitionableState.defaultTransOut;
+		//transIn = FlxTransitionableState.defaultTransIn;
+		//transOut = FlxTransitionableState.defaultTransOut;
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
