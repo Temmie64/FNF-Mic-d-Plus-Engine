@@ -39,6 +39,8 @@ class PlaySelectionState extends MusicBeatState
 
 	override function create()
 	{
+		super.create();
+
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.setDefaultDrawTarget(camGame, true);
@@ -108,8 +110,6 @@ class PlaySelectionState extends MusicBeatState
 		// NG.core.calls.event.logEvent('swag').send();
 
 		changeItem();
-
-		super.create();
 
 		new FlxTimer().start(1.1, function(tmr:FlxTimer)
 			{
