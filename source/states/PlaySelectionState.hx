@@ -176,7 +176,9 @@ class PlaySelectionState extends MusicBeatState
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('confirmMenu'));
 
+				#if DISCORD_ALLOWED
 				DiscordClient.changePresence("Selected: "+optionShit[curSelected].toUpperCase(),  null);
+				#end
 
 				menuItems.forEach(function(spr:FlxSprite)
 				{
