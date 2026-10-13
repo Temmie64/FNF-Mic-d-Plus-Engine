@@ -190,7 +190,7 @@ class MainMenuState extends MusicBeatState
 		var buildLine:String = BuildInfo.versionLine();
 		var hasBuildLine:Bool = buildLine.length > 0;
 
-		var micUpVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 80 : 44), 0, "Mic'd Up v" + micUP, 12);
+		var micUpVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 80 : 64), 0, "Mic'd Up v" + micUP, 12);
 		micUpVer.scrollFactor.set();
 		micUpVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(micUpVer);
@@ -286,8 +286,8 @@ class MainMenuState extends MusicBeatState
 
 		if (menuItem.frames != null)
 		{
-			var idleState:String = (name == 'play' || name == 'mods' || name == 'credits') ? 'basic' : 'idle';
-			var selectedState:String = (name == 'play' || name == 'mods' || name == 'credits') ? 'white' : 'selected';
+			var idleState:String = (name == 'play' || name == 'mods' || name == 'credits' || name == 'options') ? 'basic' : 'idle';
+			var selectedState:String = (name == 'play' || name == 'mods' || name == 'credits' || name == 'options') ? 'white' : 'selected';
 			menuItem.animation.addByPrefix('idle', '$name $idleState', 24, true);
 			menuItem.animation.addByPrefix('selected', '$name $selectedState', 24, true);
 			menuItem.animation.play('idle');
