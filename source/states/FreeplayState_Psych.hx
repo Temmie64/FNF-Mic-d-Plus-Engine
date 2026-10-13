@@ -122,7 +122,7 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 
 			WeekData.setDirectoryFromWeek(leWeek);
-			or (song in leWeek.songs)
+			for (song in leWeek.songs)
 			{
 				var colors:Array<Int> = song[2];
 				var colorsChecker:Array<Int> = song[3];
