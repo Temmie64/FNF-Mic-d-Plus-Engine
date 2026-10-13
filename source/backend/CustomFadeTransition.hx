@@ -159,7 +159,6 @@ class CustomFadeTransition extends MusicBeatSubstate
 
 	function createMicdUpTransition():Void
 	{
-		this.isTransIn = isTransIn;
 		var zoom:Float = FlxMath.bound(FlxG.camera.zoom, 0.05, 1);
 
 		var width:Int = Std.int(FlxG.width / Math.max(camera.zoom, 0.001));
