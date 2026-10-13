@@ -94,6 +94,10 @@ relax — progress doesn’t wait.
 * Shadow Mario - Main Programmer and Head of Psych Engine.
 * Riveren - Main Artist/Animator of Psych Engine.
 
+## Operation's Up Credits:
+* Barlizarlk - Main Dev of Operation's Up
+* IceTom - Assistance Dev
+
 ## Mic'd Up Credits:
 * Verwex - Main and Head of Mic'd Up.
 * KadeDev - Some of the Kade Engine features
