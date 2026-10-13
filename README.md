@@ -88,7 +88,7 @@ relax — progress doesn’t wait.
 ## Plus Engine Credits:
 * Lenin Asto - Main Programmer for Plus Engine
 * sirthegamercoder - Helper Programmer for Plus Engine
-* Autistic Lulu - Creator of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and author of several UIs and new features for its fork (thanks for letting me use your fork =D)
+* Autistic Lulu - Creator of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and author of several UIs and new features for its fork
 
 ## Psych Engine Credits:
 * Shadow Mario - Main Programmer and Head of Psych Engine.
