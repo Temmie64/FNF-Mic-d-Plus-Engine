@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# Mic' Plus Engine
+# Mic'd Plus Engine
 
 **EN-US | [ES-LA](docs/readmes/README.es-LA.md) | [ID-ID](docs/readmes/README.id-ID.md)**
 
