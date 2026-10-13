@@ -11,6 +11,8 @@ import states.MainMenuState;
 
 class CustomFadeTransition extends MusicBeatSubstate
 {
+	private var leTween:FlxTween = null;
+	public static var nextCamera:FlxCamera;
 	public static var finishCallback:Void->Void;
 
 	var isTransIn:Bool = false;
@@ -113,7 +115,7 @@ class CustomFadeTransition extends MusicBeatSubstate
 
 			if (ClientPrefs.data.vanillaTransition)
 			{
-				createVanillaTransition();
+				createMicdUpTransition();
 			}
 			else
 			{
@@ -153,6 +155,54 @@ class CustomFadeTransition extends MusicBeatSubstate
 			transGradient.y = transBlack.y - transBlack.height;
 		else
 			transGradient.y = -transGradient.height;
+	}
+
+	function createMicdUpTransition():Void
+	{
+		this.isTransIn = isTransIn;
+		var zoom:Float = FlxMath.bound(FlxG.camera.zoom, 0.05, 1);
+
+		var width:Int = Std.int(FlxG.width / Math.max(camera.zoom, 0.001));
+		var height:Int = Std.int(FlxG.height / Math.max(camera.zoom, 0.001));
+
+		var paddingX:Int = 10;
+
+		transGradient = FlxGradient.createGradientFlxSprite(1, height, (isTransIn ? [0x0, FlxColor.BLACK] : [FlxColor.BLACK, 0x0]));
+		transGradient.scale.x = width;
+		transGradient.updateHitbox();
+		transGradient.scrollFactor.set();
+		add(transGradient);
+
+		transBlack = new FlxSprite().makeGraphic(1, height + 400, FlxColor.BLACK);
+		transBlack.scale.x = width;
+		transBlack.updateHitbox();
+		transBlack.scrollFactor.set();
+		add(transBlack);
+
+		if(isTransIn) {
+			transGradient.y = transBlack.y - transBlack.height;
+			FlxTween.tween(transGradient, {y: transGradient.height + 50}, duration, {
+				onComplete: function(twn:FlxTween) {
+					close();
+				},
+			ease: FlxEase.linear});
+		} else {
+			transGradient.y = -transGradient.height;
+			transBlack.y = transGradient.y - transBlack.height + 50;
+			leTween = FlxTween.tween(transGradient, {y: transGradient.height + 50}, duration, {
+				onComplete: function(twn:FlxTween) {
+					if(finishCallback != null) {
+						finishCallback();
+					}
+				},
+			ease: FlxEase.linear});
+		}
+
+		if(nextCamera != null) {
+			transBlack.cameras = [nextCamera];
+			transGradient.cameras = [nextCamera];
+		}
+		nextCamera = null;
 	}
 
 	function createCustomTransition():Void
@@ -567,6 +617,10 @@ class CustomFadeTransition extends MusicBeatSubstate
 				transGradient = null;
 			}
 
+			if(leTween != null) {
+				finishCallback();
+				leTween.cancel();
+			}
 			super.destroy();
 		}
 		catch (e:Dynamic)

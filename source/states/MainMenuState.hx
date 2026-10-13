@@ -7,7 +7,7 @@ import states.editors.MasterEditorMenu;
 import options.OptionsState;
 import flixel.text.FlxText;
 import openfl.display.BitmapData;
-
+import flixel.FlxCamera;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.addons.display.FlxBackdrop;
@@ -33,6 +33,7 @@ class MainMenuState extends MusicBeatState
 	public static var psychEngineVersion(get, never):String; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = MainMenuColumn.CENTER;
+	private var camGame:FlxCamera;
 
 	static function get_isOpt():String
 	#if OPT_VER
@@ -104,6 +105,12 @@ class MainMenuState extends MusicBeatState
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence("In the Menus", null);
 		#end
+
+		transIn = FlxTransitionableState.defaultTransIn;
+		transOut = FlxTransitionableState.defaultTransOut;
+
+		camGame = new FlxCamera();
+		FlxG.cameras.reset(camGame);
 
 		persistentUpdate = persistentDraw = true;
 
