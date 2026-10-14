@@ -5,6 +5,7 @@ import backend.StageData;
 import flixel.util.FlxSpriteUtil;
 import flixel.util.FlxAxes;
 import flixel.addons.display.FlxBackdrop;
+import flixel.util.FlxGradient;
 
 class OptionsState extends MusicBeatState
 {

@@ -24,6 +24,7 @@ import openfl.geom.Matrix;
 import openfl.utils.AssetType;
 import openfl.utils.Assets;
 import flixel.addons.display.FlxBackdrop;
+import flixel.util.FlxGradient;
 #if funkin.vis
 import funkin.vis.dsp.SpectralAnalyzer;
 #end

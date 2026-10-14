@@ -9,6 +9,7 @@ import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
 import flixel.util.FlxAxes;
 import flixel.addons.display.FlxBackdrop;
+import flixel.util.FlxGradient;
 
 class CreditsState extends MusicBeatState
 {
