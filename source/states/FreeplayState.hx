@@ -108,10 +108,10 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	public var bg:FlxSprite;
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
-	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
-	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Free_Bottom'));
-	var navi:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/navi_Free'));
+	public var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
+	public var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+	public var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Free_Bottom'));
+	public var navi:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/navi_Free'));
 	
 	public var bgTransition:FlxSprite;
 	public var intendedColor:Int;
