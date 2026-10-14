@@ -25,6 +25,7 @@ import openfl.utils.AssetType;
 import openfl.utils.Assets;
 import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxGradient;
+import flixel.FlxSprite;
 #if funkin.vis
 import funkin.vis.dsp.SpectralAnalyzer;
 #end
