@@ -279,20 +279,6 @@ class ModsMenuState extends MusicBeatState {
 				}
 		}
 		
-		if(curSel >= modsList.length) curSel = 0;
-
-		if(modsList.length < 1) {
-			bg.color = defaultColor;
-			checker.color = defaultColor;
-			side.color = defaultColor;
-			}
-		else
-			{
-			bg.color = modsList[curSel].color;
-			checker.color = modsList[curSel].color;
-			side.color = modsList[curSel].color;
-			}
-
 		intendedColor = bg.color;
 		layoutList();
 		updateDetail();
@@ -607,6 +593,8 @@ class ModsMenuState extends MusicBeatState {
 
 		FlxTween.cancelTweensOf(bg);
 		FlxTween.color(bg, 0.5, bg.color, m.bgColor);
+		FlxTween.color(checker, 0.5, checker.color, m.checkerColor);
+		FlxTween.color(side, 0.5, side.color, m.sideColor);
 
 		bannerImg.clipRect = null;
 		if (m.bannerPath != null) {
@@ -1024,6 +1012,8 @@ class ModItem extends FlxSpriteGroup {
 	public var desc:String = 'No description provided.';
 	public var iconFps:Int = 10;
 	public var bgColor:FlxColor = 0xFF665AFF;
+	public var checkerColor:FlxColor = 0xFF665AFF;
+	public var sideColor:FlxColor = 0xFF665AFF;
 	public var pack:Dynamic = null;
 	public var folder:String = 'unknownMod';
 	public var mustRestart:Bool = false;
@@ -1117,6 +1107,10 @@ class ModItem extends FlxSpriteGroup {
 			if (packColor != null) {
 				var color:Array<Dynamic> = cast packColor;
 				this.bgColor = FlxColor.fromRGB(color[0] != null ? color[0] : 170, color[1] != null ? color[1] : 0,
+					color[2] != null ? color[2] : 255);
+				this.checkerColor = FlxColor.fromRGB(color[0] != null ? color[0] : 170, color[1] != null ? color[1] : 0,
+					color[2] != null ? color[2] : 255);
+				this.sideColor = FlxColor.fromRGB(color[0] != null ? color[0] : 170, color[1] != null ? color[1] : 0,
 					color[2] != null ? color[2] : 255);
 			}
 			this.mustRestart = (packRestart == true);
