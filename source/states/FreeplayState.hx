@@ -25,7 +25,6 @@ import openfl.utils.AssetType;
 import openfl.utils.Assets;
 import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxGradient;
-import flixel.FlxSprite;
 #if funkin.vis
 import funkin.vis.dsp.SpectralAnalyzer;
 #end
@@ -112,7 +111,7 @@ class FreeplayState extends MusicBeatState
 	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
 	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
 	var side:FlxSprite;
-	var navi:FLxSprite;
+	var navi:FlxSprite;
 	
 	public var bgTransition:FlxSprite;
 	public var intendedColor:Int;
