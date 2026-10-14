@@ -1058,12 +1058,12 @@ class FreeplayState extends MusicBeatState
 		innerDiscTop.x = disc.x + disc.width / 2 - innerDiscTop.width / 2;
 		innerDiscTop.y = disc.y + disc.height / 2 - innerDiscTop.height / 2;
 		innerDiscTop.angle = disc.angle;
-		innerDiscTop.scale.set(disc.scale.x, disc.scale.y);*/
+		innerDiscTop.scale.set(disc.scale.x, disc.scale.y);
 
 		discIcon.x = disc.x + disc.width / 2 - discIcon.width / 2;
 		discIcon.y = disc.y + disc.height / 2 - discIcon.height / 2;
 		discIcon.angle = disc.angle += 0.6 / (ClientPrefs.data.framerate / 60);
-		discIcon.scale.set(disc.scale.x, disc.scale.y);
+		discIcon.scale.set(disc.scale.x, disc.scale.y);*/
 
 		if (freeplayTouchInputBlockTime > 0)
 			freeplayTouchInputBlockTime -= elapsed;
