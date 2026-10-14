@@ -84,6 +84,8 @@ class MainMenuState extends MusicBeatState
 	var side:FlxSprite;
 	var camFollow:FlxObject;
 
+	var Timer:Float = 0;
+
 	//var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Main_Checker'), 0.2, 0.2, true, true);
 	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Main_Checker'), flixel.util.FlxAxes.XY);
 	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00FF0000, 0x55AE59E4, 0xAA19ECFF], 1, 90, true);
