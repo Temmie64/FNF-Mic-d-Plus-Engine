@@ -237,7 +237,6 @@ class TitleState extends MusicBeatState
 		logoBl.scale.set(0.6, 0.6);
 		logoBl.updateHitbox();
 
-		if(ClientPrefs.data.shaders) swagShader = new ColorSwap();
 		gfDance = new FlxSprite(gfPosition.x, gfPosition.y);
 		gfDance.antialiasing = ClientPrefs.data.antialiasing;
 
@@ -288,12 +287,14 @@ class TitleState extends MusicBeatState
 		blackScreen.updateHitbox();
 
 		credGroup.add(blackScreen);
+		add(credGroup);
 
 		gradientBar.y = FlxG.height - gradientBar.height;
 		gradientBar.scale.y = 0;
 		gradientBar.updateHitbox();
 		add(gradientBar);
-		gradientBar.shader = swagShader.shader;
+		if (swagShader != null)
+			gradientBar.shader = swagShader.shader;
 		FlxTween.tween(gradientBar, {'scale.y': 1.3}, 4, {ease: FlxEase.quadInOut});
 
 		credTextShit = new Alphabet(0, 0, "", true);
@@ -309,10 +310,6 @@ class TitleState extends MusicBeatState
 
 		FNF_Logo = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_Logo'));
 		FNF_EX = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_MU'));
-		add(FNF_EX);
-		add(FNF_Logo);
-		FNF_EX.shader = swagShader.shader;
-		FNF_Logo.shader = swagShader.shader;
 		FNF_EX.scale.set(0.6, 0.6);
 		FNF_Logo.scale.set(0.6, 0.6);
 		FNF_EX.updateHitbox();
@@ -325,13 +322,16 @@ class TitleState extends MusicBeatState
 		logoBl.visible = false;
 		add(titleText); // "Press Enter to Begin" text
 		titleText.visible = false;
-		add(credGroup);
 		add(ngSpr);
+		add(FNF_EX);
+		add(FNF_Logo);
 
 		if(swagShader != null)
 		{
 			gfDance.shader = swagShader.shader;
 			logoBl.shader = swagShader.shader;
+			FNF_EX.shader = swagShader.shader;
+			FNF_Logo.shader = swagShader.shader;
 		}	
 
 		FNF_EX.x = -1500;
@@ -917,4 +917,3 @@ class TitleState extends MusicBeatState
 		super.destroy();
 	}
 }
-

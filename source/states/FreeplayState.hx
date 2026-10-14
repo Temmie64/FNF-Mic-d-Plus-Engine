@@ -17,6 +17,9 @@ import backend.ui.md3.MaterialWavyProgressIndicator;
 import backend.ui.md3.MaterialWavyProgressIndicator.WavyProgressType;
 import flixel.math.FlxMath;
 import flixel.graphics.FlxGraphic;
+import flixel.addons.display.FlxBackdrop;
+import flixel.util.FlxAxes;
+import flixel.util.FlxGradient;
 import flixel.util.FlxDestroyUtil;
 import openfl.display.BitmapData;
 import openfl.geom.Matrix;
@@ -107,6 +110,12 @@ class FreeplayState extends MusicBeatState
 	public var bg:FlxSprite;
 	public var bgTransition:FlxSprite;
 	public var intendedColor:Int;
+	private var checker:FlxBackdrop;
+	private var gradientBar:FlxSprite;
+	private var side:FlxSprite;
+	private var navi:FlxSprite;
+	private var intendedCheckerColor:Int;
+	private var intendedBottomColor:Int;
 
 	var bgSwapTimer:FlxTimer = null;
 	var bgFadeTweenIn:FlxTween = null;
@@ -550,7 +559,19 @@ class FreeplayState extends MusicBeatState
 				{
 					colors = [146, 113, 253];
 				}
-				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]));
+				var checkerColors:Array<Int> = song[3];
+				if (checkerColors == null || checkerColors.length < 3)
+				{
+					checkerColors = [0, 0, 0];
+				}
+				var bottomColors:Array<Int> = song[4];
+				if (bottomColors == null || bottomColors.length < 3)
+				{
+					bottomColors = [0, 0, 0];
+				}
+				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]),
+					FlxColor.fromRGB(checkerColors[0], checkerColors[1], checkerColors[2]),
+					FlxColor.fromRGB(bottomColors[0], bottomColors[1], bottomColors[2]));
 			}
 		}
 		Mods.loadTopMod();
@@ -561,6 +582,31 @@ class FreeplayState extends MusicBeatState
 		add(bgTransition);
 		loadSelectedFreeplayBackground(true);
 		bgZoom = defaultBgZoom = 1;
+
+		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512,
+			[0x00FF0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+		gradientBar.y = FlxG.height - gradientBar.height;
+		gradientBar.scrollFactor.set(0, 0);
+		add(gradientBar);
+
+		checker = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), FlxAxes.XY);
+		checker.scrollFactor.set(0, 0.07);
+		add(checker);
+
+		side = new FlxSprite().loadGraphic(Paths.image('MicUp/Free_Bottom'));
+		side.scrollFactor.set(0, 0);
+		side.antialiasing = ClientPrefs.data.antialiasing;
+		side.screenCenter();
+		side.y = FlxG.height;
+		add(side);
+
+		navi = new FlxSprite().loadGraphic(Paths.image('MicUp/navi_Free'));
+		navi.scrollFactor.set(0, 0);
+		navi.antialiasing = ClientPrefs.data.antialiasing;
+		navi.screenCenter();
+		navi.y = FlxG.height / 1.25;
+		navi.x = FlxG.width / 1.05 - navi.width / 2;
+		add(navi);
 
 		blackOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		blackOverlay.alpha = 0.1;
@@ -660,6 +706,10 @@ class FreeplayState extends MusicBeatState
 			curSelected = 0;
 		bg.color = songs[curSelected].color;
 		intendedColor = bg.color;
+		checker.color = songs[curSelected].checkerColor;
+		side.color = songs[curSelected].bottomColor;
+		intendedCheckerColor = checker.color;
+		intendedBottomColor = side.color;
 		for (i in 0...vizBarsGroup.members.length)
 		{
 			var bar = vizBarsGroup.members[i];
@@ -708,6 +758,8 @@ class FreeplayState extends MusicBeatState
 		updateTexts();
 
 		super.create();
+
+		FlxTween.tween(side, {y: FlxG.height - side.height * 2 / 3}, 0.5, {ease: FlxEase.quartInOut});
 
 		#if (MODS_ALLOWED && sys && !mobile)
 		FlxG.stage.window.onDropFile.add(onDropFile);
@@ -831,9 +883,10 @@ class FreeplayState extends MusicBeatState
 		});
 	}
 
-	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
+	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int, ?checkerColor:Int = 0xFF000000,
+		?bottomColor:Int = 0xFF000000)
 	{
-		songs.push(new SongMetadata(songName, weekNum, songCharacter, color));
+		songs.push(new SongMetadata(songName, weekNum, songCharacter, color, checkerColor, bottomColor));
 	}
 
 	function getChartPlayError(song:SwagSong):String
@@ -1217,6 +1270,8 @@ class FreeplayState extends MusicBeatState
 		bgZoom = FlxMath.lerp(defaultBgZoom, bgZoom, Math.exp(-elapsed * 3.125));
 		bg.scale.set(bgZoom, bgZoom);
 		centerScaledFreeplayBackground(bg);
+		checker.x += 0.27 * elapsed * 60;
+		checker.y -= 0.63 * elapsed * 60;
 		if (bgTransition != null)
 		{
 			bgTransition.scale.set(bgZoom, bgZoom);
@@ -1631,6 +1686,8 @@ class FreeplayState extends MusicBeatState
 		queueSelectedFreeplayBackgroundSwap();
 
 		var newColor:Int = songs[curSelected].color;
+		var newCheckerColor:Int = songs[curSelected].checkerColor;
+		var newBottomColor:Int = songs[curSelected].bottomColor;
 		if (newColor != intendedColor)
 		{
 			intendedColor = newColor;
@@ -1646,6 +1703,18 @@ class FreeplayState extends MusicBeatState
 				if (vizBar != null)
 					FlxTween.color(vizBar, 1, vizBar.color, lightBar);
 			}
+		}
+		if (newCheckerColor != intendedCheckerColor)
+		{
+			intendedCheckerColor = newCheckerColor;
+			FlxTween.cancelTweensOf(checker);
+			FlxTween.color(checker, 0.5, checker.color, intendedCheckerColor, {ease: FlxEase.backIn});
+		}
+		if (newBottomColor != intendedBottomColor)
+		{
+			intendedBottomColor = newBottomColor;
+			FlxTween.cancelTweensOf(side);
+			FlxTween.color(side, 0.5, side.color, intendedBottomColor, {ease: FlxEase.backIn});
 		}
 
 		Mods.currentModDirectory = songs[curSelected].folder;
@@ -3428,15 +3497,20 @@ class SongMetadata
 	public var week:Int = 0;
 	public var songCharacter:String = "";
 	public var color:Int = -7179779;
+	public var checkerColor:Int = 0xFF000000;
+	public var bottomColor:Int = 0xFF000000;
 	public var folder:String = "";
 	public var lastDifficulty:String = null;
 
-	public function new(song:String, week:Int, songCharacter:String, color:Int)
+	public function new(song:String, week:Int, songCharacter:String, color:Int, checkerColor:Int = 0xFF000000,
+		bottomColor:Int = 0xFF000000)
 	{
 		this.songName = song;
 		this.week = week;
 		this.songCharacter = songCharacter;
 		this.color = color;
+		this.checkerColor = checkerColor;
+		this.bottomColor = bottomColor;
 		this.folder = Mods.currentModDirectory;
 		if (this.folder == null)
 			this.folder = '';
@@ -3723,4 +3797,3 @@ class DifficultySelector
 		}
 	}
 }
-
