@@ -198,6 +198,10 @@ class OptionsState extends MusicBeatState
 
 	var selectorLeft:Alphabet;
 	var selectorRight:Alphabet;
+	var bg:FlxSprite;
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
+	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+	var side:FlxSprite;
 
 	override function create()
 	{
@@ -207,24 +211,22 @@ class OptionsState extends MusicBeatState
 		OptionsMenuTheme.syncAccent();
 		menuStyle = normalizeMenuStyle(ClientPrefs.data.optionsMenuStyle);
 
-		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.color = isPlusStyle() ? OptionsMenuTheme.current().accent : 0xFFea71fd;
 		bg.updateHitbox();
 		bg.screenCenter();
 		add(bg);
 
-		var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
 		gradientBar.y = FlxG.height - gradientBar.height;
 		add(gradientBar);
 		gradientBar.scrollFactor.set(0, 0);
 
-		var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
 		add(checker);
 		checker.color = isPlusStyle() ? OptionsMenuTheme.current().accent : 0xFFea71fd;
 		checker.scrollFactor.set(0, 0.07);
 
-		var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Options_Side'));
+		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Options_Side'));
 		side.scrollFactor.x = 0;
 		side.scrollFactor.y = 0;
 		side.antialiasing = true;
