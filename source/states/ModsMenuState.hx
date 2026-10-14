@@ -13,6 +13,7 @@ import openfl.display.BitmapData;
 import lime.utils.Assets;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxAxes;
+import flixel.addons.display.FlxBackdrop;
 
 class ModsMenuState extends MusicBeatState {
 	static final FILTERS:Array<String> = ['ALL', 'ENABLED', 'DISABLED', 'LAUNCHABLE'];

@@ -23,6 +23,7 @@ import openfl.display.BitmapData;
 import openfl.geom.Matrix;
 import openfl.utils.AssetType;
 import openfl.utils.Assets;
+import flixel.addons.display.FlxBackdrop;
 #if funkin.vis
 import funkin.vis.dsp.SpectralAnalyzer;
 #end
