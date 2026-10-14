@@ -725,7 +725,7 @@ private class PlusOptionCard extends FlxSpriteGroup
 		add(checker);
 		checker.scrollFactor.set(0, 0.07);
 
-		side = new FlxSprite(0).loadGraphic(Paths.image('Options_Side'));
+		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Options_Side'));
 		side.scrollFactor.x = 0;
 		side.scrollFactor.y = 0;
 		side.antialiasing = true;

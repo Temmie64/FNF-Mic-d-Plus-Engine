@@ -108,10 +108,10 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	public var bg:FlxSprite;
-	public var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
-	public var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
-	public var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Free_Bottom'));
-	public var navi:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/navi_Free'));
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
+	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+	var side:FlxSprite;
+	var navi:FLxSprite;
 	
 	public var bgTransition:FlxSprite;
 	public var intendedColor:Int;
@@ -587,6 +587,7 @@ class FreeplayState extends MusicBeatState
 		add(checker);
 		checker.scrollFactor.set(0, 0.07);
 
+		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Free_Bottom'));
 		side.scrollFactor.x = 0;
 		side.scrollFactor.y = 0;
 		side.antialiasing = true;
@@ -596,6 +597,7 @@ class FreeplayState extends MusicBeatState
 		// side.y = FlxG.height - side.height/3*2;
 		side.x = FlxG.width / 2 - side.width / 2;
 
+		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/navi_Free'));
 		navi.scrollFactor.x = 0;
 		navi.scrollFactor.y = 0;
 		navi.antialiasing = true;
