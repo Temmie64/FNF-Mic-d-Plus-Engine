@@ -3,6 +3,7 @@ package options;
 import states.MainMenuState;
 import backend.StageData;
 import flixel.util.FlxSpriteUtil;
+import flixel.util.FlxAxes;
 
 class OptionsState extends MusicBeatState
 {
@@ -204,13 +205,29 @@ class OptionsState extends MusicBeatState
 		OptionsMenuTheme.syncAccent();
 		menuStyle = normalizeMenuStyle(ClientPrefs.data.optionsMenuStyle);
 
-		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		bg = new FlxSprite().loadGraphic(Paths.image('MicUp/oBG'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		bg.color = isPlusStyle() ? OptionsMenuTheme.current().accent : 0xFFea71fd;
+		// bg.color = 0xFFea71fd;
 		bg.updateHitbox();
 
 		bg.screenCenter();
 		add(bg);
+
+		gradientBar.y = FlxG.height - gradientBar.height;
+		add(gradientBar);
+		gradientBar.scrollFactor.set(0, 0);
+
+		checker = new FlxBackdrop(Paths.image('Options_Checker'), 0.2, 0.2, true, true);
+		add(checker);
+		checker.scrollFactor.set(0, 0.07);
+
+		side = new FlxSprite(0).loadGraphic(Paths.image('Options_Side'));
+		side.scrollFactor.x = 0;
+		side.scrollFactor.y = 0;
+		side.antialiasing = true;
+		side.screenCenter();
+		// side.flipX = true;
+		add(side);
 
 		if (controls.mobileC)
 		{
@@ -306,6 +323,9 @@ class OptionsState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		checker.x -= -0.27 / (ClientPrefs.data.framerate / 60);
+		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
 
 		if (isPlusStyle())
 		{
@@ -403,6 +423,9 @@ class OptionsState extends MusicBeatState
 				{
 					clearSubstateTransition();
 					MusicBeatState.switchState(new MainMenuState());
+					FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
+					FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
+					FlxTween.tween(checker, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
 				}
 			}
 			else if (controls.ACCEPT && options != null && options.length > 0)
@@ -449,6 +472,9 @@ class OptionsState extends MusicBeatState
 			{
 				clearSubstateTransition();
 				MusicBeatState.switchState(new MainMenuState());
+				FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
+				FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
+				FlxTween.tween(checker, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
 			}
 		}
 		else if (controls.ACCEPT && options != null && options.length > 0)
@@ -670,6 +696,9 @@ private class PlusOptionCard extends FlxSpriteGroup
 	public var index(default, null):Int;
 	public var cardWidth(default, null):Float = CARD_W;
 	var bg:FlxSprite;
+	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Options_Checker'), flixel.util.FlxAxes.XY);
+	var side:FlxSprite;
 	var title:FlxText;
 	var desc:FlxText;
 	var arrow:FlxText;
@@ -684,6 +713,22 @@ private class PlusOptionCard extends FlxSpriteGroup
 
 		bg = new FlxSprite().makeGraphic(Std.int(CARD_W), Std.int(CARD_H), FlxColor.TRANSPARENT, true);
 		add(bg);
+
+		gradientBar.y = FlxG.height - gradientBar.height;
+		add(gradientBar);
+		gradientBar.scrollFactor.set(0, 0);
+
+		checker = new FlxBackdrop(Paths.image('Options_Checker'), 0.2, 0.2, true, true);
+		add(checker);
+		checker.scrollFactor.set(0, 0.07);
+
+		side = new FlxSprite(0).loadGraphic(Paths.image('Options_Side'));
+		side.scrollFactor.x = 0;
+		side.scrollFactor.y = 0;
+		side.antialiasing = true;
+		side.screenCenter();
+		// side.flipX = true;
+		add(side);
 
 		title = new FlxText(CONTENT_X, 14, CARD_W - 106, label, 22);
 		title.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, LEFT);

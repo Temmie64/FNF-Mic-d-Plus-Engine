@@ -7,6 +7,7 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import flixel.util.FlxAxes;
 
 class CreditsState extends MusicBeatState
 {
@@ -19,8 +20,14 @@ class CreditsState extends MusicBeatState
 	public var bg:FlxSprite;
 	public var descText:FlxText;
 	public var descBg:FlxSprite;
-	public var intendedColor:FlxColor;
-	public var colorTween:FlxTween;
+	var intendedColor:FlxColor;
+	var colorTween:FlxTween;
+	var colorTween2:FlxTween;
+	var colorTween3:FlxTween;
+
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Play_Checker'), flixel.util.FlxAxes.XY);
+	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+	var side:FlxSprite;
 
 	public var offsetThing:Float = -75;
 
@@ -51,6 +58,20 @@ class CreditsState extends MusicBeatState
 		add(bg);
 		bg.screenCenter();
 
+		gradientBar.y = FlxG.height - gradientBar.height;
+		add(gradientBar);
+		gradientBar.scrollFactor.set(0, 0);
+
+		add(checker);
+		checker.scrollFactor.set(0, 0.07);
+
+		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/credBottom'));
+		side.scrollFactor.x = 0;
+		side.scrollFactor.y = 0;
+		side.antialiasing = true;
+		side.screenCenter();
+		add(side);
+
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
 
@@ -61,6 +82,15 @@ class CreditsState extends MusicBeatState
 
 		var defaultList:Array<Array<String>> = [
 			// Name - Icon name - Description - Link - BG Color
+			["Mic'd Plus Creator"],
+			[
+				"The One from 2005",
+				"2005",
+				"The one who made Mic'd Plus",
+				"https://github.com/Temmie64",
+				"9EFFAF"
+			]
+			[''],
 			['Plus Engine Team'],
 			[
 				'Lenin Asto',
@@ -97,6 +127,31 @@ class CreditsState extends MusicBeatState
 				"https://github.com/MeguminBOT/FNF-PsychEngine",
 				"C7A0FF"
 			],
+			[''],
+			["Operation's up Team"],
+			[
+				"barlizark",
+				"bar",
+				"Created Operation's up, The asset to use for Mic'd Plus",
+				"https://www.youtube.com/channel/UCfiTpCk8BuY__IpMckKrt-g",
+				"D43B0C"
+			],
+			[
+				"IceTom",
+				"tomska",
+				"additional programmer",
+				"https://www.youtube.com/channel/UC_2h5mOIQMis_6BXaKd_PzQ",
+				"FFFFFF"
+			],
+			[''],
+			["Mic'd Up Creator"],
+			[
+				"Verwex",
+				"verwex",
+				"Created Mic'd up, The engine that Operation's up is based off of and use for the Mic'd Plus",
+				"https://github.com/Verwex",
+				"A3DBFF"
+			]
 			[''],
 			['Mobile Porting Team'],
 			[
@@ -321,12 +376,18 @@ class CreditsState extends MusicBeatState
 		add(descText);
 
 		bg.color = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
+		checker.color = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
+		side.color = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
 		intendedColor = bg.color;
 		changeSelection();
 
 		addTouchPad('UP_DOWN', 'A_B');
 
 		super.create();
+
+		FlxG.camera.zoom = 0.6;
+		FlxG.camera.alpha = 0;
+		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 
 		#if MODS_ALLOWED
 		Mods.currentModDirectory = (Mods.launchedMod != null && Mods.launchedMod.length > 0) ? Mods.launchedMod : previousModDirectory;
@@ -339,6 +400,9 @@ class CreditsState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+
+		checker.x -= -0.27 / (ClientPrefs.data.framerate / 60);
+		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
 
 		if (FlxG.sound.music.volume < 0.7)
 		{
@@ -398,10 +462,17 @@ class CreditsState extends MusicBeatState
 			}
 			if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 			{
-				if (colorTween != null)
+				if(colorTween != null) {
 					colorTween.cancel();
+					colorTween2.cancel();
+					colorTween3.cancel();
+				}
 
 				FlxG.sound.play(Paths.sound('cancelMenu'));
+				FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
+				FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
+				FlxTween.tween(side, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
+				FlxTween.tween(checker, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
 				quitting = true;
 				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			}
@@ -438,25 +509,34 @@ class CreditsState extends MusicBeatState
 		while (unselectableCheck(curSelected));
 
 		var newColor:FlxColor = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
-		if (newColor != intendedColor)
-		{
-			intendedColor = newColor;
-			if (colorTween != null)
+		if(newColor != intendedColor) {
+			if(colorTween != null) {
 				colorTween.cancel();
-
-			colorTween = FlxTween.color(bg, 0.8, bg.color, intendedColor, {
-				onComplete: function(twn:FlxTween) colorTween = null
+				colorTween2.cancel();
+				colorTween3.cancel();
+			}
+			intendedColor = newColor;
+			colorTween3 = FlxTween.color(side, 1, bg.color, intendedColor);
+			colorTween2 = FlxTween.color(checker, 1, bg.color, intendedColor);
+			colorTween = FlxTween.color(bg, 1, bg.color, intendedColor, {
+				onComplete: function(twn:FlxTween) {
+					colorTween = null;
+					colorTween2 = null;
+					colorTween3 = null;
+				}
 			});
 		}
 
-		for (num => item in grpOptions.members)
+		var bullShit:Int = 0;
+
+		for (item in grpOptions.members)
 		{
-			item.targetY = num - curSelected;
-			if (!unselectableCheck(num))
-			{
+			item.targetY = bullShit - curSelected;
+			bullShit++;
+
+			if(!unselectableCheck(bullShit-1)) {
 				item.alpha = 0.6;
-				if (item.targetY == 0)
-				{
+				if (item.targetY == 0) {
 					item.alpha = 1;
 				}
 			}

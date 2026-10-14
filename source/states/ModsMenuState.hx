@@ -11,12 +11,17 @@ import objects.AttachedSprite;
 import options.ModSettingsSubState;
 import openfl.display.BitmapData;
 import lime.utils.Assets;
-
+import flixel.tweens.FlxTween;
+import flixel.util.FlxAxes;
 
 class ModsMenuState extends MusicBeatState {
 	static final FILTERS:Array<String> = ['ALL', 'ENABLED', 'DISABLED', 'LAUNCHABLE'];
+	public static var defaultColor:FlxColor = 0xFF665AFF;
 
 	var bg:FlxSprite;
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Play_Checker'), flixel.util.FlxAxes.XY);
+	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+	var side:FlxSprite;
 	var modsList:ModsList;
 	var modsGroup:FlxTypedGroup<ModItem>; // every installed mod
 	var view:Array<ModItem> = []; // the filtered/searched subset shown in the list
@@ -106,6 +111,20 @@ class ModsMenuState extends MusicBeatState {
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
 		bg.screenCenter();
+
+		gradientBar.y = FlxG.height - gradientBar.height;
+		add(gradientBar);
+		gradientBar.scrollFactor.set(0, 0);
+
+		add(checker);
+		checker.scrollFactor.set(0, 0.07);
+
+		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/modsAsset'));
+		side.scrollFactor.x = 0;
+		side.scrollFactor.y = 0;
+		side.antialiasing = true;
+		side.screenCenter();
+		add(side);
 
 		// ---- Header ----
 		headerBar = FlxSpriteUtil.drawRoundRect(new FlxSprite(margin,
@@ -253,10 +272,31 @@ class ModsMenuState extends MusicBeatState {
 					break;
 				}
 		}
+		
+		if(curSel >= mods.length) curSel = 0;
+
+		if(mods.length < 1) {
+			bg.color = defaultColor;
+			checker.color = defaultColor;
+			side.color = defaultColor;
+			}
+		else
+			{
+			bg.color = mods[curSel].color;
+			checker.color = mods[curSel].color;
+			side.color = mods[curSel].color;
+			}
+
+		intendedColor = bg.color;
 		layoutList();
 		updateDetail();
 		_lastControllerMode = controls.controllerMode;
+
 		super.create();
+
+		FlxG.camera.zoom = 0.6;
+		FlxG.camera.alpha = 0;
+		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 
 		#if mobile
 		addTouchPad('FULL', 'A_B');
@@ -350,6 +390,10 @@ class ModsMenuState extends MusicBeatState {
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				return;
 			}
+			FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
+			FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
+			FlxTween.tween(side, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
+			FlxTween.tween(checker, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
 			exitMenu();
 			return;
 		}
@@ -433,6 +477,8 @@ class ModsMenuState extends MusicBeatState {
 		}
 
 		super.update(elapsed);
+		checker.x -= -0.27 / (ClientPrefs.data.framerate / 60);
+		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
 	}
 
 	// ──────────────────────────────────────────────────── navigation ──
@@ -447,6 +493,26 @@ class ModsMenuState extends MusicBeatState {
 			curSel = 0;
 		else if (curSel > view.length - 1)
 			curSel = view.length - 1;
+
+		var newColor:Int = mods[curSel].color;
+		if(newColor != intendedColor) {
+			if(colorTween != null) {
+				colorTween.cancel();
+					colorTween2.cancel();
+					colorTween3.cancel();
+			}
+			intendedColor = newColor;
+			colorTween3 = FlxTween.color(side, 1, bg.color, intendedColor);
+			colorTween2 = FlxTween.color(checker, 1, bg.color, intendedColor);
+			colorTween = FlxTween.color(bg, 1, bg.color, intendedColor, {
+				onComplete: function(twn:FlxTween) {
+					colorTween = null;
+					colorTween2 = null;
+					colorTween3 = null;
+				}
+			});
+		}
+
 		layoutList();
 		updateDetail();
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
@@ -1094,6 +1160,10 @@ class ModItem extends FlxSpriteGroup {
 
 class MenuButton extends FlxSpriteGroup {
 	public var bg:FlxSprite;
+	var intendedColor:Int;
+	public var colorTween:FlxTween;
+	public var colorTween2:FlxTween;
+	public var colorTween3:FlxTween;
 	public var textOn:Alphabet;
 	public var textOff:Alphabet;
 	public var icon:FlxSprite;
