@@ -18,13 +18,13 @@ import backend.ui.md3.MaterialWavyProgressIndicator.WavyProgressType;
 import flixel.math.FlxMath;
 import flixel.graphics.FlxGraphic;
 import flixel.util.FlxDestroyUtil;
-import flixel.util.FlxAxes;
 import openfl.display.BitmapData;
 import openfl.geom.Matrix;
 import openfl.utils.AssetType;
 import openfl.utils.Assets;
 import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxGradient;
+import flixel.util.FlxAxes;
 #if funkin.vis
 import funkin.vis.dsp.SpectralAnalyzer;
 #end
@@ -112,7 +112,7 @@ class FreeplayState extends MusicBeatState
 	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
 	var side:FlxSprite;
 	var navi:FlxSprite;
-	
+
 	public var bgTransition:FlxSprite;
 	public var intendedColor:Int;
 	public var intendedColor2:Int;
@@ -607,12 +607,6 @@ class FreeplayState extends MusicBeatState
 		// navi.y = FlxG.height - navi.height/3*2;
 		navi.x = FlxG.width / 1.05 - navi.width / 2;
 
-		var tex = Paths.getSparrowAtlas('MicUp/Freeplay_Discs');
-		disc.frames = tex;
-		disc.animation.addByPrefix("spin", "spin", 24);
-		disc.animation.play("spin");
-		add(disc);
-
 		blackOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		blackOverlay.alpha = 0.1;
 		add(blackOverlay);
@@ -759,9 +753,6 @@ class FreeplayState extends MusicBeatState
 		updateTexts();
 
 		super.create();
-
-				disc.scale.x = 0;
-		FlxTween.tween(disc, {'scale.x': 1, y: 480, x: -25}, 0.5, {ease: FlxEase.quartInOut});
 
 		//FlxTween.tween(scoreText, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 		FlxTween.tween(side, {y: FlxG.height - side.height / 3 * 2}, 0.5, {ease: FlxEase.quartInOut});
@@ -1051,21 +1042,6 @@ class FreeplayState extends MusicBeatState
 
 		checker.x -= -0.27 / (ClientPrefs.data.framerate / 60);
 		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
-
-		/*innerDiscBottom.x = disc.x + disc.width / 2 - innerDiscBottom.width / 2;
-		innerDiscBottom.y = disc.y + disc.height / 2 - innerDiscBottom.height / 2;
-		innerDiscBottom.angle = disc.angle;
-		innerDiscBottom.scale.set(disc.scale.x, disc.scale.y);
-
-		innerDiscTop.x = disc.x + disc.width / 2 - innerDiscTop.width / 2;
-		innerDiscTop.y = disc.y + disc.height / 2 - innerDiscTop.height / 2;
-		innerDiscTop.angle = disc.angle;
-		innerDiscTop.scale.set(disc.scale.x, disc.scale.y);
-
-		discIcon.x = disc.x + disc.width / 2 - discIcon.width / 2;
-		discIcon.y = disc.y + disc.height / 2 - discIcon.height / 2;
-		discIcon.angle = disc.angle += 0.6 / (ClientPrefs.data.framerate / 60);
-		discIcon.scale.set(disc.scale.x, disc.scale.y);*/
 
 		if (freeplayTouchInputBlockTime > 0)
 			freeplayTouchInputBlockTime -= elapsed;
@@ -1427,7 +1403,7 @@ class FreeplayState extends MusicBeatState
 				FlxTween.tween(gradientBar, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(side, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				//FlxTween.tween(scoreText, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-				FlxTween.tween(disc, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
+				//FlxTween.tween(disc, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
 				//FlxTween.tween(innerDiscTop, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
 				//FlxTween.tween(innerDiscBottom, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
 			}

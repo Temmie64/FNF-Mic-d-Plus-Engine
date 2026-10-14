@@ -229,12 +229,12 @@ class TitleState extends MusicBeatState
 		#if TITLE_SCREEN_EASTER_EGG easterEggData(); #end
 		Conductor.bpm = musicBPM;
 
-		logoBl = new FlxSprite(logoPosition.x, logoPosition.y);
+		logoBl = new FlxSprite(142, -17);
 		logoBl.frames = Paths.getSparrowAtlas('logoBumpin');
 		logoBl.antialiasing = ClientPrefs.data.antialiasing;
-
 		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24, false);
 		logoBl.animation.play('bump');
+		logoBl.scale.set(0.6, 0.6);
 		logoBl.updateHitbox();
 
 		if(ClientPrefs.data.shaders) swagShader = new ColorSwap();
@@ -286,6 +286,7 @@ class TitleState extends MusicBeatState
 		blackScreen = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
 		blackScreen.scale.set(FlxG.width, FlxG.height);
 		blackScreen.updateHitbox();
+
 		credGroup.add(blackScreen);
 
 		gradientBar.y = FlxG.height - gradientBar.height;
@@ -320,7 +321,7 @@ class TitleState extends MusicBeatState
 		FNF_Logo.antialiasing = true;
 
 		add(gfDance);
-		add(logoBl); // FNF Logo
+		//add(logoBl); // FNF Logo
 		logoBl.visible = false;
 		add(titleText); // "Press Enter to Begin" text
 		titleText.visible = false;
@@ -837,14 +838,7 @@ class TitleState extends MusicBeatState
 						remove(credGroup);
 						FlxG.camera.flash(FlxColor.WHITE, 2);
 						skippedIntro = true;
-						FlxTween.tween(logoBl, {
-						'scale.x': 0.45,
-						'scale.y': 0.45,
-						x: -165,
-						y: -125
-						}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-						FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
-
+						
 						FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 						FlxG.sound.music.fadeIn(4, 0, 0.7);
 						return;
@@ -884,6 +878,8 @@ class TitleState extends MusicBeatState
 				remove(ngSpr);
 				remove(credGroup);
 				FlxG.camera.flash(FlxColor.WHITE, 4);
+				FlxTween.tween(logoBl, {'scale.x': 0.45,'scale.y': 0.45,x: -165,y: -125	}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
+				FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
 
 				var easteregg:String = FlxG.save.data.psychDevsEasterEgg;
 				if (easteregg == null)

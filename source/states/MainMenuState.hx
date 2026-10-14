@@ -555,6 +555,8 @@ class MainMenuState extends MusicBeatState
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
+				FlxTween.tween(FlxG.camera, {zoom: 3}, 0.6, {ease: FlxEase.expoIn});
+				FlxTween.tween(bg, {angle: 35}, 0.6, {ease: FlxEase.expoIn});
 				#if DISCORD_ALLOWED
 				DiscordClient.changePresence("Back to the Title Screen.", null);
 				#end
