@@ -91,7 +91,7 @@ class CreditsState extends MusicBeatState
 				"The one who made Mic'd Plus",
 				"https://github.com/Temmie64",
 				"9EFFAF"
-			]
+			],
 			[''],
 			['Plus Engine Team'],
 			[
@@ -153,7 +153,7 @@ class CreditsState extends MusicBeatState
 				"Created Mic'd up, The engine that Operation's up is based off of and use for the Mic'd Plus",
 				"https://github.com/Verwex",
 				"A3DBFF"
-			]
+			],
 			[''],
 			['Mobile Porting Team'],
 			[

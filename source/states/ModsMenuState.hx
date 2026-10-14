@@ -29,6 +29,10 @@ class ModsMenuState extends MusicBeatState {
 	var view:Array<ModItem> = []; // the filtered/searched subset shown in the list
 	var curSel:Int = 0;
 	var scrollOffset:Int = 0; // index of the first visible row (top-anchored)
+	var intendedColor:Int;
+	var colorTween:FlxTween;
+	var colorTween2:FlxTween;
+	var colorTween3:FlxTween;
 
 	// header
 	var headerBar:FlxSprite;
@@ -275,18 +279,18 @@ class ModsMenuState extends MusicBeatState {
 				}
 		}
 		
-		if(curSel >= mods.length) curSel = 0;
+		if(curSel >= modsList.length) curSel = 0;
 
-		if(mods.length < 1) {
+		if(modsList.length < 1) {
 			bg.color = defaultColor;
 			checker.color = defaultColor;
 			side.color = defaultColor;
 			}
 		else
 			{
-			bg.color = mods[curSel].color;
-			checker.color = mods[curSel].color;
-			side.color = mods[curSel].color;
+			bg.color = modsList[curSel].color;
+			checker.color = modsList[curSel].color;
+			side.color = modsList[curSel].color;
 			}
 
 		intendedColor = bg.color;
@@ -496,7 +500,7 @@ class ModsMenuState extends MusicBeatState {
 		else if (curSel > view.length - 1)
 			curSel = view.length - 1;
 
-		var newColor:Int = mods[curSel].color;
+		var newColor:Int = modsList[curSel].color;
 		if(newColor != intendedColor) {
 			if(colorTween != null) {
 				colorTween.cancel();
@@ -1162,7 +1166,7 @@ class ModItem extends FlxSpriteGroup {
 
 class MenuButton extends FlxSpriteGroup {
 	public var bg:FlxSprite;
-	var intendedColor:Int;
+	public var intendedColor:Int;
 	public var colorTween:FlxTween;
 	public var colorTween2:FlxTween;
 	public var colorTween3:FlxTween;

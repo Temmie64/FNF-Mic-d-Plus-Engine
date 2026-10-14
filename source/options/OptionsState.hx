@@ -219,7 +219,6 @@ class OptionsState extends MusicBeatState
 		add(gradientBar);
 		gradientBar.scrollFactor.set(0, 0);
 
-		checker = new FlxBackdrop(Paths.image('Options_Checker'), 0.2, 0.2, true, true);
 		add(checker);
 		checker.scrollFactor.set(0, 0.07);
 
@@ -697,16 +696,16 @@ private class PlusOptionCard extends FlxSpriteGroup
 
 	public var index(default, null):Int;
 	public var cardWidth(default, null):Float = CARD_W;
-	var bg:FlxSprite;
-	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Options_Checker'), flixel.util.FlxAxes.XY);
-	var side:FlxSprite;
-	var title:FlxText;
-	var desc:FlxText;
-	var arrow:FlxText;
-	var lastSelected:Null<Bool> = null;
-	var lastHeader:Null<Bool> = null;
-	var lastTheme:String = "";
+	public var bg:FlxSprite;
+	public var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
+	public var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Options_Checker'), flixel.util.FlxAxes.XY);
+	public var side:FlxSprite;
+	public var title:FlxText;
+	public var desc:FlxText;
+	public var arrow:FlxText;
+	public var lastSelected:Null<Bool> = null;
+	public var lastHeader:Null<Bool> = null;
+	public var lastTheme:String = "";
 
 	public function new(index:Int, label:String, description:String)
 	{
