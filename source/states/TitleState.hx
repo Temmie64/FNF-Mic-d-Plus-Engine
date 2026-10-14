@@ -47,10 +47,10 @@ class TitleState extends MusicBeatState
 
 	public var forceShowIntro:Bool = false; // Si debe forzar mostrar la intro
 
+	public var credGroup:FlxGroup = new FlxGroup();
+	public var textGroup:FlxGroup = new FlxGroup();
 	public var blackScreen:FlxSprite;
-	public var credGroup:FlxGroup;
 	public var credTextShit:Alphabet;
-	public var textGroup:FlxGroup;
 	public var ngSpr:FlxSprite;
 	public var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x553D0468, 0xAABF1943], 1, 90, true);
 	public var fnfSpr:FlxSprite;
@@ -159,15 +159,7 @@ class TitleState extends MusicBeatState
 		}
 		#end
 
-		if (initialized)
-				startIntro();
-			else
-			{
-				new FlxTimer().start(1, function(tmr:FlxTimer)
-				{
-					startIntro();
-				});
-			}
+		startIntro();
 	}
 
 	#if VIDEOS_ALLOWED
@@ -339,7 +331,7 @@ class TitleState extends MusicBeatState
 		{
 			gfDance.shader = swagShader.shader;
 			logoBl.shader = swagShader.shader;
-		}
+		}	
 
 		FNF_EX.x = -1500;
 		FNF_EX.y = 300;
@@ -710,12 +702,13 @@ class TitleState extends MusicBeatState
 
 	function addMoreText(text:String, ?offset:Float = 0)
 	{
-		if(textGroup != null && credGroup != null) {
+		if (textGroup != null && credGroup != null)
+		{
 			var coolText:Alphabet = new Alphabet(0, 0, text, true);
 			// coolText.screenCenter(X);
 			// coolText.y += (textGroup.length * 60) + 200 + offset;
-		coolText.x = -1500;
-		FlxTween.quadMotion(coolText, -300, -100, 10
+			coolText.x = -1500;
+			FlxTween.quadMotion(coolText, -300, -100, 10
 			+ (textGroup.length * 40), 150
 			+ (textGroup.length * 130), 30
 			+ (textGroup.length * 40),
@@ -798,6 +791,7 @@ class TitleState extends MusicBeatState
 					//addMoreText('Friday');
 				case 15:
 					FlxTween.tween(FNF_EX, {y: 48, x: 403}, 0.8, {ease: FlxEase.backOut});
+					//addMoreText('Night');
 				case 16:
 					//addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
 
@@ -816,6 +810,7 @@ class TitleState extends MusicBeatState
 		{
 			remove(FNF_Logo);
 			remove(FNF_EX);
+
 			#if TITLE_SCREEN_EASTER_EGG
 			if (playJingle) // Ignore deez
 			{
