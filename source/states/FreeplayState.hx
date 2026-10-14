@@ -22,9 +22,6 @@ import openfl.display.BitmapData;
 import openfl.geom.Matrix;
 import openfl.utils.AssetType;
 import openfl.utils.Assets;
-import flixel.addons.display.FlxBackdrop;
-import flixel.util.FlxGradient;
-import flixel.util.FlxAxes;
 #if funkin.vis
 import funkin.vis.dsp.SpectralAnalyzer;
 #end
@@ -108,23 +105,8 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	public var bg:FlxSprite;
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
-	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
-	var side:FlxSprite;
-	var navi:FlxSprite;
-
 	public var bgTransition:FlxSprite;
 	public var intendedColor:Int;
-	public var intendedColor2:Int;
-	public var intendedColor3:Int;
-	public var intendedColor4:Int;
-	public var intendedColor5:Int;
-	public var colorTween:FlxTween;
-	public var colorTween2:FlxTween;
-	public var colorTween3:FlxTween;
-	public var colorTween4:FlxTween;
-
-	var disc:FlxSprite = new FlxSprite(-200, 730);
 
 	var bgSwapTimer:FlxTimer = null;
 	var bgFadeTweenIn:FlxTween = null;
@@ -580,33 +562,6 @@ class FreeplayState extends MusicBeatState
 		loadSelectedFreeplayBackground(true);
 		bgZoom = defaultBgZoom = 1;
 
-		gradientBar.y = FlxG.height - gradientBar.height;
-		add(gradientBar);
-		gradientBar.scrollFactor.set(0, 0);
-
-		add(checker);
-		checker.scrollFactor.set(0, 0.07);
-
-		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Free_Bottom'));
-		side.scrollFactor.x = 0;
-		side.scrollFactor.y = 0;
-		side.antialiasing = true;
-		side.screenCenter();
-		add(side);
-		side.y = FlxG.height;
-		// side.y = FlxG.height - side.height/3*2;
-		side.x = FlxG.width / 2 - side.width / 2;
-
-		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/navi_Free'));
-		navi.scrollFactor.x = 0;
-		navi.scrollFactor.y = 0;
-		navi.antialiasing = true;
-		navi.screenCenter();
-		add(navi);
-		navi.y = FlxG.height / 1.25;
-		// navi.y = FlxG.height - navi.height/3*2;
-		navi.x = FlxG.width / 1.05 - navi.width / 2;
-
 		blackOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		blackOverlay.alpha = 0.1;
 		add(blackOverlay);
@@ -753,13 +708,6 @@ class FreeplayState extends MusicBeatState
 		updateTexts();
 
 		super.create();
-
-		//FlxTween.tween(scoreText, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
-		FlxTween.tween(side, {y: FlxG.height - side.height / 3 * 2}, 0.5, {ease: FlxEase.quartInOut});
-
-		FlxG.camera.zoom = 0.6;
-		FlxG.camera.alpha = 0;
-		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 
 		#if (MODS_ALLOWED && sys && !mobile)
 		FlxG.stage.window.onDropFile.add(onDropFile);
@@ -1039,10 +987,6 @@ class FreeplayState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		checker.x -= -0.27 / (ClientPrefs.data.framerate / 60);
-		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
-
 		if (freeplayTouchInputBlockTime > 0)
 			freeplayTouchInputBlockTime -= elapsed;
 
@@ -1397,15 +1341,6 @@ class FreeplayState extends MusicBeatState
 				playFreeplayMenuMusic(0.7);
 				stopMusicPlay = true;
 				MusicBeatState.switchState(backend.ScriptableState.tryCreate('PlaySelectionState', new PlaySelectionState()));
-				FlxTween.tween(FlxG.camera, {zoom: 0.6, alpha: -0.6}, 0.7, {ease: FlxEase.quartInOut});
-				FlxTween.tween(bg, {alpha: 0}, 0.7, {ease: FlxEase.quartInOut});
-				FlxTween.tween(checker, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-				FlxTween.tween(gradientBar, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-				FlxTween.tween(side, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-				//FlxTween.tween(scoreText, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-				//FlxTween.tween(disc, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
-				//FlxTween.tween(innerDiscTop, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
-				//FlxTween.tween(innerDiscBottom, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
 			}
 		}
 
