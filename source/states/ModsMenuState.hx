@@ -486,25 +486,6 @@ class ModsMenuState extends MusicBeatState {
 		else if (curSel > view.length - 1)
 			curSel = view.length - 1;
 
-		var newColor:Int = modsList[curSel].color;
-		if(newColor != intendedColor) {
-			if(colorTween != null) {
-				colorTween.cancel();
-					colorTween2.cancel();
-					colorTween3.cancel();
-			}
-			intendedColor = newColor;
-			colorTween3 = FlxTween.color(side, 1, bg.color, intendedColor);
-			colorTween2 = FlxTween.color(checker, 1, bg.color, intendedColor);
-			colorTween = FlxTween.color(bg, 1, bg.color, intendedColor, {
-				onComplete: function(twn:FlxTween) {
-					colorTween = null;
-					colorTween2 = null;
-					colorTween3 = null;
-				}
-			});
-		}
-
 		layoutList();
 		updateDetail();
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);

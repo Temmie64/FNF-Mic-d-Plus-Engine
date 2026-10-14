@@ -722,7 +722,6 @@ private class PlusOptionCard extends FlxSpriteGroup
 		add(gradientBar);
 		gradientBar.scrollFactor.set(0, 0);
 
-		checker = new FlxBackdrop(Paths.image('Options_Checker'), 0.2, 0.2, true, true);
 		add(checker);
 		checker.scrollFactor.set(0, 0.07);
 
