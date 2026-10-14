@@ -76,6 +76,7 @@ class TitleState extends MusicBeatState
 	public var canSkip:Bool = true;
 	var introVideo:VideoSprite;
 	var waitingForIntroVideo:Bool = false;
+	var Timer:Float = 0;
 
 	override public function create():Void
 	{
