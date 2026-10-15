@@ -567,7 +567,7 @@ class FreeplayState extends MusicBeatState
 				var bottomColors:Array<Int> = song[4];
 				if (bottomColors == null || bottomColors.length < 3)
 				{
-					bottomColors = [0, 0, 0];
+					bottomColors = colors;
 				}
 				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]),
 					FlxColor.fromRGB(checkerColors[0], checkerColors[1], checkerColors[2]),
@@ -760,6 +760,9 @@ class FreeplayState extends MusicBeatState
 		super.create();
 
 		FlxTween.tween(side, {y: FlxG.height - side.height * 2 / 3}, 0.5, {ease: FlxEase.quartInOut});
+		FlxG.camera.zoom = 0.6;
+		FlxG.camera.alpha = 0;
+		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 
 		#if (MODS_ALLOWED && sys && !mobile)
 		FlxG.stage.window.onDropFile.add(onDropFile);
@@ -1395,6 +1398,18 @@ class FreeplayState extends MusicBeatState
 				}
 				playFreeplayMenuMusic(0.7);
 				stopMusicPlay = true;
+				if (bgSwapTimer != null)
+					bgSwapTimer.cancel();
+				if (bgFadeTweenIn != null)
+					bgFadeTweenIn.cancel();
+				if (bgFadeTweenOut != null)
+					bgFadeTweenOut.cancel();
+				FlxTween.tween(FlxG.camera, {zoom: 0.6, alpha: -0.6}, 0.7, {ease: FlxEase.quartInOut});
+				FlxTween.tween(bg, {alpha: 0}, 0.7, {ease: FlxEase.quartInOut});
+				FlxTween.tween(bgTransition, {alpha: 0}, 0.7, {ease: FlxEase.quartInOut});
+				FlxTween.tween(checker, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
+				FlxTween.tween(gradientBar, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
+				FlxTween.tween(side, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				MusicBeatState.switchState(backend.ScriptableState.tryCreate('PlaySelectionState', new PlaySelectionState()));
 			}
 		}
@@ -1547,6 +1562,17 @@ class FreeplayState extends MusicBeatState
 				}
 				LoadingState.prepareToSong();
 				LoadingState.returnState = FreeplayStateSelector.create(); // Establecer estado de retorno
+				if (bgSwapTimer != null)
+					bgSwapTimer.cancel();
+				if (bgFadeTweenIn != null)
+					bgFadeTweenIn.cancel();
+				if (bgFadeTweenOut != null)
+					bgFadeTweenOut.cancel();
+				FlxTween.tween(bg, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+				FlxTween.tween(bgTransition, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+				FlxTween.tween(checker, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+				FlxTween.tween(gradientBar, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+				FlxTween.tween(side, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 				LoadingState.loadAndSwitchState(new PlayState());
 				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
 				stopMusicPlay = true;

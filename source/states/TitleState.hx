@@ -6,15 +6,15 @@ import flixel.input.keyboard.FlxKey;
 import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
+import flixel.util.FlxGradient;
+import flixel.addons.display.FlxBackdrop;
 import objects.VideoSprite;
 import openfl.utils.AssetType;
 import shaders.ColorSwap;
 import states.StoryMenuState;
 import states.MainMenuState;
-import flixel.util.FlxGradient;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
-import flixel.addons.display.FlxBackdrop;
 #if mobile
 import mobile.backend.TouchUtil;
 #end
@@ -52,12 +52,11 @@ class TitleState extends MusicBeatState
 	public var blackScreen:FlxSprite;
 	public var credTextShit:Alphabet;
 	public var ngSpr:FlxSprite;
-	public var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x553D0468, 0xAABF1943], 1, 90, true);
-	public var fnfSpr:FlxSprite;
+	public var gradientBar:FlxSprite;
 	public var FNF_Logo:FlxSprite;
 	public var FNF_EX:FlxSprite;
 
-	//public var titleTextColors:Array<FlxColor> = [0xFF33FFFF, 0xFF3333CC];
+	///public var titleTextColors:Array<FlxColor> = [0xFF33FFFF, 0xFF3333CC];
 	public var titleTextAlphas:Array<Float> = [1, .64];
 
 	public var curWacky:Array<String> = [];
@@ -76,7 +75,7 @@ class TitleState extends MusicBeatState
 	public var canSkip:Bool = true;
 	var introVideo:VideoSprite;
 	var waitingForIntroVideo:Bool = false;
-	var Timer:Float = 0;
+	var titleMotionTimer:Float = 0;
 
 	override public function create():Void
 	{
@@ -229,9 +228,10 @@ class TitleState extends MusicBeatState
 		#if TITLE_SCREEN_EASTER_EGG easterEggData(); #end
 		Conductor.bpm = musicBPM;
 
-		logoBl = new FlxSprite(142, -17);
+		logoBl = new FlxSprite(logoPosition.x, logoPosition.y);
 		logoBl.frames = Paths.getSparrowAtlas('logoBumpin');
 		logoBl.antialiasing = ClientPrefs.data.antialiasing;
+
 		logoBl.animation.addByPrefix('bump', 'logo bumpin', 24, false);
 		logoBl.animation.play('bump');
 		logoBl.scale.set(0.6, 0.6);
@@ -285,17 +285,7 @@ class TitleState extends MusicBeatState
 		blackScreen = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
 		blackScreen.scale.set(FlxG.width, FlxG.height);
 		blackScreen.updateHitbox();
-
 		credGroup.add(blackScreen);
-		add(credGroup);
-
-		gradientBar.y = FlxG.height - gradientBar.height;
-		gradientBar.scale.y = 0;
-		gradientBar.updateHitbox();
-		add(gradientBar);
-		if (swagShader != null)
-			gradientBar.shader = swagShader.shader;
-		FlxTween.tween(gradientBar, {'scale.y': 1.3}, 4, {ease: FlxEase.quadInOut});
 
 		credTextShit = new Alphabet(0, 0, "", true);
 		credTextShit.screenCenter();
@@ -308,38 +298,40 @@ class TitleState extends MusicBeatState
 		ngSpr.screenCenter(X);
 		ngSpr.antialiasing = ClientPrefs.data.antialiasing;
 
+		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00ff0000, 0x553D0468, 0xAABF1943], 1, 90, true);
+		gradientBar.y = FlxG.height - gradientBar.height;
+		gradientBar.scale.y = 0;
+		gradientBar.updateHitbox();
+		if (swagShader != null)
+			gradientBar.shader = swagShader.shader;
+		FlxTween.tween(gradientBar, {'scale.y': 1.3}, 4, {ease: FlxEase.quadInOut});
+
 		FNF_Logo = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_Logo'));
 		FNF_EX = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_MU'));
 		FNF_EX.scale.set(0.6, 0.6);
 		FNF_Logo.scale.set(0.6, 0.6);
 		FNF_EX.updateHitbox();
 		FNF_Logo.updateHitbox();
-		FNF_EX.antialiasing = true;
-		FNF_Logo.antialiasing = true;
+		FNF_EX.antialiasing = ClientPrefs.data.antialiasing;
+		FNF_Logo.antialiasing = ClientPrefs.data.antialiasing;
+		if (swagShader != null)
+		{
+			FNF_EX.shader = swagShader.shader;
+			FNF_Logo.shader = swagShader.shader;
+		}
+		FNF_EX.setPosition(-1500, 300);
+		FNF_Logo.setPosition(-1500, 300);
 
 		add(gfDance);
-		//add(logoBl); // FNF Logo
-		logoBl.visible = false;
+		add(credGroup);
+		add(gradientBar);
+		add(logoBl); // FNF Logo
 		add(titleText); // "Press Enter to Begin" text
-		titleText.visible = false;
 		add(ngSpr);
 		add(FNF_EX);
 		add(FNF_Logo);
-
-		if(swagShader != null)
-		{
-			gfDance.shader = swagShader.shader;
-			logoBl.shader = swagShader.shader;
-			FNF_EX.shader = swagShader.shader;
-			FNF_Logo.shader = swagShader.shader;
-		}	
-
-		FNF_EX.x = -1500;
-		FNF_EX.y = 300;
-		FNF_Logo.x = -1500;
-		FNF_Logo.y = 300;
-
-		FlxTween.tween(credTextShit, {y: credTextShit.y + 20}, 2.9, {ease: FlxEase.quadInOut, type: PINGPONG});
+		logoBl.visible = false;
+		titleText.visible = false;
 
 		if (initialized && !forceShowIntro)
 			skipIntro();
@@ -516,14 +508,6 @@ class TitleState extends MusicBeatState
 		}
 		#end
 
-		Timer += 1;
-		gradientBar.scale.y += Math.sin(Timer / 10) * 0.001 / (ClientPrefs.data.framerate / 60);
-		gradientBar.updateHitbox();
-		gradientBar.y = FlxG.height - gradientBar.height;
-
-		if (skippedIntro)
-			logoBl.angle = Math.sin(Timer / 270) * 5 / (ClientPrefs.data.framerate / 60);
-
 		if (showingIntro && canSkip)
 		{
 			var pressedSkip:Bool = false;
@@ -543,11 +527,21 @@ class TitleState extends MusicBeatState
 
 		if (!showingIntro)
 		{
+			titleMotionTimer += 1;
+			if (gradientBar != null)
+			{
+				gradientBar.scale.y += Math.sin(titleMotionTimer / 10) * 0.001 / (ClientPrefs.data.framerate / 60);
+				gradientBar.updateHitbox();
+				gradientBar.y = FlxG.height - gradientBar.height;
+			}
+			if (skippedIntro && logoBl != null)
+				logoBl.angle = Math.sin(titleMotionTimer / 270) * 5 / (ClientPrefs.data.framerate / 60);
+
 			if (FlxG.sound.music != null)
 				Conductor.songPosition = FlxG.sound.music.time;
 			// FlxG.watch.addQuick('amp', FlxG.sound.music.amplitude);
 
-			var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT;
+			var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT || FlxG.mouse.justPressed;
 			#if mobile
 			pressedEnter = pressedEnter || TouchUtil.justPressed;
 			#end
@@ -603,7 +597,6 @@ class TitleState extends MusicBeatState
 					// FlxG.sound.music.stop();
 
 					FlxTween.tween(FlxG.camera, {y: FlxG.height}, 1.6, {ease: FlxEase.expoIn, startDelay: 0.4});
-
 					new FlxTimer().start(1.7, function(tmr:FlxTimer)
 					{
 						MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('MainMenuState', function() return new MainMenuState()));
@@ -690,11 +683,11 @@ class TitleState extends MusicBeatState
 		for (i in 0...textArray.length)
 		{
 			var money:Alphabet = new Alphabet(0, 0, textArray[i], true);
-			// money.screenCenter(X);
-			// money.y += (i * 60) + 200 + offset;
 			money.x = -1500;
-			FlxTween.quadMotion(money, -300, -100, 30 + (i * 70), 150 + (i * 130), 100 + (i * 70), 80 + (i * 130), 0.4, true, {ease: FlxEase.quadInOut});
-			if(credGroup != null && textGroup != null) {
+			FlxTween.quadMotion(money, -300, -100 + offset, 30 + (i * 70), 150 + (i * 130) + offset, 100 + (i * 70), 80 + (i * 130) + offset, 0.4, true,
+				{ease: FlxEase.quadInOut});
+			if (credGroup != null && textGroup != null)
+			{
 				credGroup.add(money);
 				textGroup.add(money);
 			}
@@ -706,17 +699,9 @@ class TitleState extends MusicBeatState
 		if (textGroup != null && credGroup != null)
 		{
 			var coolText:Alphabet = new Alphabet(0, 0, text, true);
-			// coolText.screenCenter(X);
-			// coolText.y += (textGroup.length * 60) + 200 + offset;
 			coolText.x = -1500;
-			FlxTween.quadMotion(coolText, -300, -100, 10
-			+ (textGroup.length * 40), 150
-			+ (textGroup.length * 130), 30
-			+ (textGroup.length * 40),
-			80
-			+ (textGroup.length * 130), 0.4, true, {
-				ease: FlxEase.quadInOut
-			});
+			FlxTween.quadMotion(coolText, -300, -100 + offset, 10 + (textGroup.length * 40), 150 + (textGroup.length * 130) + offset,
+				30 + (textGroup.length * 40), 80 + (textGroup.length * 130) + offset, 0.4, true, {ease: FlxEase.quadInOut});
 			credGroup.add(coolText);
 			textGroup.add(coolText);
 		}
@@ -766,11 +751,11 @@ class TitleState extends MusicBeatState
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
 				case 2:
-					createCoolText(['Psych Continued by', 'Autistic Lulu'], -90);
+					createCoolText(["Mic'd Plus by", "The One From 2005"], -90);
 				case 3:
-					createCoolText(['Plus Engine by', 'Lenin Asto'], 80);
+					createCoolText(['Psych Continued by', 'Autistic Lulu'], 80);
 				case 4:
-					createCoolText(["Mic'd Plus by', 'The One From 2005"], 250);
+					createCoolText(['Plus Engine by', 'Lenin Asto'], 250);
 				case 5:
 					deleteCoolText();
 				case 6:
@@ -811,7 +796,6 @@ class TitleState extends MusicBeatState
 		{
 			remove(FNF_Logo);
 			remove(FNF_EX);
-
 			#if TITLE_SCREEN_EASTER_EGG
 			if (playJingle) // Ignore deez
 			{
@@ -838,9 +822,11 @@ class TitleState extends MusicBeatState
 						remove(credGroup);
 						FlxG.camera.flash(FlxColor.WHITE, 2);
 						skippedIntro = true;
-						
+
 						FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 						FlxG.sound.music.fadeIn(4, 0, 0.7);
+						titleText.visible = true;
+						logoBl.visible = true;
 						return;
 				}
 
@@ -878,8 +864,9 @@ class TitleState extends MusicBeatState
 				remove(ngSpr);
 				remove(credGroup);
 				FlxG.camera.flash(FlxColor.WHITE, 4);
-				FlxTween.tween(logoBl, {'scale.x': 0.45,'scale.y': 0.45,x: -165,y: -125	}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-				FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+				FlxTween.tween(logoBl, {'scale.x': 0.45, 'scale.y': 0.45, x: logoPosition.x - 15, y: logoPosition.y - 25}, 1.3,
+					{ease: FlxEase.expoInOut, startDelay: 1.3});
+				FlxTween.tween(gfDance, {y: gfPosition.y - 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
 
 				var easteregg:String = FlxG.save.data.psychDevsEasterEgg;
 				if (easteregg == null)
