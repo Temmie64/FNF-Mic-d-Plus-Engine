@@ -87,6 +87,7 @@ import mobile.backend.PsychJNI;
 		'practice' => false,
 		'botplay' => false,
 		'botplayType' => 'Normal',
+		'botplayCPUProfile' => 'Skilled',
 		'opponentdrain' => false, // JS Engine-style: opponent note hits drain player health
 		'opponentplay' => false,
 		'perfect' => false, // Perfect Mode - insta-kill on any judgement below Sick
@@ -117,6 +118,9 @@ import mobile.backend.PsychJNI;
 	public var showComboNum:Bool = true;
 	public var showTimingTags:Bool = false;
 	public var showHitMs:Bool = false;
+	#if android
+	public var runOnLightVisual:Bool = true;
+	#end
 	public var comboInGame:Bool = false;
 	public var nfRatingStyle:Bool = false;
 	public var endCountdown:Bool = false; // Enables/disables the end countdown
@@ -186,7 +190,8 @@ import mobile.backend.PsychJNI;
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
 	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
-	public var dragCharacterToMove:Bool = false;
+	public var cneStyleDragCharacter:Bool = false;
+	public var canDragCameraStage:Bool = true;
 
 	// Mod compatibility / security
 	public var scriptWarns:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs

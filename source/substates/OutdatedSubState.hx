@@ -103,7 +103,7 @@ class OutdatedSubState extends MusicBeatSubstate
 	function loadChangelogBlocking():Void
 	{
 		var loaded:Bool = false;
-		var http = new Http("https://raw.githubusercontent.com/Temmie64/FNF-Plus-x-Mic-d-Up-Engine/refs/heads/main/gitVersion.txt");
+		var http = new Http("https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/refs/heads/main/gitVersion.txt");
 
 		http.onData = function(data:String)
 		{

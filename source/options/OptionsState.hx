@@ -3,9 +3,6 @@ package options;
 import states.MainMenuState;
 import backend.StageData;
 import flixel.util.FlxSpriteUtil;
-import flixel.util.FlxAxes;
-import flixel.addons.display.FlxBackdrop;
-import flixel.util.FlxGradient;
 
 class OptionsState extends MusicBeatState
 {
@@ -198,10 +195,6 @@ class OptionsState extends MusicBeatState
 
 	var selectorLeft:Alphabet;
 	var selectorRight:Alphabet;
-	var bg:FlxSprite;
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), flixel.util.FlxAxes.XY);
-	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
-	var side:FlxSprite;
 
 	override function create()
 	{
@@ -211,29 +204,13 @@ class OptionsState extends MusicBeatState
 		OptionsMenuTheme.syncAccent();
 		menuStyle = normalizeMenuStyle(ClientPrefs.data.optionsMenuStyle);
 
-		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
+		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.color = isPlusStyle() ? OptionsMenuTheme.current().accent : 0xFFea71fd;
 		bg.updateHitbox();
+
 		bg.screenCenter();
 		add(bg);
-
-		gradientBar.y = FlxG.height - gradientBar.height;
-		add(gradientBar);
-		gradientBar.scrollFactor.set(0, 0);
-
-		add(checker);
-		checker.color = isPlusStyle() ? OptionsMenuTheme.current().accent : 0xFFea71fd;
-		checker.scrollFactor.set(0, 0.07);
-
-		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Options_Side'));
-		side.scrollFactor.x = 0;
-		side.scrollFactor.y = 0;
-		side.antialiasing = true;
-		side.color = isPlusStyle() ? OptionsMenuTheme.current().accent : 0xFFea71fd;
-		side.screenCenter();
-		// side.flipX = true;
-		add(side);
 
 		if (controls.mobileC)
 		{
@@ -329,9 +306,6 @@ class OptionsState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		checker.x -= -0.27 / (ClientPrefs.data.framerate / 60);
-		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
 
 		if (isPlusStyle())
 		{
@@ -429,9 +403,6 @@ class OptionsState extends MusicBeatState
 				{
 					clearSubstateTransition();
 					MusicBeatState.switchState(new MainMenuState());
-					FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
-					FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
-					FlxTween.tween(checker, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
 				}
 			}
 			else if (controls.ACCEPT && options != null && options.length > 0)

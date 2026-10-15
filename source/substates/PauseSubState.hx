@@ -4,7 +4,6 @@ import backend.Highscore;
 import backend.Song;
 import backend.Difficulty;
 import backend.LocaleUtils;
-import objects.HealthIcon;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -47,10 +46,6 @@ class PauseSubState extends MusicBeatSubstate
 	public var menuItemsDefault:Array<String> = [];
 	public var difficultyChoices = [];
 	public var curSelected:Int = 0;
-	public var pausebg:FlxSprite;
-	public var pausebg1:FlxSprite;
-	public var iconBG:FlxSprite;
-	public var icon:HealthIcon;
 	public var pauseMusic:FlxSound;
 	public var practiceText:FlxText;
 	public var skipTimeText:FlxText;
@@ -157,83 +152,6 @@ class PauseSubState extends MusicBeatSubstate
 		bg.alpha = 0;
 		bg.scrollFactor.set();
 		add(bg);
-
-		if (!ClientPrefs.data.lowQuality)
-		{
-			pausebg = new FlxSprite().loadGraphic(Paths.image('Beat/pausemenubg'));
-			pausebg.color = 0xFF1E1E1E;
-			pausebg.scrollFactor.set();
-			pausebg.updateHitbox();
-			pausebg.screenCenter();
-			pausebg.antialiasing = ClientPrefs.data.antialiasing;
-			add(pausebg);
-			pausebg.x += 200;
-			pausebg.y -= 200;
-			pausebg.alpha = 0;
-			FlxTween.tween(pausebg, {x: 0,y: 0,alpha: 1}, 1, {ease: FlxEase.quadOut});
-
-			pausebg1 = new FlxSprite().loadGraphic(Paths.image('Beat/iconbackground'));
-			pausebg1.color = 0xFF141414;
-			pausebg1.scrollFactor.set();
-			pausebg1.updateHitbox();
-			pausebg1.screenCenter();
-			pausebg1.antialiasing =ClientPrefs.data.antialiasing;
-			add(pausebg1);
-			pausebg1.x -= 150;
-			pausebg1.y += 150;
-			pausebg1.alpha = 0;
-			FlxTween.tween(pausebg1, {x: 0,y: 0,alpha: 1}, 0.9, {ease: FlxEase.quadOut});
-
-			iconBG = new FlxSprite().loadGraphic(Paths.image('Beat/iconbackground'));
-			iconBG.flipX = true;
-			/*if (!PlayState.instance.opponentChart)
-				iconBG.color = FlxColor.fromRGB(PlayState.instance.dad.healthColorArray[0], PlayState.instance.dad.healthColorArray[1],
-					PlayState.instance.dad.healthColorArray[2]);
-			else
-				iconBG.color = FlxColor.fromRGB(PlayState.instance.boyfriend.healthColorArray[0], PlayState.instance.boyfriend.healthColorArray[1],
-					PlayState.instance.boyfriend.healthColorArray[2]);*/
-			iconBG.color = FlxColor.fromRGB(PlayState.instance.dad.healthColorArray[0], PlayState.instance.dad.healthColorArray[1],PlayState.instance.dad.healthColorArray[2]);
-			iconBG.scrollFactor.set();
-			iconBG.updateHitbox();
-			iconBG.screenCenter();
-			iconBG.antialiasing = ClientPrefs.data.antialiasing;
-			add(iconBG);
-			iconBG.x += 100;
-			iconBG.y += 100;
-			iconBG.alpha = 0;
-			FlxTween.tween(iconBG, {x: 0,y: 0,alpha: 1}, 0.8, {ease: FlxEase.quadOut});
-
-			/*if (!PlayState.instance.opponentChart)
-				icon = new HealthIcon(PlayState.instance.dad.healthIcon);
-			else
-				icon = new HealthIcon(PlayState.instance.boyfriend.healthIcon);*/
-			icon = new HealthIcon(PlayState.instance.dad.healthIcon);
-			final healthPercent:Float = FlxMath.bound(PlayState.instance.healthBar.percent / 100, 0, 1);
-			if (icon.isAnimated)
-				icon.updateIconState(healthPercent);
-			else if (icon.animation.curAnim != null)
-			{
-				final frameCount:Int = (icon.frames != null && icon.frames.frames != null) ? icon.frames.frames.length : 0;
-				if (healthPercent < 0.2)
-					icon.animation.curAnim.curFrame = frameCount > 1 ? 1 : 0;
-				else if (healthPercent > 0.8)
-					icon.animation.curAnim.curFrame = frameCount > 2 ? 2 : 0;
-				else
-					icon.animation.curAnim.curFrame = 0;
-			}
-			icon.setGraphicSize(Std.int(icon.width * 1.7));
-			icon.antialiasing = ClientPrefs.data.antialiasing;
-			icon.x = FlxG.width - 230;
-			icon.y = FlxG.height - 180;
-			icon.flipX = true;
-			icon.scrollFactor.set();
-			icon.updateHitbox();
-			add(icon);
-			icon.x += 150;
-			icon.y += 150;
-			icon.alpha = 0;
-			FlxTween.tween(icon, {x: icon.x - 150,y: icon.y - 150,alpha: 1}, 0.8, {ease: FlxEase.quadOut});
-		}
 
 		var now:Date = Date.now();
 		var dateTimeStr:String = LocaleUtils.formatDateTimeAccordingToDevice(now);
@@ -836,3 +754,4 @@ class PauseSubState extends MusicBeatSubstate
 	public function rebuildMenu():Void
 		regenMenu();
 }
+
