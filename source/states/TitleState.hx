@@ -6,10 +6,10 @@ import flixel.input.keyboard.FlxKey;
 import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
+import flixel.system.FlxSound;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxGradient;
-import flixel.addons.display.FlxBackdrop;
 import objects.VideoSprite;
 import openfl.utils.AssetType;
 import shaders.ColorSwap;
@@ -52,11 +52,12 @@ class TitleState extends MusicBeatState
 	public var blackScreen:FlxSprite;
 	public var credTextShit:Alphabet;
 	public var ngSpr:FlxSprite;
-	public var gradientBar:FlxSprite;
-	public var FNF_Logo:FlxSprite;
-	public var FNF_EX:FlxSprite;
+	var gradientBar:FlxSprite;
+	var fnfSpr:FlxSprite;
+	var FNF_Logo:FlxSprite;
+	var FNF_EX:FlxSprite;
 
-	///public var titleTextColors:Array<FlxColor> = [0xFF33FFFF, 0xFF3333CC];
+	public var titleTextColors:Array<FlxColor> = [0xFF33FFFF, 0xFF3333CC];
 	public var titleTextAlphas:Array<Float> = [1, .64];
 
 	public var curWacky:Array<String> = [];
@@ -75,7 +76,6 @@ class TitleState extends MusicBeatState
 	public var canSkip:Bool = true;
 	var introVideo:VideoSprite;
 	var waitingForIntroVideo:Bool = false;
-	var titleMotionTimer:Float = 0;
 
 	override public function create():Void
 	{
@@ -205,6 +205,7 @@ class TitleState extends MusicBeatState
 	var danceLeft:Bool = false;
 	var titleText:FlxSprite;
 	var swagShader:ColorSwap = null;
+	var titleMotionTimer:Float = 0;
 
 	function startIntro()
 	{
@@ -306,6 +307,12 @@ class TitleState extends MusicBeatState
 			gradientBar.shader = swagShader.shader;
 		FlxTween.tween(gradientBar, {'scale.y': 1.3}, 4, {ease: FlxEase.quadInOut});
 
+		fnfSpr = new FlxSprite(0, FlxG.height * 0.47).loadGraphic(Paths.image('logo'));
+		fnfSpr.visible = false;
+		fnfSpr.setGraphicSize(Std.int(fnfSpr.width * 0.8));
+		fnfSpr.updateHitbox();
+		fnfSpr.antialiasing = ClientPrefs.data.antialiasing;
+
 		FNF_Logo = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_Logo'));
 		FNF_EX = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_MU'));
 		FNF_EX.scale.set(0.6, 0.6);
@@ -322,16 +329,17 @@ class TitleState extends MusicBeatState
 		FNF_EX.setPosition(-1500, 300);
 		FNF_Logo.setPosition(-1500, 300);
 
+		logoBl.visible = false;
+		titleText.visible = false;
 		add(gfDance);
 		add(credGroup);
 		add(gradientBar);
 		add(logoBl); // FNF Logo
 		add(titleText); // "Press Enter to Begin" text
 		add(ngSpr);
+		add(fnfSpr);
 		add(FNF_EX);
 		add(FNF_Logo);
-		logoBl.visible = false;
-		titleText.visible = false;
 
 		if (initialized && !forceShowIntro)
 			skipIntro();
@@ -382,10 +390,16 @@ class TitleState extends MusicBeatState
 						danceRightFrames = titleJSON.dance_right;
 					useIdle = (titleJSON.idle == true);
 
-					if (titleJSON.backgroundSprite != null && StringTools.trim(titleJSON.backgroundSprite).length > 0)
+					if (titleJSON.backgroundSprite != null && StringTools.trim(titleJSON.backgroundSprite).length > 0
+						&& StringTools.trim(titleJSON.backgroundSprite).toLowerCase() != 'none')
 					{
 						var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image(titleJSON.backgroundSprite));
 						bg.antialiasing = ClientPrefs.data.antialiasing;
+						add(bg);
+					}
+					else
+					{
+						var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 						add(bg);
 					}
 				}
@@ -541,7 +555,7 @@ class TitleState extends MusicBeatState
 				Conductor.songPosition = FlxG.sound.music.time;
 			// FlxG.watch.addQuick('amp', FlxG.sound.music.amplitude);
 
-			var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT || FlxG.mouse.justPressed;
+			var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT;
 			#if mobile
 			pressedEnter = pressedEnter || TouchUtil.justPressed;
 			#end
@@ -578,7 +592,7 @@ class TitleState extends MusicBeatState
 
 					timer = FlxEase.quadInOut(timer);
 
-					//titleText.color = FlxColor.interpolate(titleTextColors[0], titleTextColors[1], timer);
+					titleText.color = FlxColor.interpolate(titleTextColors[0], titleTextColors[1], timer);
 					titleText.alpha = FlxMath.lerp(titleTextAlphas[0], titleTextAlphas[1], timer);
 				}
 
@@ -750,36 +764,38 @@ class TitleState extends MusicBeatState
 					// FlxG.sound.music.stop();
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
-				case 2:
-					createCoolText(["Mic'd Plus by", "The One From 2005"], -90);
 				case 3:
-					createCoolText(['Psych Continued by', 'Autistic Lulu'], 80);
-				case 4:
-					createCoolText(['Plus Engine by', 'Lenin Asto'], 250);
+					createCoolText(['Plus Engine by', 'Lenin Astoo'], -90);
 				case 5:
+					createCoolText(["Mic'd Plus by", "The One From 2005"], 250);
+				case 7:
 					deleteCoolText();
-				case 6:
-					createCoolText(['Not associated', 'with'], -40);
+					createCoolText(['A modification', 'for']);
 				case 8:
-					addMoreText('newgrounds', -40);
-					ngSpr.visible = true;
+					fnfSpr.x = -1500;
+					fnfSpr.visible = true;
+					FlxTween.quadMotion(fnfSpr, -700, -700, 50 + (textGroup.length * 130), 150 + (textGroup.length * 50),
+						100 + (textGroup.length * 130), 80 + (textGroup.length * 50), 0.4, true, {ease: FlxEase.quadInOut});
 				case 9:
 					deleteCoolText();
-					ngSpr.visible = false;
+					fnfSpr.visible = false;
 				case 10:
 					createCoolText([curWacky[0]]);
+				case 11:
+					if (curWacky.length > 2)
+						addMoreText(curWacky[1]);
+					else
+						trace('nof');
 				case 12:
-					addMoreText(curWacky[1]);
+					if (curWacky.length > 2)
+						addMoreText(curWacky[2]);
+					else if (curWacky.length > 1)
+						addMoreText(curWacky[1]);
 				case 13:
 					deleteCoolText();
 					FlxTween.tween(FNF_Logo, {y: 120, x: 210}, 0.8, {ease: FlxEase.backOut});
-				case 14:
-					//addMoreText('Friday');
 				case 15:
 					FlxTween.tween(FNF_EX, {y: 48, x: 403}, 0.8, {ease: FlxEase.backOut});
-					//addMoreText('Night');
-				case 16:
-					//addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
 
 				case 17:
 					skipIntro();
@@ -789,6 +805,25 @@ class TitleState extends MusicBeatState
 
 	var skippedIntro:Bool = false;
 	var increaseVolume:Bool = false;
+
+	function finishIntroVisuals(flashDuration:Float = 2):Void
+	{
+		remove(fnfSpr);
+		remove(FNF_Logo);
+		remove(FNF_EX);
+		remove(ngSpr);
+		remove(credGroup);
+		FlxG.camera.flash(FlxColor.WHITE, flashDuration);
+		FlxTween.tween(logoBl, {
+			'scale.x': 0.45,
+			'scale.y': 0.45,
+			x: -165,
+			y: -125
+		}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
+		FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+		titleText.visible = true;
+		logoBl.visible = true;
+	}
 
 	function skipIntro():Void
 	{
@@ -818,24 +853,11 @@ class TitleState extends MusicBeatState
 						sound = FlxG.sound.play(Paths.sound('JinglePessy'));
 
 					default: // Go back to normal ugly ass boring GF
-						remove(fnfSpr);
-						remove(FNF_Logo);
-						remove(ngSpr);
-						remove(credGroup);
-						FlxG.camera.flash(FlxColor.WHITE, 2);
-						FlxTween.tween(logoBl, {
-							'scale.x': 0.45,
-							'scale.y': 0.45,
-							x: -165,
-							y: -125
-						}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-						FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+						finishIntroVisuals();
 						skippedIntro = true;
 
 						FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 						FlxG.sound.music.fadeIn(4, 0, 0.7);
-						titleText.visible = true;
-						logoBl.visible = true;
 						return;
 				}
 
@@ -843,77 +865,40 @@ class TitleState extends MusicBeatState
 				if (easteregg == 'SHADOW')
 				{
 					new FlxTimer().start(3.2, function(tmr:FlxTimer)
-					{						
-						remove(fnfSpr);
-						remove(FNF_Logo);
-						remove(FNF_EX);
-						remove(credGroup);
-						FlxG.camera.flash(FlxColor.WHITE, 2);
-						FlxTween.tween(logoBl, {
-							'scale.x': 0.45,
-							'scale.y': 0.45,
-							x: -165,
-							y: -125
-						}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-						FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
-						remove(credGroup);
-						titleText.visible = true;
-						logoBl.visible = true;
+					{
+						finishIntroVisuals();
 						transitioning = false;
 					});
 				}
 				else
 				{
-					remove(fnfSpr);
-					remove(FNF_Logo);
-					remove(FNF_EX);
-					remove(credGroup);
-					FlxG.camera.flash(FlxColor.WHITE, 2);
-					FlxTween.tween(logoBl, {
-						'scale.x': 0.45,
-						'scale.y': 0.45,
-						x: -165,
-						y: -125
-					}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-					FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
-					remove(credGroup);
-					titleText.visible = true;
-					logoBl.visible = true;
-					sound.onComplete = function() {
+					finishIntroVisuals();
+					sound.onComplete = function()
+					{
 						FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 						FlxG.sound.music.fadeIn(4, 0, 0.7);
 						transitioning = false;
+						#if ACHIEVEMENTS_ALLOWED
+						if (easteregg == 'PESSY')
+							Achievements.unlock('pessy_easter_egg');
+						#end
 					};
 				}
-				playJingle = false;
 			}
 			else
 			#end // Default! Edit this one!!
 			{
-				remove(fnfSpr);
-				remove(FNF_Logo);
-				remove(FNF_EX);
-				remove(credGroup);
-				FlxG.camera.flash(FlxColor.WHITE, 2);
-				FlxTween.tween(logoBl, {
-					'scale.x': 0.45,
-					'scale.y': 0.45,
-					x: -165,
-					y: -125
-				}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-				FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
-				remove(credGroup);
-				titleText.visible = true;
-				logoBl.visible = true;
+				finishIntroVisuals();
 
 				var easteregg:String = FlxG.save.data.psychDevsEasterEgg;
-				if (easteregg == null) easteregg = '';
+				if (easteregg == null)
+					easteregg = '';
 				easteregg = easteregg.toUpperCase();
 				#if TITLE_SCREEN_EASTER_EGG
-				if(easteregg == 'SHADOW')
+				if (easteregg == 'SHADOW')
 				{
 					FlxG.sound.music.fadeOut();
-					if(FreeplayState.vocals != null)
+					if (FreeplayState.vocals != null)
 					{
 						FreeplayState.vocals.fadeOut();
 					}
@@ -921,8 +906,6 @@ class TitleState extends MusicBeatState
 				#end
 			}
 			skippedIntro = true;
-			titleText.visible = true;
-			logoBl.visible = true;
 		}
 	}
 
