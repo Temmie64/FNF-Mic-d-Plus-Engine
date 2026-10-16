@@ -587,8 +587,6 @@ class StoryMenuState extends MusicBeatState
 			for (i in 0...grpWeekCharacters.length)
 			{
 				grpWeekCharacters.members[i].changeCharacter(weekArray[1]);
-				grpWeekCharacters.x = 1240 - grpWeekCharacters.width;
-				grpWeekCharacters.y = 150;
 			}
 		}
 
