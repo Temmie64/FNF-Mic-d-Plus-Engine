@@ -818,9 +818,18 @@ class TitleState extends MusicBeatState
 						sound = FlxG.sound.play(Paths.sound('JinglePessy'));
 
 					default: // Go back to normal ugly ass boring GF
+						remove(fnfSpr);
+						remove(FNF_Logo);
 						remove(ngSpr);
 						remove(credGroup);
 						FlxG.camera.flash(FlxColor.WHITE, 2);
+						FlxTween.tween(logoBl, {
+							'scale.x': 0.45,
+							'scale.y': 0.45,
+							x: -165,
+							y: -125
+						}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
+						FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
 						skippedIntro = true;
 
 						FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
@@ -834,49 +843,77 @@ class TitleState extends MusicBeatState
 				if (easteregg == 'SHADOW')
 				{
 					new FlxTimer().start(3.2, function(tmr:FlxTimer)
-					{
-						remove(ngSpr);
+					{						
+						remove(fnfSpr);
+						remove(FNF_Logo);
+						remove(FNF_EX);
 						remove(credGroup);
-						FlxG.camera.flash(FlxColor.WHITE, 0.6);
+						FlxG.camera.flash(FlxColor.WHITE, 2);
+						FlxTween.tween(logoBl, {
+							'scale.x': 0.45,
+							'scale.y': 0.45,
+							x: -165,
+							y: -125
+						}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
+						FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+						remove(credGroup);
+						titleText.visible = true;
+						logoBl.visible = true;
 						transitioning = false;
 					});
 				}
 				else
 				{
-					remove(ngSpr);
+					remove(fnfSpr);
+					remove(FNF_Logo);
+					remove(FNF_EX);
 					remove(credGroup);
-					FlxG.camera.flash(FlxColor.WHITE, 3);
-					sound.onComplete = function()
-					{
+					FlxG.camera.flash(FlxColor.WHITE, 2);
+					FlxTween.tween(logoBl, {
+						'scale.x': 0.45,
+						'scale.y': 0.45,
+						x: -165,
+						y: -125
+					}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
+					FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+					remove(credGroup);
+					titleText.visible = true;
+					logoBl.visible = true;
+					sound.onComplete = function() {
 						FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 						FlxG.sound.music.fadeIn(4, 0, 0.7);
 						transitioning = false;
-						#if ACHIEVEMENTS_ALLOWED
-						if (easteregg == 'PESSY')
-							Achievements.unlock('pessy_easter_egg');
-						#end
 					};
 				}
+				playJingle = false;
 			}
 			else
 			#end // Default! Edit this one!!
 			{
-				remove(ngSpr);
+				remove(fnfSpr);
+				remove(FNF_Logo);
+				remove(FNF_EX);
 				remove(credGroup);
-				FlxG.camera.flash(FlxColor.WHITE, 4);
-				FlxTween.tween(logoBl, {'scale.x': 0.45, 'scale.y': 0.45, x: logoPosition.x - 15, y: logoPosition.y - 25}, 1.3,
-					{ease: FlxEase.expoInOut, startDelay: 1.3});
-				FlxTween.tween(gfDance, {y: gfPosition.y - 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+				FlxG.camera.flash(FlxColor.WHITE, 2);
+				FlxTween.tween(logoBl, {
+					'scale.x': 0.45,
+					'scale.y': 0.45,
+					x: -165,
+					y: -125
+				}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
+				FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+				remove(credGroup);
+				titleText.visible = true;
+				logoBl.visible = true;
 
 				var easteregg:String = FlxG.save.data.psychDevsEasterEgg;
-				if (easteregg == null)
-					easteregg = '';
+				if (easteregg == null) easteregg = '';
 				easteregg = easteregg.toUpperCase();
 				#if TITLE_SCREEN_EASTER_EGG
-				if (easteregg == 'SHADOW')
+				if(easteregg == 'SHADOW')
 				{
 					FlxG.sound.music.fadeOut();
-					if (FreeplayState.vocals != null)
+					if(FreeplayState.vocals != null)
 					{
 						FreeplayState.vocals.fadeOut();
 					}
