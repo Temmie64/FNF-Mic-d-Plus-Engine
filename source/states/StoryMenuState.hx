@@ -224,9 +224,10 @@ class StoryMenuState extends MusicBeatState
 
 		var tracksSprite:FlxSprite = new FlxSprite(safeX(safeWidth() * 0.03), bgSprite.y + 400).loadGraphic(Paths.image('Menu_Tracks'));
 		tracksSprite.antialiasing = ClientPrefs.data.antialiasing;
+		tracksSprite.visible = false
 		add(tracksSprite);
 
-		txtTracklist = new FlxText(safeX(safeWidth() * 0.05), tracksSprite.y + 100, 0, "", 32);
+		txtTracklist = new FlxText(safeX(safeWidth() * 0.05), tracksSprite.y + 100, 0, "INCLUDES FAMOUS\n TRACKS LIKE:\n\n", 32);
 		txtTracklist.alignment = CENTER;
 		txtTracklist.font = Paths.font("vcr.ttf");
 		txtTracklist.color = 0xFFe55777;
@@ -346,10 +347,12 @@ class StoryMenuState extends MusicBeatState
 			FlxTween.tween(gradientBar, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 			FlxTween.tween(storyModeTop, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 			FlxTween.tween(storyModeBottom, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-			new FlxTimer().start(0.8, function(tmr:FlxTimer)
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('PlaySelectionState', new PlaySelectionState()));
+
+			/*new FlxTimer().start(0.8, function(tmr:FlxTimer)
 			{
 				MusicBeatState.switchState(backend.ScriptableState.tryCreate('PlaySelectionState', new PlaySelectionState()));
-			});
+			});*/
 		}
 
 		var selectedItem:MenuItem = grpWeekText.members[curWeek];
@@ -458,7 +461,7 @@ class StoryMenuState extends MusicBeatState
 				Paths.freeGraphicsFromMemory();
 			}
 			LoadingState.prepareToSong();
-			new FlxTimer().start(1, function(tmr:FlxTimer)
+			new FlxTimer().start(0.5, function(tmr:FlxTimer)
 			{
 				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
 				LoadingState.returnState = new StoryMenuState(); // Establecer estado de retorno
@@ -531,7 +534,7 @@ class StoryMenuState extends MusicBeatState
 		DiscordClient.changePresence("Deciding to play week " + curWeek + "!", null);
 		#end
 
-		bgSprite.visible = true;
+		bgSprite.visible = false;
 		{
 			var assetName:String = leWeek.weekBackground;
 			if (assetName == null || assetName.length < 1)
@@ -584,6 +587,8 @@ class StoryMenuState extends MusicBeatState
 			for (i in 0...grpWeekCharacters.length)
 			{
 				grpWeekCharacters.members[i].changeCharacter(weekArray[1]);
+				grpWeekCharacters.x = 1240 - grpWeekCharacters.width;
+				grpWeekCharacters.y = 150;
 			}
 		}
 

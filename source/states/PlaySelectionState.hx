@@ -155,7 +155,7 @@ class PlaySelectionState extends MusicBeatState
 				changeItem(1);
 			}
 
-			if (controls.BACK || FlxG.mouse.justPressedRight)
+			if (controls.BACK)
 			{
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -171,7 +171,7 @@ class PlaySelectionState extends MusicBeatState
 				MusicBeatState.switchState(new MainMenuState());
 			}
 
-			if (controls.ACCEPT || FlxG.mouse.justPressed)
+			if (controls.ACCEPT)
 			{
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('confirmMenu'));
