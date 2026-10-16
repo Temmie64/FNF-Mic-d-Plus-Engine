@@ -228,13 +228,8 @@ class StoryMenuState extends MusicBeatState
 		}
 		curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(lastDifficultyName)));
 
-		sprDifficulty = new FlxSprite();
+		sprDifficulty = new FlxSprite(0, leftArrow.y);
 		sprDifficulty.antialiasing = ClientPrefs.data.antialiasing;
-		sprDifficulty.frames = difficultyAtlas;
-		for (difficulty in ['NOOB', 'EASY', 'NORMAL', 'HARD', 'EXPERT', 'INSANE', 'CRAZY', 'FLIP', 'FUCKED', 'HELL', 'REMIX'])
-		{
-			sprDifficulty.animation.addByPrefix(difficulty.toLowerCase(), difficulty);
-		}
 		difficultySelectors.add(sprDifficulty);
 		add(grpWeekCharacters);
 
@@ -506,19 +501,19 @@ class StoryMenuState extends MusicBeatState
 		WeekData.setDirectoryFromWeek(loadedWeeks[curWeek]);
 
 		var diff:String = Difficulty.getString(curDifficulty, false);
-		var diffAnimation:String = diff.toLowerCase();
-		var customDifficulties:Array<String> = ['noob', 'easy', 'normal', 'hard', 'expert', 'insane', 'crazy', 'flip', 'fucked', 'hell', 'remix'];
-		if (customDifficulties.contains(diffAnimation))
+		var newImage:FlxGraphic = Paths.image('menudifficulties/' + Paths.formatToSongPath(diff));
+		// trace(Mods.currentModDirectory + ', menudifficulties/' + Paths.formatToSongPath(diff));
+
+		if (sprDifficulty.graphic != newImage)
 		{
-			sprDifficulty.frames = difficultyAtlas;
-			sprDifficulty.animation.play(diffAnimation, true);
-			sprDifficulty.updateHitbox();
-		}
-		else
-		{
-			var newImage:FlxGraphic = Paths.image('menudifficulties/' + Paths.formatToSongPath(diff));
-			if (sprDifficulty.graphic != newImage || sprDifficulty.frames == difficultyAtlas)
-				sprDifficulty.loadGraphic(newImage);
+			sprDifficulty.loadGraphic(newImage);
+			sprDifficulty.x = leftArrow.x + 60;
+			sprDifficulty.x += (308 - sprDifficulty.width) / 3;
+			sprDifficulty.alpha = 0;
+			sprDifficulty.y = leftArrow.y - sprDifficulty.height + 50;
+
+			FlxTween.cancelTweensOf(sprDifficulty);
+			FlxTween.tween(sprDifficulty, {y: sprDifficulty.y + 30, alpha: 1}, 0.07);
 		}
 
 		sprDifficulty.x = safeX((safeWidth() - sprDifficulty.width) / 2);
@@ -527,10 +522,6 @@ class StoryMenuState extends MusicBeatState
 		FlxTween.cancelTweensOf(sprDifficulty);
 		FlxTween.tween(sprDifficulty, {y: txtWeekTitle.y + 62, alpha: 1}, 0.07);
 		lastDifficultyName = diff;
-
-		#if DISCORD_ALLOWED
-		DiscordClient.changePresence('Deciding to play week ' + curWeek + ' on ' + diffAnimation + '!', null);
-		#end
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
@@ -604,7 +595,7 @@ class StoryMenuState extends MusicBeatState
 		weekCharacterThing.scale.set(0.8, 0.8);
 		weekCharacterThing.updateHitbox();
 		weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width);
-		weekCharacterThing.y = 300;
+		weekCharacterThing.y = 150;
 		switch (weekCharacterThing.character)
 		{
 			case 'parents-christmas':
