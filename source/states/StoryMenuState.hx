@@ -292,20 +292,20 @@ class StoryMenuState extends MusicBeatState
 			if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 			{
 				changeWeek(-1);
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeDiff = true;
 			}
 
 			if (controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed))
 			{
 				changeWeek(1);
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeDiff = true;
 			}
 
 			if (FlxG.mouse.wheel != 0)
 			{
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeWeek(-FlxG.mouse.wheel);
 				changeDifficulty();
 			}
@@ -335,7 +335,7 @@ class StoryMenuState extends MusicBeatState
 
 		if ((controls.BACK || FlxG.mouse.justPressedRight || (touchPad != null && touchPad.buttonB.justPressed)) && !movedBack && !selectedWeek)
 		{
-			FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+			FlxG.sound.play(Paths.sound('cancelMenu'));
 			movedBack = true;
 			#if DISCORD_ALLOWED
 			DiscordClient.changePresence("Going Back!", null);
@@ -435,7 +435,7 @@ class StoryMenuState extends MusicBeatState
 
 			if (stopspamming == false)
 			{
-				FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('confirmMenu'));
 
 				grpWeekText.members[curWeek].isFlashing = true;
 				for (char in grpWeekCharacters.members)
