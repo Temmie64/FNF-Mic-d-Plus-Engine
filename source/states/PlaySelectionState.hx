@@ -155,7 +155,7 @@ class PlaySelectionState extends MusicBeatState
 				changeItem(1);
 			}
 
-			if (controls.BACK) || (touchPad != null && touchPad.buttonB.justPressed)
+			if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 			{
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
