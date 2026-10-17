@@ -233,6 +233,11 @@ class StoryMenuState extends MusicBeatState
 
 		add(grpWeekCharacters);
 
+		var tracksSprite:FlxSprite = new FlxSprite(FlxG.width * 0.03, bgSprite.y + 400).loadGraphic(Paths.image('Menu_Tracks'));
+		tracksSprite.antialiasing = ClientPrefs.data.antialiasing;
+		tracksSprite.visible = false;
+		add(tracksSprite);
+
 		txtTracklist = new FlxText(safeX(safeWidth() * 0.05), tracksSprite.y + 100, 0, "INCLUDES FAMOUS\n TRACKS LIKE:\n\n", 32);
 		txtTracklist.alignment = CENTER;
 		txtTracklist.font = Paths.font("vcr.ttf");
