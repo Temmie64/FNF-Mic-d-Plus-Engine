@@ -17,11 +17,11 @@ class HealthIcon extends FlxSprite
 	public var isAnimated:Bool = false;
 	public var animFPS:Int = 24;
 
-	public function new(char:String = 'face', isPlayer:Bool = false, ?allowGPU:Bool = true, ?animFPS:Int = 24)
+	public function new(char:String = 'face', isPlayer:Bool = false, ?allowGPU:Bool = true, ?animFPS:Int = 24, ?forceAnimated:Bool = false)
 	{
 		super();
 		this.isPlayer = isPlayer;
-		changeIcon(char, allowGPU, false, animFPS);
+		changeIcon(char, allowGPU, forceAnimated, animFPS);
 		scrollFactor.set();
 	}
 

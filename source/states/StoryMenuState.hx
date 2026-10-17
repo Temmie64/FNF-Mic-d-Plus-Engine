@@ -41,8 +41,6 @@ class StoryMenuState extends MusicBeatState
 
 	public var difficultySelectors:FlxGroup;
 	public var sprDifficulty:FlxSprite;
-	public var leftArrow:FlxSprite;
-	public var rightArrow:FlxSprite;
 	public var checker:FlxBackdrop;
 	public var storyModeBackground:FlxSprite;
 	public var storyModeBottom:FlxSprite;
@@ -222,14 +220,6 @@ class StoryMenuState extends MusicBeatState
 		difficultySelectors = new FlxGroup();
 		add(difficultySelectors);
 
-		leftArrow = new FlxSprite(850, grpWeekText.members[0].y + 10);
-		leftArrow.antialiasing = ClientPrefs.data.antialiasing;
-		leftArrow.frames = ui_tex;
-		leftArrow.animation.addByPrefix('idle', "arrow left");
-		leftArrow.animation.addByPrefix('press', "arrow push left");
-		leftArrow.animation.play('idle');
-		difficultySelectors.add(leftArrow);
-
 		Difficulty.resetList();
 		if (lastDifficultyName == '')
 		{
@@ -237,25 +227,18 @@ class StoryMenuState extends MusicBeatState
 		}
 		curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(lastDifficultyName)));
 
-		sprDifficulty = new FlxSprite(0, leftArrow.y);
+		sprDifficulty = new FlxSprite();
 		sprDifficulty.antialiasing = ClientPrefs.data.antialiasing;
 		difficultySelectors.add(sprDifficulty);
 
-		rightArrow = new FlxSprite(leftArrow.x + 376, leftArrow.y);
-		rightArrow.antialiasing = ClientPrefs.data.antialiasing;
-		rightArrow.frames = ui_tex;
-		rightArrow.animation.addByPrefix('idle', 'arrow right');
-		rightArrow.animation.addByPrefix('press', "arrow push right", 24, false);
-		rightArrow.animation.play('idle');
-		difficultySelectors.add(rightArrow);
-
 		add(grpWeekCharacters);
 
-		txtTracklist = new FlxText(safeX(safeWidth() * 0.05), FlxG.height + storyModeBottom.height + 60, 0, "", 32);
+		txtTracklist = new FlxText(safeX(safeWidth() * 0.05), tracksSprite.y + 100, 0, "INCLUDES FAMOUS\n TRACKS LIKE:\n\n", 32);
 		txtTracklist.alignment = CENTER;
 		txtTracklist.font = Paths.font("vcr.ttf");
 		txtTracklist.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
 		txtTracklist.color = 0xFFe55777;
+
 		add(txtTracklist);
 		add(scoreText);
 		add(txtWeekTitle);
@@ -347,16 +330,6 @@ class StoryMenuState extends MusicBeatState
 				changeWeek(-FlxG.mouse.wheel);
 				changeDifficulty();
 			}
-
-			if (controls.UI_RIGHT || (touchPad != null && touchPad.buttonRight.pressed))
-				rightArrow.animation.play('press')
-			else
-				rightArrow.animation.play('idle');
-
-			if (controls.UI_LEFT || (touchPad != null && touchPad.buttonLeft.pressed))
-				leftArrow.animation.play('press');
-			else
-				leftArrow.animation.play('idle');
 
 			if (controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed))
 				changeDifficulty(1);
@@ -471,6 +444,7 @@ class StoryMenuState extends MusicBeatState
 				FlxTween.tween(storyModeBottom, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 				FlxTween.tween(scoreText, {y: -50, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 				FlxTween.tween(txtWeekTitle, {y: -50, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
+				FlxTween.tween(sprDifficulty, {y: -120, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 			}
 			catch (e:Dynamic)
 			{
@@ -533,13 +507,11 @@ class StoryMenuState extends MusicBeatState
 		if (sprDifficulty.graphic != newImage)
 		{
 			sprDifficulty.loadGraphic(newImage);
-			sprDifficulty.x = leftArrow.x + 60;
-			sprDifficulty.x += (308 - sprDifficulty.width) / 3;
+			sprDifficulty.x = safeX((safeWidth() - sprDifficulty.width) / 2);
+			sprDifficulty.y = txtWeekTitle.y + 5;
 			sprDifficulty.alpha = 0;
-			sprDifficulty.y = leftArrow.y - sprDifficulty.height + 50;
-
 			FlxTween.cancelTweensOf(sprDifficulty);
-			FlxTween.tween(sprDifficulty, {y: sprDifficulty.y + 30, alpha: 1}, 0.07);
+			FlxTween.tween(sprDifficulty, {y: txtWeekTitle.y + 62, alpha: 1}, 0.07);
 		}
 		lastDifficultyName = diff;
 
@@ -627,8 +599,9 @@ class StoryMenuState extends MusicBeatState
 		weekCharacterThing.changeCharacter(weekArray[0]);
 		weekCharacterThing.scale.set(0.8, 0.8);
 		weekCharacterThing.updateHitbox();
-		weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width);
+		weekCharacterThing.x = 1240 - weekCharacterThing.width;
 		weekCharacterThing.y = 300;
+
 		switch (weekCharacterThing.character)
 		{
 			case 'parents-christmas':

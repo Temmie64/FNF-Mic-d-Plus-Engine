@@ -26,6 +26,7 @@ import backend.Paths;
 import backend.Language;
 import backend.AssetLoader;
 import haxe.Json;
+import states.play.HealthIconHud;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -203,24 +204,9 @@ class PauseSubState extends MusicBeatSubstate
 			iconBG.alpha = 0;
 			FlxTween.tween(iconBG, {x: 0,y: 0,alpha: 1}, 0.8, {ease: FlxEase.quadOut});
 
-			/*if (!PlayState.instance.opponentChart)
-				icon = new HealthIcon(PlayState.instance.dad.healthIcon);
-			else
-				icon = new HealthIcon(PlayState.instance.boyfriend.healthIcon);*/
-			icon = new HealthIcon(PlayState.instance.dad.healthIcon);
-			final healthPercent:Float = FlxMath.bound(PlayState.instance.healthBar.percent / 100, 0, 1);
-			if (icon.isAnimated)
-				icon.updateIconState(healthPercent);
-			else if (icon.animation.curAnim != null)
-			{
-				final frameCount:Int = (icon.frames != null && icon.frames.frames != null) ? icon.frames.frames.length : 0;
-				if (healthPercent < 0.2)
-					icon.animation.curAnim.curFrame = frameCount > 1 ? 1 : 0;
-				else if (healthPercent > 0.8)
-					icon.animation.curAnim.curFrame = frameCount > 2 ? 2 : 0;
-				else
-					icon.animation.curAnim.curFrame = 0;
-			}
+			final opponentIcon:HealthIcon = PlayState.instance.iconP2;
+			icon = new HealthIcon(opponentIcon.getCharacter(), false, true, opponentIcon.animFPS, opponentIcon.isAnimated);
+			HealthIconHud.frames(PlayState.instance.healthBar, PlayState.instance.playOpponent, '', null, icon, null);
 			icon.setGraphicSize(Std.int(icon.width * 1.7));
 			icon.antialiasing = ClientPrefs.data.antialiasing;
 			icon.x = FlxG.width - 230;
