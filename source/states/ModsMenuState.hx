@@ -278,12 +278,11 @@ class ModsMenuState extends MusicBeatState {
 					break;
 				}
 		}
-		
+
 		intendedColor = bg.color;
 		layoutList();
 		updateDetail();
 		_lastControllerMode = controls.controllerMode;
-
 		super.create();
 
 		FlxG.camera.zoom = 0.6;
@@ -485,7 +484,6 @@ class ModsMenuState extends MusicBeatState {
 			curSel = 0;
 		else if (curSel > view.length - 1)
 			curSel = view.length - 1;
-
 		layoutList();
 		updateDetail();
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
@@ -1024,9 +1022,7 @@ class ModItem extends FlxSpriteGroup {
 			} catch (e:Dynamic) {
 				var errorTitle = 'Mod name: ' + Mods.currentModDirectory;
 				var errorMsg = 'An error occurred: $e';
-				#if windows
-				lime.app.Application.current.window.alert(errorMsg, errorTitle);
-				#end
+				CoolUtil.showPopUp(errorMsg, errorTitle);
 				trace('$errorTitle - $errorMsg');
 			}
 		}

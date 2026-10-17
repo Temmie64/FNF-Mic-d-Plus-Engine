@@ -210,10 +210,10 @@ class StoryMenuState extends MusicBeatState
 
 		WeekData.setDirectoryFromWeek(loadedWeeks[0]);
 		var charArray:Array<String> = loadedWeeks[0].weekCharacters;
-		weekCharacterThing = new MenuCharacter(0, charArray[0]);
+		weekCharacterThing = new MenuCharacter((FlxG.width * 0.25) * 1 - 150, charArray[0]);
 		weekCharacterThing.scale.set(0.8, 0.8);
 		weekCharacterThing.updateHitbox();
-		weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width);
+		weekCharacterThing.x = 1240 - weekCharacterThing.width;
 		weekCharacterThing.y = 300;
 		grpWeekCharacters.add(weekCharacterThing);
 
@@ -631,7 +631,8 @@ class StoryMenuState extends MusicBeatState
 
 		txtTracklist.text = txtTracklist.text.toUpperCase();
 
-		txtTracklist.x = safeX((safeWidth() - txtTracklist.width) / 2 - safeWidth() * 0.35);
+		txtTracklist.screenCenter(X);
+		txtTracklist.x -= FlxG.width * 0.35;
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);

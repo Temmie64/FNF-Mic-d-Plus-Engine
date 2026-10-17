@@ -143,19 +143,19 @@ class PlaySelectionState extends MusicBeatState
 
 		if (!selectedSomethin && selectable)
 		{
-			if (controls.UI_LEFT_P)
+			if (controls.UI_LEFT_P || (touchPad != null && touchPad.buttonLeft.justPressed))
 			{
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeItem(-1);
 			}
 
-			if (controls.UI_RIGHT_P)
+			if (controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed))
 			{
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 				changeItem(1);
 			}
 
-			if (controls.BACK)
+			if (controls.BACK) || (touchPad != null && touchPad.buttonB.justPressed)
 			{
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -171,7 +171,7 @@ class PlaySelectionState extends MusicBeatState
 				MusicBeatState.switchState(new MainMenuState());
 			}
 
-			if (controls.ACCEPT)
+			if (controls.ACCEPT || touchAccept)
 			{
 				selectedSomethin = true;
 				FlxG.sound.play(Paths.sound('confirmMenu'));
@@ -208,7 +208,7 @@ class PlaySelectionState extends MusicBeatState
 										DiscordClient.changePresence("Going to select a week.",  null);
 										#end
 								case 'freeplay':
-										MusicBeatState.switchState(new FreeplayState());
+										MusicBeatState.switchState(FreeplayStateSelector.create());
 										#if DISCORD_ALLOWED
 										DiscordClient.changePresence("Am bored, so I freeplay.",  null);
 										#end
