@@ -1025,6 +1025,8 @@ class ModItem extends FlxSpriteGroup {
 	public var desc:String = '';
 	public var iconFps:Int = 10;
 	public var bgColor:FlxColor = 0xFF665AFF;
+	public var checkerColor:FlxColor = 0xFF665AFF;
+	public var sideColor:FlxColor = 0xFF665AFF;
 	public var pack:Dynamic = null;
 	public var folder:String = 'unknownMod';
 	public var mustRestart:Bool = false;
