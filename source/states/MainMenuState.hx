@@ -103,7 +103,7 @@ class MainMenuState extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence(Language.getPhrase('states.main_menu.presence', 'In the Menus'), null);
 		#end
 
 		//transIn = FlxTransitionableState.defaultTransIn;
@@ -190,15 +190,19 @@ class MainMenuState extends MusicBeatState
 		var buildLine:String = BuildInfo.versionLine();
 		var hasBuildLine:Bool = buildLine.length > 0;
 
-		var micUpVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 80 : 64), 0, "Mic'd Up v" + micUP, 12);
+		var micUpVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 80 : 64), 0,
+			Language.getPhrase('states.main_menu.version.mic_engine', "Mic'd Up v{1}", [micUP]), 12);
 		micUpVer.scrollFactor.set();
 		micUpVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(micUpVer);
-		var psychVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 64 : 44), 0, "Psych Engine v" + psychEngineVersion, 12);
+
+		var psychVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 64 : 44), 0,
+			Language.getPhrase('states.main_menu.version.psych_engine', 'Psych Engine v{1}', [psychEngineVersion]), 12);
 		psychVer.scrollFactor.set();
 		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(psychVer);
-		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0, "Friday Night Funkin' v" + fnfVersion, 12);
+		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0,
+			Language.getPhrase('states.main_menu.version.friday_night_funkin', "Friday Night Funkin' v{1}", [fnfVersion]), 12);
 		fnfVer.scrollFactor.set();
 		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		leftWatermarkText = fnfVer;
@@ -449,7 +453,7 @@ class MainMenuState extends MusicBeatState
 
 			var allowMouse:Bool = allowMouse;
 			if (allowMouse
-				&& ((FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0)
+				&& ((FlxG.mouse.deltaScreenX != 0 && FlxG.mouse.deltaScreenY != 0)
 					|| FlxG.mouse.justPressed)) // FlxG.mouse.deltaScreenX/Y checks is more accurate than FlxG.mouse.justMoved
 			{
 				allowMouse = false;
@@ -558,7 +562,7 @@ class MainMenuState extends MusicBeatState
 				FlxTween.tween(FlxG.camera, {zoom: 3}, 0.6, {ease: FlxEase.expoIn});
 				FlxTween.tween(bg, {angle: 35}, 0.6, {ease: FlxEase.expoIn});
 				#if DISCORD_ALLOWED
-				DiscordClient.changePresence("Back to the Title Screen.", null);
+				DiscordClient.changePresence(Language.getPhrase('states.main_menu.title', 'Back to the Title Screen.'), null);
 				#end
 				MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('TitleState', function() return new TitleState()));
 			}
@@ -600,7 +604,7 @@ class MainMenuState extends MusicBeatState
 				}
 
 				#if DISCORD_ALLOWED
-				DiscordClient.changePresence("Chosen: " + option.toUpperCase(), null);
+				DiscordClient.changePresence(Language.getPhrase('states.main_menu.chosen', 'Chosen: ') + option.toUpperCase(), null);
 				#end
 
 				for (memb in menuItems)
@@ -675,7 +679,7 @@ class MainMenuState extends MusicBeatState
 			case MainMenuColumn.LEFT: leftOption;
 			case MainMenuColumn.RIGHT: rightOption;
 		};
-		DiscordClient.changePresence("Main Menu: " + selectedOption.toUpperCase(), null);
+		DiscordClient.changePresence(Language.getPhrase('states.main_menu.presence2', 'Main Menu: ') + selectedOption.toUpperCase(), null);
 		#end
 	}
 }

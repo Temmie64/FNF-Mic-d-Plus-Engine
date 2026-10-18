@@ -238,7 +238,7 @@ class TitleState extends MusicBeatState
 		logoBl.scale.set(0.6, 0.6);
 		logoBl.updateHitbox();
 
-		gfDance = new FlxSprite(gfPosition.x, gfPosition.y);
+		gfDance = new FlxSprite(FlxG.width * 0.35, FlxG.height * 1.2);
 		gfDance.antialiasing = ClientPrefs.data.antialiasing;
 
 		if (ClientPrefs.data.shaders)
@@ -262,7 +262,7 @@ class TitleState extends MusicBeatState
 		}
 
 		var animFrames:Array<FlxFrame> = [];
-		titleText = new FlxSprite(enterPosition.x, enterPosition.y);
+		titleText = new FlxSprite(100, FlxG.height * 0.8);
 		titleText.frames = Paths.getSparrowAtlas('titleEnter');
 		@:privateAccess
 		{
@@ -390,8 +390,7 @@ class TitleState extends MusicBeatState
 						danceRightFrames = titleJSON.dance_right;
 					useIdle = (titleJSON.idle == true);
 
-					if (titleJSON.backgroundSprite != null && StringTools.trim(titleJSON.backgroundSprite).length > 0
-						&& StringTools.trim(titleJSON.backgroundSprite).toLowerCase() != 'none')
+					if (titleJSON.backgroundSprite != null && StringTools.trim(titleJSON.backgroundSprite).length > 0 && StringTools.trim(titleJSON.backgroundSprite).toLowerCase() != 'none')
 					{
 						var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image(titleJSON.backgroundSprite));
 						bg.antialiasing = ClientPrefs.data.antialiasing;
@@ -484,7 +483,10 @@ class TitleState extends MusicBeatState
 		}
 
 		if (swagGoodArray.length == 0)
-			swagGoodArray.push(['Psych Engine', 'Plus Engine']);
+			swagGoodArray.push([
+				Language.getPhrase('states.title.intro.fallback_first', 'Psych Engine'),
+				Language.getPhrase('states.title.intro.fallback_second', 'Plus Engine')
+			]);
 
 		return swagGoodArray;
 	}
@@ -757,6 +759,10 @@ class TitleState extends MusicBeatState
 
 		if (!closedState && !showingIntro)
 		{
+			case 3:
+					createCoolText(['Plus Engine by', 'Lenin Astoo'], -90);
+				case 5:
+					createCoolText(["Mic'd Plus by", "The One From 2005"], 250);
 			sickBeats++;
 			switch (sickBeats)
 			{
@@ -765,9 +771,9 @@ class TitleState extends MusicBeatState
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
 				case 3:
-					createCoolText(['Plus Engine by', 'Lenin Astoo'], -90);
+					createCoolText([Language.getPhrase('states.title.intro.plus_engine_by', 'Plus Engine by'), 'Lenin Asto'], -90);
 				case 5:
-					createCoolText(["Mic'd Plus by", "The One From 2005"], 250);
+					createCoolText([Language.getPhrase('states.title.intro.mic_engine_by', "Mic'd Engine by"), 'The One From 2005'], 250);
 				case 7:
 					deleteCoolText();
 					createCoolText(['A modification', 'for']);

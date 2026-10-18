@@ -80,7 +80,7 @@ class StoryMenuState extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence(Language.getPhrase('states.story_menu.presence', 'In the Menus'), null);
 		#end
 
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
@@ -91,8 +91,8 @@ class StoryMenuState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
-				new states.ErrorState("NO WEEKS ADDED FOR STORY MODE\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject
-					+ " to return to Main Menu.",
+				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_weeks',
+					'NO WEEKS ADDED FOR STORY MODE\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
 					function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
 					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
 			return;
@@ -131,7 +131,8 @@ class StoryMenuState extends MusicBeatState
 		storyModeBottom.screenCenter();
 		storyModeBottom.y = FlxG.height + storyModeBottom.height;
 
-		scoreText = new FlxText(safeX(10), 10, 0, Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]), 36);
+		scoreText = new FlxText(safeX(10), 10, 0,
+			Language.getPhrase('states.story_menu.score', Language.getPhrase('week_score', 'WEEK SCORE: {1}'), [lerpScore]), 36);
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32);
 		scoreText.alignment = CENTER;
 		scoreText.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
@@ -200,7 +201,8 @@ class StoryMenuState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
-				new states.ErrorState("NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress " + reject + " to return to Main Menu.", null,
+				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_visible_weeks',
+					'NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress {1} to return to Main Menu.', [reject]), null,
 					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
 			return;
 		}
@@ -210,12 +212,15 @@ class StoryMenuState extends MusicBeatState
 
 		WeekData.setDirectoryFromWeek(loadedWeeks[0]);
 		var charArray:Array<String> = loadedWeeks[0].weekCharacters;
-		weekCharacterThing = new MenuCharacter((FlxG.width * 0.25) * 1 - 150, charArray[0]);
-		weekCharacterThing.scale.set(0.8, 0.8);
-		weekCharacterThing.updateHitbox();
-		weekCharacterThing.x = 1240 - weekCharacterThing.width;
-		weekCharacterThing.y = 300;
-		grpWeekCharacters.add(weekCharacterThing);
+		for (char in 0...3)
+		{
+			var weekCharacterThing:MenuCharacter = new MenuCharacter(safeX((safeWidth() * 0.25) * (1 + char) - 150), charArray[char]);
+			weekCharacterThing.x = 1240 - weekCharacterThing.width;
+			weekCharacterThing.y = 300;
+			weekCharacterThing.scale.x = 0.8;
+			weekCharacterThing.scale.y = 0.8;
+			grpWeekCharacters.add(weekCharacterThing);
+		}
 
 		difficultySelectors = new FlxGroup();
 		add(difficultySelectors);
@@ -306,7 +311,7 @@ class StoryMenuState extends MusicBeatState
 			if (Math.abs(intendedScore - lerpScore) < 10)
 				lerpScore = intendedScore;
 
-			scoreText.text = Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]);
+			scoreText.text = Language.getPhrase('states.story_menu.score', Language.getPhrase('week_score', 'WEEK SCORE: {1}'), [lerpScore]);
 			scoreText.x = safeX((safeWidth() - scoreText.width) / 2);
 		}
 
@@ -540,7 +545,8 @@ class StoryMenuState extends MusicBeatState
 		var leWeek:WeekData = loadedWeeks[curWeek];
 		WeekData.setDirectoryFromWeek(leWeek);
 
-		var leName:String = Language.getPhrase('storyname_${leWeek.fileName}', leWeek.storyName);
+		var leName:String = Language.getPhrase('states.story_menu.weeks.${leWeek.fileName}.name',
+			Language.getPhrase('storyname_${leWeek.fileName}', leWeek.storyName));
 		txtWeekTitle.text = leName.toUpperCase();
 		txtWeekTitle.x = safeX((safeWidth() - txtWeekTitle.width) / 2);
 
@@ -601,18 +607,11 @@ class StoryMenuState extends MusicBeatState
 		grpWeekCharacters.visible = true;
 
 		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
-		weekCharacterThing.changeCharacter(weekArray[0]);
-		weekCharacterThing.scale.set(0.8, 0.8);
-		weekCharacterThing.updateHitbox();
-		weekCharacterThing.x = 1240 - weekCharacterThing.width;
-		weekCharacterThing.y = 300;
-
-		switch (weekCharacterThing.character)
 		{
-			case 'parents-christmas':
-				weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width / 2);
-			case 'senpai':
-				weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width / 1.5);
+			for (i in 0...grpWeekCharacters.length)
+			{				
+				grpWeekCharacters.members[i].changeCharacter(weekArray[i]);
+			}
 		}
 
 		var stringThing:Array<String> = [];
@@ -639,3 +638,4 @@ class StoryMenuState extends MusicBeatState
 		#end
 	}
 }
+

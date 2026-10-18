@@ -65,7 +65,7 @@ class LuaUtils
 		if(instance == null)
 		{
 			#if LUA_ALLOWED
-			FunkinLua.luaTrace('setProperty: Cannot set "$variable" because its parent object is null', false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_luautils.setproperty_cannot_set_value_because_its_parent_object_is_null', "setProperty: Cannot set \"{1}\" because its parent object is null", [variable]), false, false, FlxColor.RED);
 			#end
 			return null;
 		}
@@ -125,7 +125,7 @@ class LuaUtils
 		catch(e:Dynamic)
 		{
 			#if LUA_ALLOWED
-			FunkinLua.luaTrace('setProperty: Could not set "$variable": $e', false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_luautils.setproperty_could_not_set_value_value', "setProperty: Could not set \"{1}\": {2}", [variable, e]), false, false, FlxColor.RED);
 			#else
 			FlxG.log.warn('setProperty: Could not set "$variable": $e');
 			#end
@@ -186,7 +186,7 @@ class LuaUtils
 		catch(e:Dynamic)
 		{
 			#if LUA_ALLOWED
-			FunkinLua.luaTrace('getProperty: Could not read "$variable": $e', false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_luautils.getproperty_could_not_read_value_value', "getProperty: Could not read \"{1}\": {2}", [variable, e]), false, false, FlxColor.RED);
 			#else
 			FlxG.log.warn('getProperty: Could not read "$variable": $e');
 			#end
@@ -238,14 +238,12 @@ class LuaUtils
 						var sub:Dynamic = parsedJson[i];
 						if(sub != null && sub.save != null && !settings.exists(sub.save))
 						{
-							if(sub.type != 'keybind' && sub.type != 'key')
+							var settingType:String = sub.type != null ? Std.string(sub.type).trim().toLowerCase() : 'bool';
+							if(settingType != 'keybind' && settingType != 'key')
 							{
-								var defaultValue:Dynamic = sub.value != null ? sub.value : Reflect.field(sub, 'default');
-								if(defaultValue != null)
-								{
-									//FunkinLua.luaTrace('getModSetting: Found unsaved value "${sub.save}" in Mod: "$modName"');
-									settings.set(sub.save, defaultValue);
-								}
+								var defaultValue:Dynamic = modSettingDefault(sub, settingType);
+								//FunkinLua.luaTrace('getModSetting: Found unsaved value "${sub.save}" in Mod: "$modName"');
+								settings.set(sub.save, defaultValue);
 							}
 							else
 							{
@@ -258,8 +256,8 @@ class LuaUtils
 				}
 				catch(e:Dynamic)
 				{
-					var errorTitle = 'Mod name: ' + Mods.currentModDirectory;
-					var errorMsg = 'An error occurred: $e';
+					var errorTitle = Language.getPhrase('errors.scripting.mod_settings.title', 'Mod name: {1}', [Mods.currentModDirectory]);
+					var errorMsg = Language.getPhrase('errors.scripting.mod_settings.parse_error', 'An error occurred: {1}', [e]);
 					CoolUtil.showPopUp(errorMsg, errorTitle);
 				}
 			}
@@ -267,28 +265,52 @@ class LuaUtils
 		else
 		{
 			FlxG.save.data.modSettings.remove(modName);
+			var missingPathMsg:String = Language.getPhrase('errors.scripting.mod_settings.file_missing',
+				'getModSetting: {1} could not be found!', [path]);
 			#if LUA_ALLOWED
-			FunkinLua.luaTrace('getModSetting: $path could not be found!', true, false, FlxColor.RED);
+			FunkinLua.luaTrace(missingPathMsg, true, false, FlxColor.RED);
 			#elseif HSCRIPT_ALLOWED
-			if (PlayState.instance != null) PlayState.instance.addTextToDebug('getModSetting: $path could not be found!', FlxColor.RED);
-			else FlxG.log.warn('getModSetting: $path could not be found!');
+			if (PlayState.instance != null) PlayState.instance.addTextToDebug(missingPathMsg, FlxColor.RED);
+			else FlxG.log.warn(missingPathMsg);
 			#else
-			FlxG.log.warn('getModSetting: $path could not be found!');
+			FlxG.log.warn(missingPathMsg);
 			#end
 			return null;
 		}
 
 		if(settings.exists(saveTag)) return settings.get(saveTag);
+		var missingSettingMsg:String = Language.getPhrase('errors.scripting.mod_settings.setting_missing',
+			'getModSetting: "{1}" could not be found inside {2}\'s settings!', [saveTag, modName]);
 		#if LUA_ALLOWED
-		FunkinLua.luaTrace('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', true, false, FlxColor.RED);
+		FunkinLua.luaTrace(missingSettingMsg, true, false, FlxColor.RED);
 		#elseif HSCRIPT_ALLOWED
-		if (PlayState.instance != null) PlayState.instance.addTextToDebug('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', FlxColor.RED);
-		else FlxG.log.warn('getModSetting: "$saveTag" could not be found inside $modName\'s settings!');
+		if (PlayState.instance != null) PlayState.instance.addTextToDebug(missingSettingMsg, FlxColor.RED);
+		else FlxG.log.warn(missingSettingMsg);
 		#else
-		FlxG.log.warn('getModSetting: "$saveTag" could not be found inside $modName\'s settings!');
+		FlxG.log.warn(missingSettingMsg);
 		#end
 		#end
 		return null;
+	}
+
+	static function modSettingDefault(setting:Dynamic, settingType:String):Dynamic
+	{
+		if (setting.value != null)
+			return setting.value;
+
+		var declaredDefault:Dynamic = Reflect.field(setting, 'default');
+		if (declaredDefault != null)
+			return declaredDefault;
+
+		return switch (settingType)
+		{
+			case 'string', 'str':
+				var choices:Array<Dynamic> = cast setting.options;
+				choices != null && choices.length > 0 ? choices[0] : '';
+			case 'percent': 1;
+			case 'int', 'integer', 'float', 'fl': 0;
+			default: false;
+		}
 	}
 
 	public static function isMap(variable:Dynamic)

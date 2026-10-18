@@ -1,0 +1,13 @@
+{
+  "$schema": 1,
+  "$namespace": "states.story_menu",
+  "chosen": "Chosen: ",
+  "title": "Back to the Title Screen.",
+  "presence": "In the Menus",
+  "presence2": "Main Menu: ",
+  "score": "WEEK SCORE: {1}",
+  "errors": {
+    "no_weeks": "NO WEEKS ADDED FOR STORY MODE\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.",
+    "no_visible_weeks": "NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress {1} to return to Main Menu."
+  }
+}

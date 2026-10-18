@@ -14,12 +14,7 @@ import objects.MusicPlayerPsych;
 import options.GameplayChangersSubstate;
 import substates.ResetScoreSubState;
 import flixel.math.FlxMath;
-import flixel.addons.display.FlxBackdrop;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxAxes;
 import flixel.util.FlxDestroyUtil;
-import flixel.util.FlxGradient;
 import openfl.utils.Assets;
 #if (MODS_ALLOWED && sys)
 import sys.FileSystem;
@@ -55,18 +50,7 @@ class FreeplayState_Psych extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	var bg:FlxSprite;
-	var checker:FlxBackdrop;
-	var gradientBar:FlxSprite;
-	var side:FlxSprite;
-	var navi:FlxSprite;
-	var disc:FlxSprite;
-	var innerDiscTop:FlxSprite;
-	var innerDiscBottom:FlxSprite;
-	var discIcon:HealthIcon;
-	var sprDifficulty:FlxSprite;
 	var intendedColor:Int;
-	var intendedCheckerColor:Int;
-	var intendedBottomColor:Int;
 
 	var missingTextBG:FlxSprite;
 	var missingText:FlxText;
@@ -86,7 +70,7 @@ class FreeplayState_Psych extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence(Language.getPhrase('freeplay.presence', 'In the Menus'), null);
 		#end
 
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
@@ -96,8 +80,8 @@ class FreeplayState_Psych extends MusicBeatState
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
-			MusicBeatState.switchState(new states.ErrorState("NO WEEKS ADDED FOR FREEPLAY\n\nPress " + accept + " to go to the Week Editor Menu.\nPress "
-				+ reject + " to return to Main Menu.",
+			MusicBeatState.switchState(new states.ErrorState(Language.getPhrase('freeplay.errors.no_weeks',
+				'NO WEEKS ADDED FOR FREEPLAY\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
 				function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
 				function() MusicBeatState.switchState(new states.MainMenuState())));
 			return;
@@ -122,78 +106,19 @@ class FreeplayState_Psych extends MusicBeatState
 			for (song in leWeek.songs)
 			{
 				var colors:Array<Int> = song[2];
-				var checkerColors:Array<Int> = song[3];
-				var bottomColors:Array<Int> = song[4];
-				var discTopColors:Array<Int> = song[5];
-				var discBottomColors:Array<Int> = song[6];
 				if (colors == null || colors.length < 3)
 				{
 					colors = [146, 113, 253];
 				}
-				if (checkerColors == null || checkerColors.length < 3)
-					checkerColors = [0, 0, 0];
-				if (bottomColors == null || bottomColors.length < 3)
-					bottomColors = [0, 0, 0];
-				if (discTopColors == null || discTopColors.length < 3)
-					discTopColors = [0, 0, 0];
-				if (discBottomColors == null || discBottomColors.length < 3)
-					discBottomColors = [0, 0, 0];
-				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]),
-					FlxColor.fromRGB(checkerColors[0], checkerColors[1], checkerColors[2]),
-					FlxColor.fromRGB(bottomColors[0], bottomColors[1], bottomColors[2]),
-					FlxColor.fromRGB(discTopColors[0], discTopColors[1], discTopColors[2]),
-					FlxColor.fromRGB(discBottomColors[0], discBottomColors[1], discBottomColors[2]));
+				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]));
 			}
 		}
 		Mods.loadTopMod();
-		if (curSelected < 0 || curSelected >= songs.length)
-			curSelected = 0;
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
 		bg.screenCenter();
-
-		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512,
-			[0x00FF0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
-		gradientBar.y = FlxG.height - gradientBar.height;
-		gradientBar.scrollFactor.set();
-		add(gradientBar);
-
-		checker = new FlxBackdrop(Paths.image('MicUp/Free_Checker'), FlxAxes.XY);
-		checker.scrollFactor.set(0, 0.07);
-		add(checker);
-
-		side = new FlxSprite().loadGraphic(Paths.image('MicUp/Free_Bottom'));
-		side.antialiasing = ClientPrefs.data.antialiasing;
-		side.scrollFactor.set();
-		side.screenCenter();
-		side.y = FlxG.height;
-		add(side);
-
-		navi = new FlxSprite().loadGraphic(Paths.image('MicUp/navi_Free'));
-		navi.antialiasing = ClientPrefs.data.antialiasing;
-		navi.scrollFactor.set();
-		navi.screenCenter();
-		navi.y = FlxG.height / 1.25;
-		navi.x = FlxG.width / 1.05 - navi.width / 2;
-		add(navi);
-
-		var discAtlas = Paths.getSparrowAtlas('MicUp/Freeplay_Discs');
-		disc = new FlxSprite(-200, 730);
-		disc.frames = discAtlas;
-		disc.animation.addByPrefix('spin', 'spin', 24);
-		disc.animation.play('spin');
-		disc.antialiasing = ClientPrefs.data.antialiasing;
-		add(disc);
-
-		innerDiscTop = new FlxSprite().loadGraphic(Paths.image('MicUp/innerDiscTop'));
-		innerDiscTop.antialiasing = ClientPrefs.data.antialiasing;
-		add(innerDiscTop);
-
-		innerDiscBottom = new FlxSprite().loadGraphic(Paths.image('MicUp/innerDiscBottom'));
-		innerDiscBottom.antialiasing = ClientPrefs.data.antialiasing;
-		add(innerDiscBottom);
 
 		grpSongs = new FlxTypedGroup<Alphabet>();
 		add(grpSongs);
@@ -203,6 +128,9 @@ class FreeplayState_Psych extends MusicBeatState
 			var songText:Alphabet = new Alphabet(90, 320, songs[i].songName, true);
 			songText.targetY = i;
 			grpSongs.add(songText);
+
+			songText.scaleX = Math.min(1, 980 / songText.width);
+			songText.snapToPosition();
 
 			Mods.currentModDirectory = songs[i].folder;
 			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
@@ -217,44 +145,18 @@ class FreeplayState_Psych extends MusicBeatState
 
 		WeekData.setDirectoryFromWeek();
 
-		sprDifficulty = new FlxSprite();
-		var difficultyAtlas = Paths.getSparrowAtlas('MicUp/difficulties');
-		sprDifficulty.frames = difficultyAtlas;
-		sprDifficulty.animation.addByPrefix('noob', 'NOOB');
-		sprDifficulty.animation.addByPrefix('easy', 'EASY');
-		sprDifficulty.animation.addByPrefix('normal', 'NORMAL');
-		sprDifficulty.animation.addByPrefix('hard', 'HARD');
-		sprDifficulty.animation.addByPrefix('expert', 'EXPERT');
-		sprDifficulty.animation.addByPrefix('insane', 'INSANE');
-		sprDifficulty.animation.addByPrefix('crazy', 'CRAZY');
-		sprDifficulty.animation.addByPrefix('flip', 'FLIP');
-		sprDifficulty.animation.addByPrefix('fucked', 'FUCKED');
-		sprDifficulty.animation.addByPrefix('hell', 'HELL');
-		sprDifficulty.animation.addByPrefix('remix', 'REMIX');
-		sprDifficulty.antialiasing = ClientPrefs.data.antialiasing;
-		sprDifficulty.screenCenter(X);
-		sprDifficulty.y = FlxG.height - sprDifficulty.height - 8;
-		add(sprDifficulty);
+		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
+		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
 
-		scoreText = new FlxText(0, 0, FlxG.width, "", 32);
-		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
-		scoreText.setBorderStyle(OUTLINE, FlxColor.BLACK, 5, 1);
-		scoreText.screenCenter(X);
-		scoreText.y = sprDifficulty.y - 38;
-
-		scoreBG = new FlxSprite(0, 0).makeGraphic(1, 66, FlxColor.BLACK);
-		scoreBG.alpha = 0;
+		scoreBG = new FlxSprite(scoreText.x - 6, 0).makeGraphic(1, 66, 0xFF000000);
+		scoreBG.alpha = 0.6;
 		add(scoreBG);
 
-		diffText = new FlxText(0, scoreText.y + 36, FlxG.width, "", 24);
+		diffText = new FlxText(scoreText.x, scoreText.y + 36, 0, "", 24);
 		diffText.font = scoreText.font;
 		add(diffText);
 
 		add(scoreText);
-		Mods.currentModDirectory = songs[curSelected].folder;
-		discIcon = new HealthIcon(songs[curSelected].songCharacter);
-		discIcon.antialiasing = ClientPrefs.data.antialiasing;
-		add(discIcon);
 
 		missingTextBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		missingTextBG.alpha = 0.6;
@@ -267,14 +169,10 @@ class FreeplayState_Psych extends MusicBeatState
 		missingText.visible = false;
 		add(missingText);
 
+		if (curSelected >= songs.length)
+			curSelected = 0;
 		bg.color = songs[curSelected].color;
-		checker.color = songs[curSelected].checkerColor;
-		side.color = songs[curSelected].bottomColor;
-		innerDiscTop.color = songs[curSelected].discTopColor;
-		innerDiscBottom.color = songs[curSelected].discBottomColor;
 		intendedColor = bg.color;
-		intendedCheckerColor = checker.color;
-		intendedBottomColor = side.color;
 		lerpSelected = curSelected;
 
 		curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(lastDifficultyName)));
@@ -283,11 +181,11 @@ class FreeplayState_Psych extends MusicBeatState
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
 
-		var leText:String = Language.getPhrase("freeplay_tip",
-			"Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.",
+		var leText:String = Language.getPhrase('freeplay.psych.tip', Language.getPhrase('freeplay_tip',
+			'Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.'),
 			[space, control, reset]);
 		#if (MODS_ALLOWED && sys && !mobile)
-		leText += " / F5 reloads mods / drop a mod folder to import it.";
+		leText += Language.getPhrase('freeplay.psych.desktop_mod_tip', ' / F5 reloads mods / drop a mod folder to import it.');
 		#end
 		bottomString = leText;
 
@@ -319,21 +217,6 @@ class FreeplayState_Psych extends MusicBeatState
 		freeplayTouchInputBlockTime = 0.12;
 		super.create();
 
-		FlxTween.tween(side, {y: FlxG.height - side.height * 2 / 3}, 0.5, {ease: FlxEase.quartInOut});
-		disc.scale.x = 0;
-		innerDiscTop.scale.x = 0;
-		innerDiscBottom.scale.x = 0;
-		FlxTween.tween(disc, {'scale.x': 1, y: 480, x: -25}, 0.5, {ease: FlxEase.quartInOut});
-		FlxTween.tween(innerDiscTop, {'scale.x': 1, y: 480, x: -25}, 0.5, {ease: FlxEase.quartInOut});
-		FlxTween.tween(innerDiscBottom, {'scale.x': 1, y: 480, x: -25}, 0.5, {ease: FlxEase.quartInOut});
-		scoreText.alpha = 0;
-		FlxTween.tween(scoreText, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
-		sprDifficulty.alpha = 0;
-		FlxTween.tween(sprDifficulty, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
-		FlxG.camera.zoom = 0.6;
-		FlxG.camera.alpha = 0;
-		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
-
 		#if (MODS_ALLOWED && sys && !mobile)
 		FlxG.stage.window.onDropFile.add(onDropFile);
 		#end
@@ -357,10 +240,9 @@ class FreeplayState_Psych extends MusicBeatState
 		return freeplayTouchInputBlockTime <= 0 && button != null && button.justReleased;
 	}
 
-	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int, checkerColor:Int, bottomColor:Int, discTopColor:Int,
-			discBottomColor:Int)
+	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
 	{
-		songs.push(new SongMetadataPsych(songName, weekNum, songCharacter, color, checkerColor, bottomColor, discTopColor, discBottomColor));
+		songs.push(new SongMetadataPsych(songName, weekNum, songCharacter, color));
 	}
 
 	function weekIsLocked(name:String):Bool
@@ -413,7 +295,8 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 			#end
 
-			scoreText.text = 'PERSONAL BEST: ${lerpScore} (${AccuracyTools.format(lerpRating)})';
+			scoreText.text = Language.getPhrase('freeplay.score.personal_best', 'PERSONAL BEST: {1} ({2})',
+				[lerpScore, AccuracyTools.format(lerpRating)]);
 			positionHighscore();
 
 			if (songs.length > 1)
@@ -622,30 +505,6 @@ class FreeplayState_Psych extends MusicBeatState
 
 		updateTexts(elapsed);
 		super.update(elapsed);
-		updateFreeplayVisuals(elapsed);
-	}
-
-	function updateFreeplayVisuals(elapsed:Float):Void
-	{
-		var frameScale:Float = elapsed * 60;
-		checker.x += 0.27 * frameScale;
-		checker.y -= 0.63 * frameScale;
-
-		innerDiscBottom.x = disc.x + disc.width / 2 - innerDiscBottom.width / 2;
-		innerDiscBottom.y = disc.y + disc.height / 2 - innerDiscBottom.height / 2;
-		innerDiscBottom.angle = disc.angle;
-		innerDiscBottom.scale.set(disc.scale.x, disc.scale.y);
-
-		innerDiscTop.x = disc.x + disc.width / 2 - innerDiscTop.width / 2;
-		innerDiscTop.y = disc.y + disc.height / 2 - innerDiscTop.height / 2;
-		innerDiscTop.angle = disc.angle;
-		innerDiscTop.scale.set(disc.scale.x, disc.scale.y);
-
-		discIcon.x = disc.x + disc.width / 2 - discIcon.width / 2;
-		discIcon.y = disc.y + disc.height / 2 - discIcon.height / 2;
-		disc.angle += 0.6 * frameScale;
-		discIcon.angle = disc.angle;
-		discIcon.scale.set(disc.scale.x, disc.scale.y);
 	}
 
 	function loadChartWithChecker(chartName:String, songFolder:String):Bool
@@ -661,7 +520,8 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 			catch (e:Dynamic)
 			{
-				report.add(SongCheckSeverity.ERROR, 'chart-load-exception', 'Unexpected error while loading the chart: ${Std.string(e)}', report.chartPath);
+				report.add(SongCheckSeverity.ERROR, 'chart-load-exception',
+					Language.getPhrase('freeplay.errors.chart_load_exception', 'Unexpected error while loading the chart: {1}', [Std.string(e)]), report.chartPath);
 			}
 		}
 		SongLoadMetrics.recordChecker((Timer.stamp() - checkerStarted) * 1000 - SongLoadMetrics.chartMs);
@@ -729,7 +589,6 @@ class FreeplayState_Psych extends MusicBeatState
 			diffText.text = '< ' + displayDiff.toUpperCase() + ' >';
 		else
 			diffText.text = displayDiff.toUpperCase();
-		playDifficultyAnimation(displayDiff);
 
 		positionHighscore();
 		missingText.visible = false;
@@ -751,34 +610,22 @@ class FreeplayState_Psych extends MusicBeatState
 		{
 			intendedColor = newColor;
 			FlxTween.cancelTweensOf(bg);
-			FlxTween.color(bg, 0.5, bg.color, intendedColor, {ease: FlxEase.backIn});
+			FlxTween.color(bg, 1, bg.color, intendedColor);
 		}
-		var newCheckerColor:Int = songs[curSelected].checkerColor;
-		if (newCheckerColor != intendedCheckerColor)
-		{
-			intendedCheckerColor = newCheckerColor;
-			FlxTween.cancelTweensOf(checker);
-			FlxTween.color(checker, 0.5, checker.color, intendedCheckerColor, {ease: FlxEase.backIn});
-		}
-		var newBottomColor:Int = songs[curSelected].bottomColor;
-		if (newBottomColor != intendedBottomColor)
-		{
-			intendedBottomColor = newBottomColor;
-			FlxTween.cancelTweensOf(side);
-			FlxTween.color(side, 0.5, side.color, intendedBottomColor, {ease: FlxEase.backIn});
-		}
-		innerDiscTop.color = songs[curSelected].discTopColor;
-		innerDiscBottom.color = songs[curSelected].discBottomColor;
-		Mods.currentModDirectory = songs[curSelected].folder;
-		discIcon.changeIcon(songs[curSelected].songCharacter);
 
 		for (num => item in grpSongs.members)
 		{
 			var icon:HealthIcon = iconArray[num];
-			item.alpha = num == curSelected ? 1 : 0.6;
-			icon.alpha = 0;
+			item.alpha = 0.6;
+			icon.alpha = 0.6;
+			if (item.targetY == curSelected)
+			{
+				item.alpha = 1;
+				icon.alpha = 1;
+			}
 		}
 
+		Mods.currentModDirectory = songs[curSelected].folder;
 		PlayState.storyWeek = songs[curSelected].week;
 		Difficulty.loadFromWeek();
 
@@ -802,30 +649,11 @@ class FreeplayState_Psych extends MusicBeatState
 
 	private function positionHighscore()
 	{
-		sprDifficulty.y = FlxG.height - sprDifficulty.height - 8;
-		scoreText.y = sprDifficulty.y - 38;
-		diffText.y = scoreText.y + 36;
-		scoreText.x = FlxG.width / 2 - scoreText.width / 2;
+		scoreText.x = FlxG.width - scoreText.width - 6;
 		scoreBG.scale.x = FlxG.width - scoreText.x + 6;
 		scoreBG.x = FlxG.width - (scoreBG.scale.x / 2);
 		diffText.x = Std.int(scoreBG.x + (scoreBG.width / 2));
 		diffText.x -= diffText.width / 2;
-		sprDifficulty.x = FlxG.width / 2 - sprDifficulty.width / 2;
-	}
-
-	function playDifficultyAnimation(difficulty:String):Void
-	{
-		var animationName:String = difficulty.toLowerCase();
-		switch (animationName)
-		{
-			case 'noob', 'easy', 'normal', 'hard', 'expert', 'insane', 'crazy', 'flip', 'fucked', 'hell', 'remix':
-				sprDifficulty.animation.play(animationName);
-				sprDifficulty.visible = true;
-				diffText.alpha = 0;
-			default:
-				sprDifficulty.visible = false;
-				diffText.alpha = 1;
-		}
 	}
 
 	var _drawDistance:Int = 4;
@@ -833,35 +661,26 @@ class FreeplayState_Psych extends MusicBeatState
 
 	public function updateTexts(elapsed:Float = 0.0)
 	{
-		lerpSelected = FlxMath.lerp(lerpSelected, curSelected, FlxMath.bound(elapsed * 9.6, 0, 1));
+		lerpSelected = FlxMath.lerp(curSelected, lerpSelected, Math.exp(-elapsed * 9.6));
+		for (i in _lastVisibles)
+		{
+			grpSongs.members[i].visible = grpSongs.members[i].active = false;
+			iconArray[i].visible = iconArray[i].active = false;
+		}
 		_lastVisibles = [];
 
-		for (i in 0...grpSongs.members.length)
+		var min:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected - _drawDistance)));
+		var max:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected + _drawDistance)));
+		for (i in min...max)
 		{
 			var item:Alphabet = grpSongs.members[i];
+			item.visible = item.active = true;
+			item.x = ((item.targetY - lerpSelected) * item.distancePerItem.x) + item.startPosition.x;
+			item.y = ((item.targetY - lerpSelected) * 1.3 * item.distancePerItem.y) + item.startPosition.y;
+
 			var icon:HealthIcon = iconArray[i];
-			var offset:Float = i - lerpSelected;
-			var scaledY:Float = offset * 1.3;
-			var visible:Bool = Math.abs(offset) <= _drawDistance;
-			item.visible = item.active = visible;
-			icon.visible = icon.active = false;
-			item.targetY = i - curSelected;
-			item.alpha = i == curSelected ? 1 : 0.6;
-
-			if (visible)
-			{
-				var targetX:Float = FlxG.width + 30;
-				if (scaledY >= 0 && scaledY < 10)
-					targetX = Math.exp(scaledY * 0.8) * 70 + FlxG.width * 0.1;
-				else if (scaledY < 0 && scaledY > -20)
-					targetX = Math.exp(scaledY * -0.8) * 70 + FlxG.width * 0.1;
-
-				var targetY:Float = scaledY * 65 + FlxG.height * 0.39;
-				var lerpAmount:Float = FlxMath.bound(elapsed * 9.6, 0, 1);
-				item.x = FlxMath.lerp(item.x, Math.min(targetX, FlxG.width + 30), lerpAmount);
-				item.y = FlxMath.lerp(item.y, targetY, lerpAmount);
-				_lastVisibles.push(i);
-			}
+			icon.visible = icon.active = true;
+			_lastVisibles.push(i);
 		}
 	}
 
@@ -938,25 +757,18 @@ class SongMetadataPsych
 	public var week:Int = 0;
 	public var songCharacter:String = "";
 	public var color:Int = -7179779;
-	public var checkerColor:Int = FlxColor.BLACK;
-	public var bottomColor:Int = FlxColor.BLACK;
-	public var discTopColor:Int = FlxColor.BLACK;
-	public var discBottomColor:Int = FlxColor.BLACK;
 	public var folder:String = "";
 	public var lastDifficulty:String = null;
 
-	public function new(song:String, week:Int, songCharacter:String, color:Int, checkerColor:Int, bottomColor:Int, discTopColor:Int, discBottomColor:Int)
+	public function new(song:String, week:Int, songCharacter:String, color:Int)
 	{
 		this.songName = song;
 		this.week = week;
 		this.songCharacter = songCharacter;
 		this.color = color;
-		this.checkerColor = checkerColor;
-		this.bottomColor = bottomColor;
-		this.discTopColor = discTopColor;
-		this.discBottomColor = discBottomColor;
 		this.folder = Mods.currentModDirectory;
 		if (this.folder == null)
 			this.folder = '';
 	}
 }
+

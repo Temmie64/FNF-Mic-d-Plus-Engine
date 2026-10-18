@@ -57,9 +57,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		super();
 		if (title == null)
-			title = 'Options';
+			title = Language.getPhrase('options.common.title', 'Options');
 		if (rpcTitle == null)
-			rpcTitle = 'Options Menu';
+			rpcTitle = Language.getPhrase('options.common.presence', 'Options Menu');
 
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence(rpcTitle, null);
@@ -133,7 +133,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						checkbox.alpha = 0;
 					checkboxGroup.add(checkbox);
 				}
-				else
+				else if (optionsArray[i].type != ACTION)
 				{
 					optionText.x -= 80;
 					optionText.startPosition.x -= 80;
@@ -289,7 +289,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						FlxTween.tween(bindingBlack, {alpha: 0.6}, 0.35, {ease: FlxEase.linear});
 						add(bindingBlack);
 
-						bindingText = new Alphabet(FlxG.width / 2, 160, Language.getPhrase('controls_rebinding', 'Rebinding {1}', [curOption.name]), false);
+						bindingText = new Alphabet(FlxG.width / 2, 160,
+							Language.getPhrase('options.controls.rebinding',
+								Language.getPhrase('controls_rebinding', 'Rebinding {1}', [curOption.name]), [curOption.name]), false);
 						bindingText.alignment = CENTERED;
 						add(bindingText);
 
@@ -297,7 +299,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						final backspace:String = (controls.mobileC) ? "C" : "Backspace";
 
 						bindingText2 = new Alphabet(FlxG.width / 2, 340,
-							Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]), true);
+							Language.getPhrase('options.controls.rebinding_help',
+								Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]),
+								[escape, backspace]), true);
 						bindingText2.alignment = CENTERED;
 						add(bindingText2);
 
@@ -305,6 +309,16 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						holdingEsc = 0;
 						ClientPrefs.toggleVolumeKeys(false);
 						FlxG.sound.play(Paths.sound('scrollMenu'));
+					}
+
+			case ACTION:
+					if (controls.ACCEPT)
+					{
+						var actionStop = callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]);
+						if (actionStop == Function_Stop)
+							return;
+						FlxG.sound.play(Paths.sound('confirmMenu'));
+						curOption.change();
 					}
 
 				default:
@@ -398,7 +412,11 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			if (controls.RESET || touchPad.buttonC.justPressed)
 			{
 				var leOption:Option = optionsArray[curSelected];
-				if (leOption.type != KEYBIND)
+				if (leOption.type == ACTION)
+				{
+					// Actions have no persistent value to reset.
+				}
+				else if (leOption.type != KEYBIND)
 				{
 					leOption.setValue(leOption.defaultValue);
 					if (leOption.type != BOOL)
@@ -413,9 +431,12 @@ class BaseOptionsMenu extends MusicBeatSubstate
 					leOption.setValue(!Controls.instance.controllerMode ? leOption.defaultKeys.keyboard : leOption.defaultKeys.gamepad);
 					updateBind(null, leOption);
 				}
-				leOption.change();
-				FlxG.sound.play(Paths.sound('cancelMenu'));
-				reloadCheckboxes();
+				if (leOption.type != ACTION)
+				{
+					leOption.change();
+					FlxG.sound.play(Paths.sound('cancelMenu'));
+					reloadCheckboxes();
+				}
 			}
 		}
 
@@ -757,6 +778,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	{
 		if (option == null)
 			return;
+		if (option.type == ACTION)
+			return;
 
 		if (option.type == KEYBIND)
 		{
@@ -906,6 +929,13 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	public function getOptionsCopy():Array<Option>
 		return optionsArray != null ? optionsArray.copy() : [];
 
+	public function setMenuTitle(value:String):Void
+	{
+		title = value;
+		if (titleText != null)
+			titleText.text = value;
+	}
+
 	public function getCurrentOption():Option
 		return curOption;
 
@@ -994,7 +1024,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 					checkbox.ID = i;
 					checkboxGroup.add(checkbox);
 				}
-				else
+				else if (optionsArray[i].type != ACTION)
 				{
 					optionText.x -= 80;
 					optionText.startPosition.x -= 80;
@@ -1122,6 +1152,8 @@ private class PlusOptionRow extends FlxSpriteGroup
 		{
 			case BOOL:
 				setValueLabel(Std.string(option.getValue()) == 'true' ? 'ON' : 'OFF');
+			case ACTION:
+				setValueLabel('');
 			default:
 				var value:String = option.text;
 				if (value == null || value.length < 1)

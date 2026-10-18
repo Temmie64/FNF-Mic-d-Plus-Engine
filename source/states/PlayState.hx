@@ -186,6 +186,12 @@ class PlayState extends MusicBeatState
 
 	public var notes:FlxTypedGroup<Note>;
 	public var unspawnNotes:Array<Note> = [];
+	private var denseChartQueue:Bool = false;
+	private var unspawnNoteCursor:Int = 0;
+	private var denseHitVisualsThisFrame:Int = 0;
+	private var denseRatingPending:Bool = false;
+	private var denseRatingHadMiss:Bool = false;
+	private static inline final DENSE_QUEUE_COMPACT_AT:Int = 2048;
 	public var eventNotes:Array<EventNote> = [];
 
 	public var camFollow:FlxObject;
@@ -261,7 +267,7 @@ class PlayState extends MusicBeatState
 	public var botplaySine:Float = 0;
 	public var botplayTxt:FlxText;
 	var botplayCPU:BotplayCPU;
-	var hitTimes:Array<Float> = [];
+	var hitTimes:Array<{time:Float, count:Int}> = [];
 	var msTxt:FlxText;
 	var msTween:FlxTween;
 
@@ -294,6 +300,7 @@ class PlayState extends MusicBeatState
 	var lyricTween:FlxTween;
 	var versionText:FlxText;
 	var verTween:FlxTween;
+	var languageRevision:Int = -1;
 	var gfIconSide:String = '';
 	var gfIconSwapOnSing:Bool = false;
 
@@ -440,12 +447,12 @@ class PlayState extends MusicBeatState
 		storyDifficultyText = Difficulty.getString();
 
 		if (isStoryMode)
-			detailsText = "Story Mode: " + WeekData.getCurrentWeek().weekName;
+			detailsText = Language.getPhrase('playstate.presence.story', 'Story Mode: {1}', [WeekData.getCurrentWeek().weekName]);
 		else
-			detailsText = "Freeplay";
+			detailsText = Language.getPhrase('playstate.presence.freeplay', 'Freeplay');
 
 		// String for when the game is paused
-		detailsPausedText = "Paused - " + detailsText;
+		detailsPausedText = Language.getPhrase('playstate.presence.paused', 'Paused - {1}', [detailsText]);
 		#end
 
 		GameOverSubstate.resetVariables();
@@ -718,10 +725,7 @@ class PlayState extends MusicBeatState
 
 		if(ClientPrefs.data.showVersionText && !ClientPrefs.data.hideHud)
 		{
-			var ver = SONG.song + ' (' + Difficulty.getString() + ') - Plus Engine v' + MainMenuState.plusEngineVersion;
-			if(BuildInfo.githubDevBuild && BuildInfo.commit.length > 0)
-				ver += ' #' + BuildInfo.shortCommit();
-			versionText = new FlxText(0, -22, FlxG.width, ver, 14);
+			versionText = new FlxText(0, -22, FlxG.width, versionLabel(), 14);
 			versionText.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			versionText.scrollFactor.set();
 			versionText.borderSize = 1;
@@ -1004,8 +1008,13 @@ class PlayState extends MusicBeatState
 			var ratio:Float = value / songSpeed; //funny word huh
 			if(ratio != 1)
 			{
-				for (note in notes.members) note.resizeByRatio(ratio);
-				for (note in unspawnNotes) note.resizeByRatio(ratio);
+				for (note in notes.members)
+					if (note != null) note.resizeByRatio(ratio);
+				for (i in (denseChartQueue ? unspawnNoteCursor : 0)...unspawnNotes.length)
+				{
+					var note:Note = unspawnNotes[i];
+					if (note != null) note.resizeByRatio(ratio);
+				}
 			}
 		}
 		songSpeed = value;
@@ -1026,8 +1035,13 @@ class PlayState extends MusicBeatState
 			var ratio:Float = playbackRate / value; //funny word huh
 			if(ratio != 1)
 			{
-				for (note in notes.members) note.resizeByRatio(ratio);
-				for (note in unspawnNotes) note.resizeByRatio(ratio);
+				for (note in notes.members)
+					if (note != null) note.resizeByRatio(ratio);
+				for (i in (denseChartQueue ? unspawnNoteCursor : 0)...unspawnNotes.length)
+				{
+					var note:Note = unspawnNotes[i];
+					if (note != null) note.resizeByRatio(ratio);
+				}
 			}
 		}
 		playbackRate = value;
@@ -1266,7 +1280,7 @@ class PlayState extends MusicBeatState
 			return videoCutscene;
 		}
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-		else addTextToDebug("Video not found: " + fileName, FlxColor.RED);
+		else addTextToDebug(Language.getPhrase('errors.script_debug.states_playstate.video_not_found_value', "Video not found: {1}", [fileName]), FlxColor.RED);
 		#else
 		else FlxG.log.error("Video not found: " + fileName);
 		#end
@@ -1558,26 +1572,41 @@ class PlayState extends MusicBeatState
 
 	public function clearNotesBefore(time:Float)
 	{
-		var i:Int = unspawnNotes.length - 1;
-		while (i >= 0) {
-			var daNote:Note = unspawnNotes[i];
-			if(daNote.strumTime - 350 < time)
+		var i:Int;
+		if (denseChartQueue)
+		{
+			var queued:Note = nextUnspawnNote();
+			while (queued != null && queued.strumTime - 350 < time)
 			{
-				daNote.active = false;
-				daNote.visible = false;
-				daNote.ignoreNote = true;
-
-				//if(!ClientPrefs.data.lowQuality || !cpuControlled) daNote.kill();
-				unspawnNotes.remove(daNote);
-				daNote.destroy();
+				queued.active = queued.visible = false;
+				queued.ignoreNote = true;
+				queued.destroy();
+				unspawnNoteCursor++;
+				queued = nextUnspawnNote();
 			}
-			--i;
+			compactDenseUnspawnQueue(true);
+		}
+		else
+		{
+			i = unspawnNotes.length - 1;
+			while (i >= 0) {
+				var daNote:Note = unspawnNotes[i];
+				if(daNote.strumTime - 350 < time)
+				{
+					daNote.active = false;
+					daNote.visible = false;
+					daNote.ignoreNote = true;
+					unspawnNotes.remove(daNote);
+					daNote.destroy();
+				}
+				--i;
+			}
 		}
 
 		i = notes.length - 1;
 		while (i >= 0) {
 			var daNote:Note = notes.members[i];
-			if(daNote.strumTime - 350 < time)
+			if(daNote != null && daNote.strumTime - 350 < time)
 			{
 				daNote.active = false;
 				daNote.visible = false;
@@ -1609,7 +1638,7 @@ class PlayState extends MusicBeatState
 	{
 		if (cpuControlled && !isBotplayCPU())
 		{
-			scoreTxt.text = 'BOTPLAY MODE';
+			scoreTxt.text = Language.getPhrase('playstate.hud.botplay_mode', 'BOTPLAY MODE');
 			return;
 		}
 
@@ -1623,20 +1652,48 @@ class PlayState extends MusicBeatState
 		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(songScore) : Std.string(songScore);
 		if(ClientPrefs.data.psychScoreText)
 		{
-			if(!instakillOnMiss) tempScore = Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [score, songMisses, str]);
-			else tempScore = Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [score, str]);
+			if(!instakillOnMiss) tempScore = Language.getPhrase('playstate.hud.score.psych',
+				Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [score, songMisses, str]), [score, songMisses, str]);
+			else tempScore = Language.getPhrase('playstate.hud.score.psych_instakill',
+				Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [score, str]), [score, str]);
 		}
 		else
 		{
 			var tps:String = Std.string(getTPS());
-			if(!instakillOnMiss) tempScore = Language.getPhrase('score_text_plus', 'Score: {1} | Misses: {2} | Combo: {3} | TPS: {4} | Rating: {5}', [score, songMisses, combo, tps, str]);
-			else tempScore = Language.getPhrase('score_text_plus_instakill', 'Score: {1} | Combo: {2} | TPS: {3} | Rating: {4}', [score, combo, tps, str]);
+			if(!instakillOnMiss) tempScore = Language.getPhrase('playstate.hud.score.plus',
+				Language.getPhrase('score_text_plus', 'Score: {1} | Misses: {2} | Combo: {3} | TPS: {4} | Rating: {5}',
+					[score, songMisses, combo, tps, str]), [score, songMisses, combo, tps, str]);
+			else tempScore = Language.getPhrase('playstate.hud.score.plus_instakill',
+				Language.getPhrase('score_text_plus_instakill', 'Score: {1} | Combo: {2} | TPS: {3} | Rating: {4}', [score, combo, tps, str]),
+				[score, combo, tps, str]);
 		}
 		scoreTxt.text = tempScore;
 	}
 
 	function botplayLabel():String
-		return modes.label(cpuControlled, practiceMode, isBotplayCPU() ? 'BOTPLAY CPU: ${botplayCPUProfile().toUpperCase()}' : 'BOTPLAY');
+		return modes.label(cpuControlled, practiceMode, isBotplayCPU()
+			? Language.getPhrase('playstate.hud.botplay_cpu', 'BOTPLAY CPU: {1}', [botplayCPUProfile().toUpperCase()])
+			: Language.getPhrase('playstate.hud.botplay', 'BOTPLAY'));
+
+	function versionLabel():String
+	{
+		var value:String = Language.getPhrase('playstate.hud.version', '{1} ({2}) - Plus Engine v{3}',
+			[SONG.song, Difficulty.getString(), MainMenuState.plusEngineVersion]);
+		if(BuildInfo.githubDevBuild && BuildInfo.commit.length > 0)
+			value += ' #' + BuildInfo.shortCommit();
+		return value;
+	}
+
+	function refreshLocalizedHud():Void
+	{
+		languageRevision = Language.revision;
+		if (scoreTxt != null)
+			updateScoreText();
+		if (botplayTxt != null)
+			botplayTxt.text = botplayLabel();
+		if (versionText != null)
+			versionText.text = versionLabel();
+	}
 
 	function botplayKind():String
 		return CoolUtil.botplayType(ClientPrefs.getGameplaySetting('botplayType', 'Normal'));
@@ -1671,9 +1728,12 @@ class PlayState extends MusicBeatState
 			return 0;
 
 		var minTime:Float = Conductor.songPosition - 1000;
-		while (hitTimes.length > 0 && hitTimes[0] < minTime)
+		while (hitTimes.length > 0 && hitTimes[0].time < minTime)
 			hitTimes.shift();
-		return hitTimes.length;
+		var count:Int = 0;
+		for (hit in hitTimes)
+			count += hit.count;
+		return count;
 	}
 
 	function botplayCPUHitOffset(note:Note):Float
@@ -1894,6 +1954,8 @@ class PlayState extends MusicBeatState
 		var ghostNotesCaught:Int = 0;
 		var chartNotes:Map<String, Note> = [];
 		var loadPlan:SongLoadPlan = SongLoadPlan.get(songData);
+		denseChartQueue = loadPlan.denseChart;
+		unspawnNoteCursor = 0;
 
 		for (chartNote in loadPlan.notes)
 		{
@@ -1927,6 +1989,7 @@ class PlayState extends MusicBeatState
 				swagNote.mustPress = mustPress;
 				swagNote.sustainLength = holdLength;
 				swagNote.noteType = noteType;
+				swagNote.noteDensity = chartNote.density;
 
 				swagNote.scrollFactor.set();
 				unspawnNotes.push(swagNote);
@@ -2010,7 +2073,9 @@ class PlayState extends MusicBeatState
 		totalNotes = 0;
 		for(note in unspawnNotes)
 			if(note != null && !note.isSustainNote && note.mustPress)
-				totalNotes++;
+				totalNotes += noteDensityCount(note);
+		if (denseChartQueue)
+			trace('[DENSE CHART]: packed ${loadPlan.sourceNoteCount} chart taps into ${unspawnNotes.length} runtime notes at 120 Hz.');
 		generatedMusic = true;
 		var generateFinished:Float = haxe.Timer.stamp();
 		SongLoadMetrics.recordGeneration((generateFinished - generateStarted) * 1000, (audioFinished - generateStarted) * 1000,
@@ -2068,6 +2133,15 @@ class PlayState extends MusicBeatState
 
 	public static function sortByTime(Obj1:Dynamic, Obj2:Dynamic):Int
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.strumTime, Obj2.strumTime);
+
+	public static function sortNotesByY(order:Int, noteA:Note, noteB:Note):Int
+	{
+		if (noteA == null)
+			return noteB == null ? 0 : 1;
+		if (noteB == null)
+			return -1;
+		return FlxSort.byY(order, noteA, noteB);
+	}
 
 	function makeEvent(event:Array<Dynamic>, i:Int)
 	{
@@ -2277,8 +2351,46 @@ class PlayState extends MusicBeatState
 	var freezeCamera:Bool = false;
 	var allowDebugKeys:Bool = true;
 
+	private inline function nextUnspawnNote():Note
+		return denseChartQueue ? (unspawnNoteCursor < unspawnNotes.length ? unspawnNotes[unspawnNoteCursor] : null) : unspawnNotes[0];
+
+	private function compactDenseUnspawnQueue(?force:Bool = false):Void
+	{
+		if (!denseChartQueue || unspawnNoteCursor <= 0)
+			return;
+		if (!force && unspawnNoteCursor < DENSE_QUEUE_COMPACT_AT)
+			return;
+		unspawnNotes.splice(0, unspawnNoteCursor);
+		unspawnNoteCursor = 0;
+	}
+
+	private static inline function noteDensityCount(note:Note):Int
+		return note == null ? 1 : Std.int(Math.max(1, Math.round(note.noteDensity)));
+
+	private inline function requestRatingRecalculation(badHit:Bool):Void
+	{
+		if (!denseChartQueue)
+		{
+			RecalculateRating(badHit);
+			return;
+		}
+		denseRatingPending = true;
+		denseRatingHadMiss = denseRatingHadMiss || badHit;
+	}
+
+	private function flushDenseRatingRecalculation():Void
+	{
+		if (!denseRatingPending)
+			return;
+		var badHit:Bool = denseRatingHadMiss;
+		denseRatingPending = false;
+		denseRatingHadMiss = false;
+		RecalculateRating(badHit);
+	}
+
 	override public function update(elapsed:Float)
 	{
+		denseHitVisualsThisFrame = 0;
 		if(!inCutscene && !paused && !freezeCamera) {
 			FlxG.camera.followLerp = 0.04 * cameraSpeed * playbackRate;
 			var pc:Character = playerChar();
@@ -2294,6 +2406,8 @@ class PlayState extends MusicBeatState
 		}
 		else FlxG.camera.followLerp = 0;
 		callOnScripts('onUpdate', [elapsed]);
+		if (languageRevision != Language.revision)
+			refreshLocalizedHud();
 
 		super.update(elapsed);
 		if (audioRecoveryPending && startedCountdown && !startingSong && !endingSong && !paused && FlxG.sound.music != null)
@@ -2401,31 +2515,38 @@ class PlayState extends MusicBeatState
 		}
 		doDeathCheck();
 
-		if (unspawnNotes[0] != null)
+		var queuedNote:Note = nextUnspawnNote();
+		if (queuedNote != null)
 		{
 			var time:Float = spawnTime;
 			#if MODCHART_ALLOWED
 			if (Manager.instance != null)
-				time = Manager.instance.getNoteSpawnTime(unspawnNotes[0].mustPress ? 1 : 0, time);
+				time = Manager.instance.getNoteSpawnTime(queuedNote.mustPress ? 1 : 0, time);
 			#end
 			// Chart time advances playbackRate times faster than real time. Scale the
 			// final Manager/fallback window so notes still enter from off-screen.
 			time *= playbackRate;
 			if(songSpeed < 1) time /= songSpeed;
-			if(unspawnNotes[0].multSpeed < 1) time /= unspawnNotes[0].multSpeed;
+			if(queuedNote.multSpeed < 1) time /= queuedNote.multSpeed;
 
-			while (unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < time)
+			while ((queuedNote = nextUnspawnNote()) != null && queuedNote.strumTime - Conductor.songPosition < time)
 			{
-				var dunceNote:Note = unspawnNotes[0];
-				notes.insert(0, dunceNote);
+				var dunceNote:Note = queuedNote;
+				if (denseChartQueue)
+					notes.add(dunceNote);
+				else
+					notes.insert(0, dunceNote);
 				dunceNote.spawned = true;
 
 				callOnLuas('onSpawnNote', [notes.members.indexOf(dunceNote), dunceNote.noteData, dunceNote.noteType, dunceNote.isSustainNote, dunceNote.strumTime]);
 				callOnHScript('onSpawnNote', [dunceNote]);
 
-				var index:Int = unspawnNotes.indexOf(dunceNote);
-				unspawnNotes.splice(index, 1);
+				if (denseChartQueue)
+					unspawnNoteCursor++;
+				else
+					unspawnNotes.splice(0, 1);
 			}
+			compactDenseUnspawnQueue();
 		}
 
 		if (generatedMusic)
@@ -2446,7 +2567,11 @@ class PlayState extends MusicBeatState
 						while(i < notes.length)
 						{
 							var daNote:Note = notes.members[i];
-							if(daNote == null) continue;
+							if(daNote == null)
+							{
+								i++;
+								continue;
+							}
 
 							var strumGroup:FlxTypedGroup<StrumNote> = playerStrums;
 							if(!daNote.mustPress) strumGroup = opponentStrums;
@@ -2511,6 +2636,7 @@ class PlayState extends MusicBeatState
 					}
 				}
 			}
+			flushDenseRatingRecalculation();
 			checkEventNote();
 		}
 
@@ -2616,7 +2742,7 @@ class PlayState extends MusicBeatState
 			opponentVocals.pause();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Chart Editor", null, null, true);
+		DiscordClient.changePresence(Language.getPhrase('playstate.presence.chart_editor', 'Chart Editor'), null, null, true);
 		DiscordClient.resetClientID();
 		#end
 
@@ -2701,7 +2827,8 @@ class PlayState extends MusicBeatState
 
 				#if DISCORD_ALLOWED
 				// Game Over doesn't get his its variable because it's only used here
-				if(autoUpdateRPC) DiscordClient.changePresence("Game Over - " + detailsText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
+				if(autoUpdateRPC) DiscordClient.changePresence(Language.getPhrase('playstate.presence.game_over', 'Game Over - {1}', [detailsText]),
+					SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
 				#end
 				isDead = true;
 				return true;
@@ -2986,7 +3113,7 @@ class PlayState extends MusicBeatState
 					var len:Int = e.message.indexOf('\n') + 1;
 					if(len <= 0) len = e.message.length;
 					#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-					addTextToDebug('ERROR ("Set Property" Event) - ' + e.message.substr(0, len), FlxColor.RED);
+					addTextToDebug(Language.getPhrase('errors.script_debug.states_playstate.error_set_property_event_value', "ERROR (\"Set Property\" Event) - {1}", [e.message.substr(0, len)]), FlxColor.RED);
 					#else
 					FlxG.log.warn('ERROR ("Set Property" Event) - ' + e.message.substr(0, len));
 					#end
@@ -3255,12 +3382,13 @@ class PlayState extends MusicBeatState
 			notes.forEachAlive(function(daNote:Note)
 			{
 				if(daNote.strumTime < songLength - Conductor.safeZoneOffset)
-					health -= 0.05 * healthLoss;
+						health -= 0.05 * healthLoss * noteDensityCount(daNote);
 			});
-			for (daNote in unspawnNotes)
+			for (i in (denseChartQueue ? unspawnNoteCursor : 0)...unspawnNotes.length)
 			{
+				var daNote:Note = unspawnNotes[i];
 				if(daNote != null && daNote.strumTime < songLength - Conductor.safeZoneOffset)
-					health -= 0.05 * healthLoss;
+					health -= 0.05 * healthLoss * noteDensityCount(daNote);
 			}
 
 			if(doDeathCheck()) {
@@ -3506,13 +3634,16 @@ class PlayState extends MusicBeatState
 	}
 
 	public function KillNotes() {
-		while(notes.length > 0) {
-			var daNote:Note = notes.members[0];
-			daNote.active = false;
-			daNote.visible = false;
-			invalidateNote(daNote);
-		}
+		for (daNote in notes.members)
+			if (daNote != null)
+			{
+				daNote.active = false;
+				daNote.visible = false;
+				daNote.destroy();
+			}
+		notes.clear();
 		unspawnNotes = [];
+		unspawnNoteCursor = 0;
 		eventNotes = [];
 	}
 
@@ -3532,6 +3663,8 @@ class PlayState extends MusicBeatState
 	var androidRatingGraphics:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
 	var androidNumGraphics:Array<FlxGraphic> = [];
 	var androidMinusGraphic:FlxGraphic;
+	var androidComboKGraphic:FlxGraphic;
+	var androidComboDotGraphic:FlxGraphic;
 	#end
 	var breakTimerHud:BreakTimerHud = null;
 	// Stores HUD Objects in a Group
@@ -3545,6 +3678,8 @@ class PlayState extends MusicBeatState
 			Paths.image(uiAsset(rating.image));
 		for (i in 0...10)
 			Paths.image(uiAsset('num' + i));
+		Paths.image(uiAsset('k'));
+		Paths.image(uiAsset('dot'));
 		Paths.image(uiAsset('combo'));
 		Paths.image(uiAsset('miss'));
 		Paths.image(popupMinusAsset());
@@ -3558,6 +3693,8 @@ class PlayState extends MusicBeatState
 			androidRatingGraphics.set(rating.image, Paths.image(uiAsset(rating.image)));
 		androidRatingGraphics.set('miss', Paths.image(uiAsset('miss')));
 		androidMinusGraphic = Paths.image(popupMinusAsset());
+		androidComboKGraphic = Paths.image(uiAsset('k'));
+		androidComboDotGraphic = Paths.image(uiAsset('dot'));
 		for (i in 0...10)
 			androidNumGraphics[i] = Paths.image(uiAsset('num' + i));
 		for (i in 0...18)
@@ -3679,16 +3816,25 @@ class PlayState extends MusicBeatState
 			return;
 
 		var popupCount:Int = isMiss ? songMisses : combo;
-		var comboStr:String = ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3);
+		var comboStr:String = !isMiss && popupCount >= 10000 ? formatComboCount(popupCount)
+			: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 		for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 		{
 			var isMinus:Bool = i == comboStr.length;
-			var digit:Null<Int> = isMinus ? 0 : Std.parseInt(comboStr.charAt(i));
-			if (!isMinus && (digit == null || digit < 0 || digit > 9))
+			var character:String = isMinus ? '-' : comboStr.charAt(i);
+			var digit:Null<Int> = isMinus ? null : Std.parseInt(character);
+			var graphic:FlxGraphic = switch (character)
+			{
+				case '-': androidMinusGraphic;
+				case '.': androidComboDotGraphic;
+				case 'k': androidComboKGraphic;
+				default: digit != null && digit >= 0 && digit <= 9 ? androidNumGraphics[digit] : null;
+			};
+			if (graphic == null)
 				continue;
 
 			var numScore:FlxSprite = getAndroidComboSprite();
-			setupAndroidComboSprite(numScore, isMinus ? androidMinusGraphic : androidNumGraphics[digit], placement + (43 * i) - 90 + ClientPrefs.data.comboOffset[2],
+			setupAndroidComboSprite(numScore, graphic, placement + (43 * i) - 90 + ClientPrefs.data.comboOffset[2],
 				(FlxG.height * 0.5) + 80 - ClientPrefs.data.comboOffset[3], numScale, antialias, true);
 			numScore.velocity.x = FlxG.random.float(-3, 3) * playbackRate;
 			if (isMiss) numScore.color = 0xFFB060FF;
@@ -3698,6 +3844,22 @@ class PlayState extends MusicBeatState
 
 	inline function uiAsset(name:String):String
 		return Paths.getUIPath(name);
+
+	public static function formatComboCount(value:Int):String
+	{
+		if (value < 10000)
+			return Std.string(value);
+		var tenths:Int = Math.floor(value / 100);
+		return '${Std.int(tenths / 10)}.${tenths % 10}k';
+	}
+
+	inline function comboCharacterAsset(character:String):String
+		return switch (character)
+		{
+			case '.': uiAsset('dot');
+			case 'k': uiAsset('k');
+			default: uiAsset('num' + character);
+		};
 
 	function popupMinusAsset():String
 	{
@@ -3833,7 +3995,7 @@ class PlayState extends MusicBeatState
 			if (comboGroup.members.indexOf(msTxt) < 0)
 				comboGroup.add(msTxt);
 
-			msTxt.text = Std.string(Std.int(Math.round(hitDiff))) + 'ms';
+		msTxt.text = Language.getPhrase('playstate.hud.milliseconds', '{1}ms', [Std.int(Math.round(hitDiff))]);
 			msTxt.color = color;
 			msTxt.alpha = 1;
 			msTxt.visible = true;
@@ -3904,6 +4066,10 @@ class PlayState extends MusicBeatState
 	private function popUpScore(note:Note = null, isMiss:Bool = false):Void
 	{
 		if (!isMiss && note == null) return;
+		var density:Int = noteDensityCount(note);
+		var suppressDenseVisuals:Bool = denseChartQueue && !isMiss && denseHitVisualsThisFrame >= 4;
+		if (denseChartQueue && !isMiss)
+			denseHitVisualsThisFrame++;
 		var hitDiff:Float = isMiss ? 0 : (note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset) / playbackRate;
 		var noteDiff:Float = Math.abs(hitDiff);
 		if (!isMiss) vocals.volume = 1;
@@ -3913,7 +4079,7 @@ class PlayState extends MusicBeatState
 		var lightHitVisuals:Bool = false;
 		#end
 
-		if (!lightHitVisuals && (!ClientPrefs.data.comboStacking || ClientPrefs.data.nfRatingStyle))
+		if (!suppressDenseVisuals && !lightHitVisuals && (!ClientPrefs.data.comboStacking || ClientPrefs.data.nfRatingStyle))
 			clearComboPopups();
 
 		var placement:Float = FlxG.width * 0.35;
@@ -3924,25 +4090,25 @@ class PlayState extends MusicBeatState
 
 		if (!isMiss)
 		{
-			totalNotesHit += daRating.ratingMod;
+			totalNotesHit += daRating.ratingMod * density;
 			note.ratingMod = daRating.ratingMod;
-			if(!note.ratingDisabled) daRating.hits++;
+			if(!note.ratingDisabled) daRating.hits += density;
 			note.rating = daRating.name;
 			score = daRating.score;
 
-			if(!lightHitVisuals && daRating.noteSplash && !note.noteSplashData.disabled)
+			if(!suppressDenseVisuals && !lightHitVisuals && daRating.noteSplash && !note.noteSplashData.disabled)
 				spawnNoteSplashOnNote(note);
 
 			if(!cpuControlled || isBotplayCPU()) {
-				songScore += score;
+				songScore += score * density;
 				if(!note.ratingDisabled)
 				{
 					if (!perfectBonusHit(daRating.name))
 						lockAccuracyBonus();
-					songHits++;
-					totalPlayed++;
-					hitTimes.push(Conductor.songPosition);
-					RecalculateRating(false);
+					songHits += density;
+					totalPlayed += density;
+					hitTimes.push({time: Conductor.songPosition, count: density});
+					requestRatingRecalculation(false);
 
 					if (perfectMode && !practiceMode && !perfectBonusHit(daRating.name))
 						doDeathCheck(true);
@@ -3954,6 +4120,8 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
+		if (suppressDenseVisuals)
+			return;
 		if (isMiss && (!ClientPrefs.data.popUpRating || ClientPrefs.data.hideHud || comboGroup == null)) return;
 
 		if (lightHitVisuals)
@@ -4028,11 +4196,12 @@ class PlayState extends MusicBeatState
 				comboGroup.add(comboSpr);
 
 			var popupCount:Int = isMiss ? songMisses : combo;
-			var comboStr:String = ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3);
+			var comboStr:String = !isMiss && popupCount >= 10000 ? formatComboCount(popupCount)
+				: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 			for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 			{
 				var isMinus:Bool = i == comboStr.length;
-				var numberAsset:String = isMinus ? popupMinusAsset() : uiAsset('num' + comboStr.charAt(i));
+				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i));
 				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(numberAsset));
 				if (isMiss) numScore.color = 0xFFB060FF;
 				numScore.screenCenter();
@@ -4353,10 +4522,15 @@ class PlayState extends MusicBeatState
 
 	function noteMiss(daNote:Note):Void { //You didn't hit the key and let it go offscreen, also used by Hurt Notes
 		//Dupe note remove
-		notes.forEachAlive(function(note:Note) {
-			if (daNote != note && daNote.mustPress && daNote.noteData == note.noteData && daNote.isSustainNote == note.isSustainNote && Math.abs(daNote.strumTime - note.strumTime) < 1)
-				invalidateNote(note);
-		});
+		// Dense charts already merge equivalent taps during loading. Scanning every
+		// live sprite for each miss would turn a dense burst into quadratic work.
+		if (!denseChartQueue)
+		{
+			notes.forEachAlive(function(note:Note) {
+				if (daNote != note && daNote.mustPress && daNote.noteData == note.noteData && daNote.isSustainNote == note.isSustainNote && Math.abs(daNote.strumTime - note.strumTime) < 1)
+					invalidateNote(note);
+			});
+		}
 
 		noteMissCommon(daNote.noteData, daNote);
 		stagesFunc(function(stage:BaseStage) stage.noteMiss(daNote));
@@ -4376,6 +4550,7 @@ class PlayState extends MusicBeatState
 
 	function noteMissCommon(direction:Int, note:Note = null)
 	{
+		var density:Int = noteDensityCount(note);
 		// score and data
 		var subtract:Float = pressMissDamage;
 		if(note != null) subtract = note.missHealth;
@@ -4428,13 +4603,13 @@ class PlayState extends MusicBeatState
 		var lastCombo:Int = combo;
 		combo = 0;
 
-		health -= subtract * healthLoss;
-		songScore -= 10;
+		health -= subtract * healthLoss * density;
+		songScore -= 10 * density;
 		lockAccuracyBonus();
-		if(!endingSong) songMisses++;
+		if(!endingSong) songMisses += density;
 		if (!endingSong) showMissPopup();
-		totalPlayed++;
-		RecalculateRating(true);
+		totalPlayed += density;
+		requestRatingRecalculation(true);
 
 		// play character anims
 		var char:Character = playerChar();
@@ -4498,7 +4673,7 @@ class PlayState extends MusicBeatState
 		strumPlayAnim(true, Std.int(Math.abs(note.noteData)), Conductor.stepCrochet * 1.25 / 1000 / playbackRate);
 		note.hitByOpponent = true;
 		if (opponentDrain && !note.isSustainNote && !practiceMode && health > PlayModes.DRAIN_FLOOR)
-			health = Math.max(PlayModes.DRAIN_FLOOR, health - note.hitHealth * healthLoss);
+			health = Math.max(PlayModes.DRAIN_FLOOR, health - note.hitHealth * healthLoss * noteDensityCount(note));
 
 		stagesFunc(function(stage:BaseStage) stage.opponentNoteHit(note));
 		var result:Dynamic = callOnLuas('opponentNoteHit', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
@@ -4582,8 +4757,7 @@ class PlayState extends MusicBeatState
 
 			if (!note.isSustainNote)
 			{
-				combo++;
-				if(combo > 9999) combo = 9999;
+				combo += noteDensityCount(note);
 				if(combo > maxCombo) maxCombo = combo;
 				popUpScore(note);
 
@@ -4601,7 +4775,7 @@ class PlayState extends MusicBeatState
 			}
 			var gainHealth:Bool = true; // prevent health gain, *if* sustains are treated as a singular note
 			if (guitarHeroSustains && note.isSustainNote) gainHealth = false;
-			if (gainHealth) health += note.hitHealth * healthGain;
+			if (gainHealth) health += note.hitHealth * healthGain * noteDensityCount(note);
 
 		}
 		else //Notes that count as a miss if you hit them (Hurt notes for example)
@@ -4631,7 +4805,9 @@ class PlayState extends MusicBeatState
 
 	public function invalidateNote(note:Note):Void {
 		//if(!ClientPrefs.data.lowQuality || !cpuControlled) note.kill();
-		notes.remove(note, true);
+		// Keep reusable holes on dense charts. Splicing shifts every later member,
+		// which is needlessly expensive when hundreds of notes expire together.
+		notes.remove(note, !denseChartQueue);
 		note.destroy();
 	}
 
@@ -4651,8 +4827,11 @@ class PlayState extends MusicBeatState
 
 		for (note in notes)
 			if (note != null) note.reloadNote();
-		for (note in unspawnNotes)
+		for (i in (denseChartQueue ? unspawnNoteCursor : 0)...unspawnNotes.length)
+		{
+			var note:Note = unspawnNotes[i];
 			if (note != null) note.reloadNote();
+		}
 
 		for (strum in strumLineNotes)
 			if (strum != null) strum.texture = newSkin;
@@ -4786,7 +4965,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (generatedMusic)
-			notes.sort(FlxSort.byY, ClientPrefs.data.downScroll ? FlxSort.ASCENDING : FlxSort.DESCENDING);
+			notes.sort(sortNotesByY, ClientPrefs.data.downScroll ? FlxSort.ASCENDING : FlxSort.DESCENDING);
 
 		switch (ClientPrefs.data.iconBounceType)
 		{
@@ -5304,7 +5483,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 			#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-			addTextToDebug('Missing shader $name .frag AND .vert files!', FlxColor.RED);
+			addTextToDebug(Language.getPhrase('errors.script_debug.states_playstate.missing_shader_value_frag_and_vert_files', "Missing shader {1} .frag AND .vert files!", [name]), FlxColor.RED);
 			#else
 			FlxG.log.warn('Missing shader $name .frag AND .vert files!');
 			#end
