@@ -759,10 +759,6 @@ class TitleState extends MusicBeatState
 
 		if (!closedState && !showingIntro)
 		{
-			case 3:
-					createCoolText(['Plus Engine by', 'Lenin Astoo'], -90);
-				case 5:
-					createCoolText(["Mic'd Plus by", "The One From 2005"], 250);
 			sickBeats++;
 			switch (sickBeats)
 			{
