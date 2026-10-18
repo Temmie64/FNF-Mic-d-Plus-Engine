@@ -23,7 +23,7 @@
 [![Mac](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Mac&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=macos&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/macos/)
 [![Linux](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Linux&primaryBGColor=%23dba80f&primaryTextColor=%23FFFFFF&secondaryBGColor=%23ffc107&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=linux&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.linux.org/)
 
-Engine based in Psych 1.0.4 with fixes/UIs of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and modcharts like NotITG and compatible with hxcodec videos from Psych mods 0.6.3 and 0.7.3.
+**Mic'd Plus Engine** is a custom fork creatted by Temmie64 that build based in from Plus Engine, This is a mix between Plus Engine as base with Mic'd Up style with all modification as well fixes/UIs of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and modcharts like NotITG and compatible with hxcodec videos from Psych mods 0.6.3 and 0.7.3.
 
 [![Discord](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Join+to+the+&secondaryLabel=Discord&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%235665ed&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=discord&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://discord.gg/EBvUWcMdqV)
 
@@ -85,13 +85,29 @@ relax — progress doesn’t wait.
 **Good Luck!**
 
 ## Developer Credits:
+* Temmie64 - Main Programmer for Mic'd Plus Engine
+  
+## Plus Engine Credits:
 * Lenin Asto - Main Programmer for Plus Engine
 * sirthegamercoder - Helper Programmer for Plus Engine
-* Autistic Lulu - Creator of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and author of several UIs and new features for its fork (thanks for letting me use your fork =D)
+* Autistic Lulu - Creator of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and author of several UIs and new features for its fork
 
-## Original Credits:
+## Psych Engine Credits:
 * Shadow Mario - Main Programmer and Head of Psych Engine.
 * Riveren - Main Artist/Animator of Psych Engine.
+
+## Operation's Up Credits:
+* Barlizarlk - Main Dev of Operation's Up
+* IceTom - Assistance Dev
+
+## Mic'd Up Credits:
+* Verwex - Main and Head of Mic'd Up.
+* KadeDev - Some of the Kade Engine features
+* Ash237 - Bugfixes, some features
+* Haya - Bugfixes, some features
+* TentaRJ - Chromakey mode
+* Rozebud - FPS+ features
+* Sector03 - Health Icons and Ranking Sprites.
 
 ## Mobile Credits:
 * Homura - Head Porter of Psych Engine Mobile.
@@ -113,7 +129,6 @@ relax — progress doesn’t wait.
 * CheemsAndFriends - Creator of FlxAnimate.
 * Ezhalt - Pessy's Easter Egg Jingle.
 * MaliciousBunny - Video for the Final Update.
-
 ***
 
 # Build Mobile:
