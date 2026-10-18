@@ -2,8 +2,6 @@
 
 <div align="center">
 
-# Mic'd Plus Engine
-
 **EN-US | [ES-LA](docs/readmes/README.es-LA.md) | [ID-ID](docs/readmes/README.id-ID.md)**
 
 
@@ -25,7 +23,7 @@
 [![Mac](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Mac&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=macos&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/macos/)
 [![Linux](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Linux&primaryBGColor=%23dba80f&primaryTextColor=%23FFFFFF&secondaryBGColor=%23ffc107&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=linux&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.linux.org/)
 
-**Mic'd Plus Engine** is a custom fork creatted by 2005 that build based in from Plus Engine, This is a mix between Plus Engine as base with Mic'd Up style with all modification as well fixes/UIs of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and modcharts like NotITG and compatible with hxcodec videos from Psych mods 0.6.3 and 0.7.3.
+Engine based in Psych 1.0.4 with fixes/UIs of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and modcharts like NotITG and compatible with hxcodec videos from Psych mods 0.6.3 and 0.7.3.
 
 [![Discord](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Join+to+the+&secondaryLabel=Discord&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%235665ed&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=discord&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://discord.gg/EBvUWcMdqV)
 
@@ -42,19 +40,24 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 Contributions are welcome! If you have ideas, improvements, or fixes, feel free to fork the repo and open a pull request.
 
+<div align="center">
+  <h2>Engine Views</h2>
+  <img src="https://count.getloli.com/@plus?theme=booru-lisu&padding=7&offset=0&align=top&scale=0.6&pixelated=1&darkmode=auto&prefix=0" alt="counter visitors" >
+  <h2></h2>
+</div>
+
 > This project is subject to bugs, fixes, improvements and changes.
 
 # About Code Usage
 
 This project is **open to learn, build, and improve**.
 You’re free to use it as a reference, a base, or a learning resource.
-
 Because code is not a buried treasure —
 **code lives when it’s shared**.
 
-📚 **Learning > hoarding**
-💡 **Sharing > flexing**
-🚀 **Building > gatekeeping**
+ **Learning > hoarding**
+ **Sharing > flexing**
+ **Building > gatekeeping**
 
 I don’t really believe in the mindset of:
 > “Don’t touch my code, don't create other engine, don't use my engine's stuffs, bruh...”
@@ -68,44 +71,27 @@ Source code is:
 - mistakes
 - evolution
 
-If someone improves something I made, **respect** 🫡
+If someone improves something I made, **respect** 
 That’s how this has always worked:
 learn from the past to build the future.
 
-### ⚠️ Important note
+### Important note
 Don’t claim others’ work as your own or sell it as original.
 Respect the effort, learn from it, and create something better.
-
-To those who share: thank you 💙
+To those who share: thank you 
 To those who hide code out of fear or envy:
 relax — progress doesn’t wait.
 
-**Happy coding.**
+**Good Luck!**
 
 ## Developer Credits:
-* The One From 2005 - Main Programmer for Mic'd Plus Engine
-  
-## Plus Engine Credits:
 * Lenin Asto - Main Programmer for Plus Engine
 * sirthegamercoder - Helper Programmer for Plus Engine
-* Autistic Lulu - Creator of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and author of several UIs and new features for its fork
+* Autistic Lulu - Creator of [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) and author of several UIs and new features for its fork (thanks for letting me use your fork =D)
 
-## Psych Engine Credits:
+## Original Credits:
 * Shadow Mario - Main Programmer and Head of Psych Engine.
 * Riveren - Main Artist/Animator of Psych Engine.
-
-## Operation's Up Credits:
-* Barlizarlk - Main Dev of Operation's Up
-* IceTom - Assistance Dev
-
-## Mic'd Up Credits:
-* Verwex - Main and Head of Mic'd Up.
-* KadeDev - Some of the Kade Engine features
-* Ash237 - Bugfixes, some features
-* Haya - Bugfixes, some features
-* TentaRJ - Chromakey mode
-* Rozebud - FPS+ features
-* Sector03 - Health Icons and Ranking Sprites.
 
 ## Mobile Credits:
 * Homura - Head Porter of Psych Engine Mobile.

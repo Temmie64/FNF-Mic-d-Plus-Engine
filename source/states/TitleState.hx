@@ -100,6 +100,11 @@ class TitleState extends MusicBeatState
 			{
 				var updateVersion = CoolUtil.checkForUpdates();
 			}
+			else
+			{
+				var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+				add(bg);
+			}
 			catch (e:Dynamic)
 			{
 				trace('Error checking for updates: ' + e);
@@ -484,7 +489,10 @@ class TitleState extends MusicBeatState
 		}
 
 		if (swagGoodArray.length == 0)
-			swagGoodArray.push(['Psych Engine', 'Plus Engine']);
+			swagGoodArray.push([
+				Language.getPhrase('states.title.intro.fallback_first', 'Psych Engine'),
+				Language.getPhrase('states.title.intro.fallback_second', 'Plus Engine')
+			]);
 
 		return swagGoodArray;
 	}
@@ -765,9 +773,9 @@ class TitleState extends MusicBeatState
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
 				case 3:
-					createCoolText(['Plus Engine by', 'Lenin Astoo'], -90);
+					createCoolText([Language.getPhrase('states.title.intro.plus_engine_by', 'Plus Engine by'), 'Lenin Asto'], -90);
 				case 5:
-					createCoolText(["Mic'd Plus by", "The One From 2005"], 250);
+					createCoolText([Language.getPhrase('states.title.intro.mic_engine_by', "Mic'd Plus by"), 'The One From 2005'], 250);
 				case 7:
 					deleteCoolText();
 					createCoolText(['A modification', 'for']);
@@ -796,7 +804,6 @@ class TitleState extends MusicBeatState
 					FlxTween.tween(FNF_Logo, {y: 120, x: 210}, 0.8, {ease: FlxEase.backOut});
 				case 15:
 					FlxTween.tween(FNF_EX, {y: 48, x: 403}, 0.8, {ease: FlxEase.backOut});
-
 				case 17:
 					skipIntro();
 			}
@@ -924,3 +931,4 @@ class TitleState extends MusicBeatState
 		super.destroy();
 	}
 }
+

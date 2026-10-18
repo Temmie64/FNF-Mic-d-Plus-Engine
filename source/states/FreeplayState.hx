@@ -513,7 +513,7 @@ class FreeplayState extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence(Language.getPhrase('freeplay.presence', 'In the Menus'), null);
 		#end
 
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
@@ -524,8 +524,8 @@ class FreeplayState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
-				new states.ErrorState("NO WEEKS ADDED FOR FREEPLAY\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject
-					+ " to return to Main Menu.",
+			new states.ErrorState(Language.getPhrase('freeplay.errors.no_weeks',
+					'NO WEEKS ADDED FOR FREEPLAY\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
 					function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
 					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
 			return;
@@ -670,7 +670,7 @@ class FreeplayState extends MusicBeatState
 		// Eliminar scoreText de la esquina ya que ahora se mostrará debajo de cada dificultad
 		// scoreText ya no se usa
 
-		freeplayText = new FlxText(0, 0, 0, "FREEPLAY", 40);
+		freeplayText = new FlxText(0, 0, 0, Language.getPhrase('freeplay.title', 'FREEPLAY'), 40);
 		freeplayText.setFormat(Paths.font("vcr.ttf"), 40, FlxColor.WHITE, CENTER);
 		freeplayText.borderSize = 0;
 		freeplayText.updateHitbox();
@@ -725,11 +725,11 @@ class FreeplayState extends MusicBeatState
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
 
-		var leText:String = Language.getPhrase("new_freeplay_tip",
-			"Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.",
+	var leText:String = Language.getPhrase('freeplay.psych.tip', Language.getPhrase('freeplay_tip',
+			'Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.'),
 			[space, control, reset]);
 		#if (MODS_ALLOWED && sys && !mobile)
-		leText += " / F5 reloads mods / drop a mod folder to import it.";
+		leText += Language.getPhrase('freeplay.psych.desktop_mod_tip', ' / F5 reloads mods / drop a mod folder to import it.');
 		#end
 		bottomString = leText;
 		var size:Int = 16;
@@ -837,7 +837,8 @@ class FreeplayState extends MusicBeatState
 
 	function updateMissingCardLayout(message:String):Void
 	{
-		final displayText = (message != null && message.length > 0) ? message : 'No chart is available for this difficulty.';
+		final displayText = (message != null && message.length > 0) ? message :
+			Language.getPhrase('freeplay.errors.no_chart', 'No chart is available for this difficulty.');
 		missingText.text = displayText;
 		missingText.wordWrap = false;
 		if (missingText.textField != null)
@@ -895,18 +896,17 @@ class FreeplayState extends MusicBeatState
 	function getChartPlayError(song:SwagSong):String
 	{
 		if (song == null)
-			return 'No chart is available for this difficulty!';
+			return Language.getPhrase('freeplay.errors.no_chart', 'No chart is available for this difficulty!');
 		if (song.notes == null || song.notes.length == 0)
-			return 'No chart is available for this difficulty!';
+			return Language.getPhrase('freeplay.errors.no_chart', 'No chart is available for this difficulty!');
 		if (!isValidBpm(song.bpm))
-			return 'This chart has an invalid BPM, so it cannot be played.';
-
+			return Language.getPhrase('freeplay.errors.no_chart', 'No chart is available for this difficulty!');
 		for (section in song.notes)
 		{
 			if (section == null)
 				continue;
 			if (section.changeBPM == true && !isValidBpm(section.bpm))
-				return 'This chart has an invalid BPM, so it cannot be played.';
+				return Language.getPhrase('freeplay.errors.invalid_bpm', 'This chart has an invalid BPM, so it cannot be played.');
 		}
 		return null;
 	}
@@ -1546,7 +1546,7 @@ class FreeplayState extends MusicBeatState
 						|| errorStr.contains('Invalid difficulty index')
 						|| errorStr.contains('chart file not found')
 						|| errorStr.contains('Chart failed to load'))
-						errorStr = 'No chart is available for this difficulty!';
+						errorStr = Language.getPhrase('freeplay.errors.no_chart', 'No chart is available for this difficulty!');
 
 					showMissingCard(errorStr);
 					FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -1997,7 +1997,8 @@ class FreeplayState extends MusicBeatState
 		songInfoCardSpinner.visible = false;
 		add(songInfoCardSpinner);
 
-		songInfoCardLoadingLabel = new FlxText(FlxG.width * 0.5 - 120, FlxG.height * 0.5 + 42, 240, "Loading...", 14);
+		songInfoCardLoadingLabel = new FlxText(FlxG.width * 0.5 - 120, FlxG.height * 0.5 + 42, 240,
+			Language.getPhrase('freeplay.song_info.loading', 'Loading...'), 14);
 		songInfoCardLoadingLabel.setFormat(Paths.font('NotoSans-Medium.ttf'), 14, FlxColor.WHITE, CENTER);
 		songInfoCardLoadingLabel.alpha = 0.8;
 		songInfoCardLoadingLabel.visible = false;
@@ -2202,7 +2203,7 @@ class FreeplayState extends MusicBeatState
 				var accuracy:Float = Highscore.getRating(data.songName, i);
 				scoreLines.push('${diffName}: ${score} (${AccuracyTools.format(accuracy)})');
 			}
-			songInfoCardScores.text = 'Diff and Scores:\n' + scoreLines.join('\n');
+			songInfoCardScores.text = Language.getPhrase('freeplay.song_info.scores', 'Diff and Scores:\n{1}', [scoreLines.join('\n')]);
 		}
 
 		var coverGraphic:FlxGraphic = getOptionalImageInFolder(data.coverKey, data.folder, false);
@@ -2225,11 +2226,12 @@ class FreeplayState extends MusicBeatState
 	function formatSongInfoStats(data:FreeplaySongCardData):String
 	{
 		var statsLines:Array<String> = [
-			Language.getPhrase("new_freeplay_song_time", "Time: {1}", [formatDuration(data.durationMs)]),
-			'BPM: ${formatFloat(data.bpm)}'
+			Language.getPhrase('freeplay.song_info.time',
+				Language.getPhrase('new_freeplay_song_time', 'Time: {1}', [formatDuration(data.durationMs)]), [formatDuration(data.durationMs)]),
+			Language.getPhrase('freeplay.song_info.bpm', 'BPM: {1}', [formatFloat(data.bpm)])
 		];
 		if (data.author != null && data.author.length > 0)
-			statsLines.push('By: ${data.author}');
+			statsLines.push(Language.getPhrase('freeplay.song_info.author', 'By: {1}', [data.author]));
 		return statsLines.join('\n');
 	}
 
@@ -2317,7 +2319,7 @@ class FreeplayState extends MusicBeatState
 
 	function formatLicenseLabel(id:String):String
 	{
-		return switch (id)
+		var fallback:String = switch (id)
 		{
 			case 'no-licenses': 'No License';
 			case 'creative-commons': 'Creative Commons';
@@ -2343,7 +2345,8 @@ class FreeplayState extends MusicBeatState
 			case 'public-execution': 'Public Performance';
 			case 'sync': 'Sync';
 			default: id.split('-').map((part) -> part.length > 0 ? part.charAt(0).toUpperCase() + part.substr(1) : part).join(' ');
-		}
+		};
+		return Language.getPhrase('freeplay.licenses.$id', fallback);
 	}
 
 	function loadRoundedGraphic(target:FlxSprite, graphic:FlxGraphic, width:Int, height:Int, radius:Float, cacheTag:String):Bool
@@ -3664,11 +3667,12 @@ class DifficultySelector
 
 			if (score > 0)
 			{
-				scoreText.text = 'Score: ${score}\nAccuracy: ${AccuracyTools.format(accuracy)}';
+				scoreText.text = Language.getPhrase('freeplay.score.details', 'Score: {1}\nAccuracy: {2}',
+					[score, AccuracyTools.format(accuracy)]);
 			}
 			else
 			{
-				scoreText.text = Language.getPhrase('new_no_score', 'No score yet');
+				scoreText.text = Language.getPhrase('freeplay.score.none', Language.getPhrase('new_no_score', 'No score yet'));
 			}
 			#else
 			scoreText.text = '';

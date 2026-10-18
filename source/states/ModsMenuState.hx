@@ -11,28 +11,17 @@ import objects.AttachedSprite;
 import options.ModSettingsSubState;
 import openfl.display.BitmapData;
 import lime.utils.Assets;
-import flixel.tweens.FlxTween;
-import flixel.util.FlxAxes;
-import flixel.addons.display.FlxBackdrop;
-import flixel.util.FlxGradient;
+
 
 class ModsMenuState extends MusicBeatState {
-	static final FILTERS:Array<String> = ['ALL', 'ENABLED', 'DISABLED', 'LAUNCHABLE'];
-	public static var defaultColor:FlxColor = 0xFF665AFF;
+	static final FILTER_KEYS:Array<String> = ['all', 'enabled', 'disabled', 'launchable'];
 
 	var bg:FlxSprite;
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Play_Checker'), flixel.util.FlxAxes.XY);
-	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
-	var side:FlxSprite;
 	var modsList:ModsList;
 	var modsGroup:FlxTypedGroup<ModItem>; // every installed mod
 	var view:Array<ModItem> = []; // the filtered/searched subset shown in the list
 	var curSel:Int = 0;
 	var scrollOffset:Int = 0; // index of the first visible row (top-anchored)
-	var intendedColor:Int;
-	var colorTween:FlxTween;
-	var colorTween2:FlxTween;
-	var colorTween3:FlxTween;
 
 	// header
 	var headerBar:FlxSprite;
@@ -105,7 +94,7 @@ class ModsMenuState extends MusicBeatState {
 		backend.Language.reloadPhrases();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("In the Mod Browser", null);
+		DiscordClient.changePresence(Language.getPhrase('states.mods_menu.presence', 'In the Mod Browser'), null);
 		#end
 
 		var margin = 20.0;
@@ -118,20 +107,6 @@ class ModsMenuState extends MusicBeatState {
 		add(bg);
 		bg.screenCenter();
 
-		gradientBar.y = FlxG.height - gradientBar.height;
-		add(gradientBar);
-		gradientBar.scrollFactor.set(0, 0);
-
-		add(checker);
-		checker.scrollFactor.set(0, 0.07);
-
-		side = new FlxSprite(0).loadGraphic(Paths.image('MicUp/modsAsset'));
-		side.scrollFactor.x = 0;
-		side.scrollFactor.y = 0;
-		side.antialiasing = true;
-		side.screenCenter();
-		add(side);
-
 		// ---- Header ----
 		headerBar = FlxSpriteUtil.drawRoundRect(new FlxSprite(margin,
 			margin).makeGraphic(Std.int(FlxG.width - margin * 2), Std.int(headerH), FlxColor.TRANSPARENT), 0, 0,
@@ -139,16 +114,16 @@ class ModsMenuState extends MusicBeatState {
 		headerBar.alpha = 0.6;
 		add(headerBar);
 
-		titleTxt = new Alphabet(margin + 18, margin + 8, 'MODS', true);
+		titleTxt = new Alphabet(margin + 18, margin + 8, Language.getPhrase('states.mods_menu.title', 'MODS'), true);
 		titleTxt.setScale(0.6);
 		add(titleTxt);
 
-		filterTxt = new FlxText(0, margin + 16, 0, 'FILTER: ALL', 22);
+		filterTxt = new FlxText(0, margin + 16, 0, filterText(), 22);
 		filterTxt.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		filterTxt.borderSize = 1.5;
 		add(filterTxt);
 
-		searchTxt = new FlxText(0, margin + 16, 0, 'SEARCH', 22);
+		searchTxt = new FlxText(0, margin + 16, 0, searchText(), 22);
 		searchTxt.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		searchTxt.borderSize = 1.5;
 		add(searchTxt);
@@ -204,19 +179,20 @@ class ModsMenuState extends MusicBeatState {
 		var cy = contentY + 14;
 		contentTopY = cy;
 
-		descHeader = sectionHeader(cx, cy, 'DESCRIPTION');
+		descHeader = sectionHeader(cx, cy, Language.getPhrase('states.mods_menu.sections.description', 'DESCRIPTION'));
 		cy += 28;
 		descTxt = sectionBody(cx, cy, cw, 78);
 		cy += 84;
-		featHeader = sectionHeader(cx, cy, 'FEATURES');
+		featHeader = sectionHeader(cx, cy, Language.getPhrase('states.mods_menu.sections.features', 'FEATURES'));
 		cy += 28;
 		featTxt = sectionBody(cx, cy, cw, 66);
 		cy += 72;
-		clHeader = sectionHeader(cx, cy, 'CHANGELOG');
+		clHeader = sectionHeader(cx, cy, Language.getPhrase('states.mods_menu.sections.changelog', 'CHANGELOG'));
 		cy += 28;
 		clTxt = sectionBody(cx, cy, cw, Std.int(contentY + contentH - cy - 30));
 
-		modRestartText = new FlxText(cx, contentY + contentH - 24, cw, '* Moving/Toggling this mod will restart the game.', 14);
+		modRestartText = new FlxText(cx, contentY + contentH - 24, cw,
+			Language.getPhrase('states.mods_menu.restart_notice', '* Moving/Toggling this mod will restart the game.'), 14);
 		modRestartText.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, RIGHT);
 		modRestartText.alpha = 0.8;
 		add(modRestartText);
@@ -232,37 +208,43 @@ class ModsMenuState extends MusicBeatState {
 		var btnW = Std.int((barW - 30) / 4);
 		var bh = Std.int(bottomH - 8);
 
-		launchBtn = new MenuButton(margin, barY, btnW, bh, Language.getPhrase('launch_button', 'LAUNCH'), launchSelected);
+		launchBtn = new MenuButton(margin, barY, btnW, bh,
+			Language.getPhrase('states.mods_menu.buttons.launch', Language.getPhrase('launch_button', 'LAUNCH')), launchSelected);
 		launchBtn.bg.color = FlxColor.GREEN;
 		launchBtn.focusChangeCallback = function(f) if (!f)
 			launchBtn.bg.color = FlxColor.GREEN;
 		add(launchBtn);
 
-		enableBtn = new MenuButton(margin + (btnW + 10), barY, btnW, bh, Language.getPhrase('enable_button', 'ENABLE'), toggleSelected);
+		enableBtn = new MenuButton(margin + (btnW + 10), barY, btnW, bh,
+			Language.getPhrase('states.mods_menu.buttons.enable', Language.getPhrase('enable_button', 'ENABLE')), toggleSelected);
 		add(enableBtn);
 
-		settingsBtn = new MenuButton(margin + (btnW + 10) * 2, barY, btnW, bh, Language.getPhrase('settings_button', 'SETTINGS'), openSelectedSettings);
+		settingsBtn = new MenuButton(margin + (btnW + 10) * 2, barY, btnW, bh,
+			Language.getPhrase('states.mods_menu.buttons.settings', Language.getPhrase('settings_button', 'SETTINGS')), openSelectedSettings);
 		add(settingsBtn);
 
-		reloadBtn = new MenuButton(margin + (btnW + 10) * 3, barY, btnW, bh, Language.getPhrase('reload_button', 'RELOAD'), reload);
+		reloadBtn = new MenuButton(margin + (btnW + 10) * 3, barY, btnW, bh,
+			Language.getPhrase('states.mods_menu.buttons.reload', Language.getPhrase('reload_button', 'RELOAD')), reload);
 		add(reloadBtn);
 
 		add(modsGroup);
 
 		hintBar = new FlxText(margin, FlxG.height - 18, FlxG.width - margin * 2,
-			'UP/DOWN Select   L/R Reorder   ENTER Launch   SPACE On/Off (SHIFT=All)   TAB Settings   Y Security   F Filter   / Search   ESC Exit',
+			Language.getPhrase('states.mods_menu.hint',
+				'UP/DOWN Select   L/R Reorder   ENTER Launch   SPACE On/Off (SHIFT=All)   TAB Settings   Y Security   F Filter   / Search   ESC Exit'),
 			15);
 		hintBar.setFormat(Paths.font("vcr.ttf"), 15, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		hintBar.alpha = 0.7;
 		add(hintBar);
 
 		// align right-aligned header labels
-		searchTxt.x = FlxG.width - margin - 18 - filterWidthOf('FILTER: LAUNCHABLE') - 120 - searchTxt.width;
+		searchTxt.x = FlxG.width - margin - 18 - filterWidthOf(filterText(3)) - 120 - searchTxt.width;
 		filterTxt.x = FlxG.width - margin - 18 - filterTxt.width;
 
 		// no-mods overlay
 		if (modsList.all.length < 1) {
-			noModsTxt = new FlxText(rightX, 0, rightW, Language.getPhrase('no_mods_installed', 'NO MODS INSTALLED\nPRESS BACK TO EXIT OR INSTALL A MOD'), 32);
+			noModsTxt = new FlxText(rightX, 0, rightW, Language.getPhrase('states.mods_menu.empty',
+				Language.getPhrase('no_mods_installed', 'NO MODS INSTALLED\nPRESS BACK TO EXIT OR INSTALL A MOD')), 32);
 			noModsTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			noModsTxt.borderSize = 2;
 			noModsTxt.screenCenter(Y);
@@ -278,16 +260,10 @@ class ModsMenuState extends MusicBeatState {
 					break;
 				}
 		}
-
-		intendedColor = bg.color;
 		layoutList();
 		updateDetail();
 		_lastControllerMode = controls.controllerMode;
 		super.create();
-
-		FlxG.camera.zoom = 0.6;
-		FlxG.camera.alpha = 0;
-		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 
 		#if mobile
 		addTouchPad('FULL', 'A_B');
@@ -300,6 +276,27 @@ class ModsMenuState extends MusicBeatState {
 		var w = t.width;
 		t.destroy();
 		return w;
+	}
+
+	inline function filterLabel(?mode:Int):String {
+		var index:Int = mode == null ? filterMode : mode;
+		var key:String = FILTER_KEYS[index];
+		var fallback:String = switch (index) {
+			case 1: 'ENABLED';
+			case 2: 'DISABLED';
+			case 3: 'LAUNCHABLE';
+			default: 'ALL';
+		};
+		return Language.getPhrase('states.mods_menu.filters.$key', fallback);
+	}
+
+	inline function filterText(?mode:Int):String
+		return Language.getPhrase('states.mods_menu.filter', 'FILTER: {1}', [filterLabel(mode)]);
+
+	inline function searchText(?editing:Bool = false):String {
+		if (query.length == 0 && !editing)
+			return Language.getPhrase('states.mods_menu.search', 'SEARCH');
+		return Language.getPhrase('states.mods_menu.search_query', 'SEARCH: {1}{2}', [query, editing ? '_' : '']);
 	}
 
 	function sectionHeader(x:Float, y:Float, label:String):FlxText {
@@ -376,15 +373,11 @@ class ModsMenuState extends MusicBeatState {
 				// first BACK clears the filter/search, second leaves
 				query = '';
 				filterMode = 0;
-				searchTxt.text = 'SEARCH';
+				searchTxt.text = searchText();
 				applyView();
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				return;
 			}
-			FlxTween.tween(FlxG.camera, { zoom: 2}, 0.4, { ease: FlxEase.expoIn});
-			FlxTween.tween(bg, { y: 0-bg.height}, 0.4, { ease: FlxEase.expoIn });
-			FlxTween.tween(side, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
-			FlxTween.tween(checker, { alpha:0}, 0.4, { ease: FlxEase.quartInOut});
 			exitMenu();
 			return;
 		}
@@ -468,8 +461,6 @@ class ModsMenuState extends MusicBeatState {
 		}
 
 		super.update(elapsed);
-		checker.x -= -0.27 / (ClientPrefs.data.framerate / 60);
-		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
 	}
 
 	// ──────────────────────────────────────────────────── navigation ──
@@ -519,7 +510,7 @@ class ModsMenuState extends MusicBeatState {
 		if (curSel > view.length - 1)
 			curSel = Std.int(Math.max(0, view.length - 1));
 
-		filterTxt.text = 'FILTER: ' + FILTERS[filterMode];
+		filterTxt.text = filterText();
 		layoutList();
 		updateDetail();
 	}
@@ -572,8 +563,6 @@ class ModsMenuState extends MusicBeatState {
 
 		FlxTween.cancelTweensOf(bg);
 		FlxTween.color(bg, 0.5, bg.color, m.bgColor);
-		FlxTween.color(checker, 0.5, checker.color, m.checkerColor);
-		FlxTween.color(side, 0.5, side.color, m.sideColor);
 
 		bannerImg.clipRect = null;
 		if (m.bannerPath != null) {
@@ -664,7 +653,11 @@ class ModsMenuState extends MusicBeatState {
 
 		var lockedGlobal:Bool = Mods.isRequiredGlobalMod(m.folder);
 		var enabled = lockedGlobal || !modsList.disabled.contains(m.folder);
-		enableBtn.setText(lockedGlobal ? Language.getPhrase('enabled_button', 'ENABLED') : (enabled ? Language.getPhrase('disable_button', 'DISABLE') : Language.getPhrase('enable_button', 'ENABLE')));
+		enableBtn.setText(lockedGlobal
+			? Language.getPhrase('states.mods_menu.buttons.enabled', Language.getPhrase('enabled_button', 'ENABLED'))
+			: (enabled
+				? Language.getPhrase('states.mods_menu.buttons.disable', Language.getPhrase('disable_button', 'DISABLE'))
+				: Language.getPhrase('states.mods_menu.buttons.enable', Language.getPhrase('enable_button', 'ENABLE'))));
 		enableBtn.enabled = !lockedGlobal;
 		settingsBtn.enabled = (m.settings != null && m.settings.length > 0);
 		launchBtn.enabled = enabled && m.launchable;
@@ -675,13 +668,13 @@ class ModsMenuState extends MusicBeatState {
 	function updateLaunchStatus(m:ModItem, enabled:Bool) {
 		#if HSCRIPT_ALLOWED
 		if (!enabled) {
-			launchStatus.text = 'Disabled - enable to launch';
+			launchStatus.text = Language.getPhrase('states.mods_menu.status.disabled', 'Disabled - enable to launch');
 			launchStatus.color = FlxColor.GRAY;
 		} else if (m.launchable) {
-			launchStatus.text = '> Press ENTER to Launch';
+			launchStatus.text = Language.getPhrase('states.mods_menu.status.launch', '> Press ENTER to Launch');
 			launchStatus.color = 0xFF66FF66;
 		} else {
-			launchStatus.text = 'No launchable states';
+			launchStatus.text = Language.getPhrase('states.mods_menu.status.no_launchable_states', 'No launchable states');
 			launchStatus.color = FlxColor.GRAY;
 		}
 		#else
@@ -721,7 +714,7 @@ class ModsMenuState extends MusicBeatState {
 		var mod = m.folder;
 		if (Mods.isRequiredGlobalMod(mod)) {
 			FlxG.sound.play(Paths.sound('cancelMenu'), 0.6);
-			launchStatus.text = 'Base game is always loaded globally';
+			launchStatus.text = Language.getPhrase('states.mods_menu.status.base_game_global', 'Base game is always loaded globally');
 			launchStatus.color = 0xFF66FF66;
 			return;
 		}
@@ -733,7 +726,8 @@ class ModsMenuState extends MusicBeatState {
 			#if MODS_ALLOWED
 			if (ClientPrefs.data.modSecure && backend.ModSecurity.hasFindings(mod)) {
 				FlxG.sound.play(Paths.sound('confirmMenu'), 0.6);
-				launchStatus.text = 'Sensitive scripts detected - choose TRUST to enable';
+				launchStatus.text = Language.getPhrase('states.mods_menu.status.sensitive_scripts',
+					'Sensitive scripts detected - choose TRUST to enable');
 				launchStatus.color = FlxColor.YELLOW;
 				openSubState(new substates.ModSecuritySubstate([mod], function(folder:String, allowed:Bool) {
 					if (allowed)
@@ -742,7 +736,8 @@ class ModsMenuState extends MusicBeatState {
 					}
 					else
 					{
-						launchStatus.text = 'Activation denied - mod stayed disabled';
+						launchStatus.text = Language.getPhrase('states.mods_menu.status.activation_denied',
+							'Activation denied - mod stayed disabled');
 						launchStatus.color = 0xFFFF6666;
 						applyView();
 					}
@@ -767,7 +762,7 @@ class ModsMenuState extends MusicBeatState {
 			modsList.enabled.push(folder);
 		if (item != null && item.mustRestart)
 			waitingToRestart = true;
-		launchStatus.text = 'Trusted - mod enabled';
+		launchStatus.text = Language.getPhrase('states.mods_menu.status.trusted', 'Trusted - mod enabled');
 		launchStatus.color = 0xFF66FF66;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		applyView();
@@ -789,7 +784,8 @@ class ModsMenuState extends MusicBeatState {
 		// trust/block a mod's scripts. Only the master toggle gates it.
 		if (!ClientPrefs.data.modSecure) {
 			FlxG.sound.play(Paths.sound('cancelMenu'), 0.6);
-			launchStatus.text = 'Mod Security is disabled (enable it in Options)';
+			launchStatus.text = Language.getPhrase('states.mods_menu.status.security_disabled',
+				'Mod Security is disabled (enable it in Options)');
 			launchStatus.color = FlxColor.YELLOW;
 			return;
 		}
@@ -859,14 +855,14 @@ class ModsMenuState extends MusicBeatState {
 	}
 
 	function cycleFilter() {
-		filterMode = (filterMode + 1) % FILTERS.length;
+		filterMode = (filterMode + 1) % FILTER_KEYS.length;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		applyView();
 	}
 
 	function beginSearch() {
 		searching = true;
-		searchTxt.text = 'SEARCH: ' + query + '_';
+		searchTxt.text = searchText(true);
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		#if android
 		mobile.backend.SoftKeyboard.open(searchType, searchBackspace, endSearch);
@@ -875,21 +871,21 @@ class ModsMenuState extends MusicBeatState {
 
 	function endSearch() {
 		searching = false;
-		searchTxt.text = query.length > 0 ? 'SEARCH: ' + query : 'SEARCH';
+		searchTxt.text = searchText();
 		#if android mobile.backend.SoftKeyboard.close(); #end
 	}
 
 	#if android
 	function searchType(input:String) {
 		query += input.toLowerCase();
-		searchTxt.text = 'SEARCH: ' + query + '_';
+		searchTxt.text = searchText(true);
 		applyView();
 	}
 
 	function searchBackspace() {
 		if (query.length > 0) {
 			query = query.substr(0, query.length - 1);
-			searchTxt.text = 'SEARCH: ' + query + '_';
+			searchTxt.text = searchText(true);
 			applyView();
 		}
 	}
@@ -913,7 +909,7 @@ class ModsMenuState extends MusicBeatState {
 		else
 			return;
 
-		searchTxt.text = 'SEARCH: ' + query + '_';
+		searchTxt.text = searchText(true);
 		applyView();
 	}
 
@@ -987,12 +983,10 @@ class ModItem extends FlxSpriteGroup {
 	public var totalFrames:Int = 0;
 
 	// options
-	public var name:String = 'Unknown Mod';
-	public var desc:String = 'No description provided.';
+	public var name:String = '';
+	public var desc:String = '';
 	public var iconFps:Int = 10;
 	public var bgColor:FlxColor = 0xFF665AFF;
-	public var checkerColor:FlxColor = 0xFF665AFF;
-	public var sideColor:FlxColor = 0xFF665AFF;
 	public var pack:Dynamic = null;
 	public var folder:String = 'unknownMod';
 	public var mustRestart:Bool = false;
@@ -1013,6 +1007,8 @@ class ModItem extends FlxSpriteGroup {
 		super();
 
 		this.folder = folder;
+		name = Language.getPhrase('states.mods_menu.unknown_mod', 'Unknown Mod');
+		desc = Language.getPhrase('states.mods_menu.no_description', 'No description provided.');
 		pack = Mods.getPack(folder);
 
 		var path:String = Paths.mods('$folder/data/settings.json');
@@ -1020,8 +1016,8 @@ class ModItem extends FlxSpriteGroup {
 			try {
 				settings = cast tjson.TJSON.parse(File.getContent(path));
 			} catch (e:Dynamic) {
-				var errorTitle = 'Mod name: ' + Mods.currentModDirectory;
-				var errorMsg = 'An error occurred: $e';
+				var errorTitle = Language.getPhrase('states.mods_menu.settings_error.title', 'Mod name: {1}', [Mods.currentModDirectory]);
+				var errorMsg = Language.getPhrase('states.mods_menu.settings_error.message', 'An error occurred: {1}', [e]);
 				CoolUtil.showPopUp(errorMsg, errorTitle);
 				trace('$errorTitle - $errorMsg');
 			}
@@ -1085,10 +1081,6 @@ class ModItem extends FlxSpriteGroup {
 				var color:Array<Dynamic> = cast packColor;
 				this.bgColor = FlxColor.fromRGB(color[0] != null ? color[0] : 170, color[1] != null ? color[1] : 0,
 					color[2] != null ? color[2] : 255);
-				this.checkerColor = FlxColor.fromRGB(color[0] != null ? color[0] : 170, color[1] != null ? color[1] : 0,
-					color[2] != null ? color[2] : 255);
-				this.sideColor = FlxColor.fromRGB(color[0] != null ? color[0] : 170, color[1] != null ? color[1] : 0,
-					color[2] != null ? color[2] : 255);
 			}
 			this.mustRestart = (packRestart == true);
 		}
@@ -1137,10 +1129,6 @@ class ModItem extends FlxSpriteGroup {
 
 class MenuButton extends FlxSpriteGroup {
 	public var bg:FlxSprite;
-	public var intendedColor:Int;
-	public var colorTween:FlxTween;
-	public var colorTween2:FlxTween;
-	public var colorTween3:FlxTween;
 	public var textOn:Alphabet;
 	public var textOff:Alphabet;
 	public var icon:FlxSprite;

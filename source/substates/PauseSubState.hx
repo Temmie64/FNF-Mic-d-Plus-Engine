@@ -4,7 +4,6 @@ import backend.Highscore;
 import backend.Song;
 import backend.Difficulty;
 import backend.LocaleUtils;
-import objects.HealthIcon;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -26,7 +25,6 @@ import backend.Paths;
 import backend.Language;
 import backend.AssetLoader;
 import haxe.Json;
-import states.play.HealthIconHud;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -48,10 +46,6 @@ class PauseSubState extends MusicBeatSubstate
 	public var menuItemsDefault:Array<String> = [];
 	public var difficultyChoices = [];
 	public var curSelected:Int = 0;
-	public var pausebg:FlxSprite;
-	public var pausebg1:FlxSprite;
-	public var iconBG:FlxSprite;
-	public var icon:HealthIcon;
 	public var pauseMusic:FlxSound;
 	public var practiceText:FlxText;
 	public var skipTimeText:FlxText;
@@ -135,7 +129,7 @@ class PauseSubState extends MusicBeatSubstate
 			var diff:String = Difficulty.getString(i);
 			difficultyChoices.push(diff);
 		}
-		difficultyChoices.push('BACK');
+		difficultyChoices.push('BACK'); // Internal action ID; translated only when rendered.
 
 		pauseMusic = new FlxSound();
 		var pauseSong:String = getPauseSong();
@@ -243,7 +237,9 @@ class PauseSubState extends MusicBeatSubstate
 		levelDifficulty.updateHitbox();
 		add(levelDifficulty);
 
-		var blueballedTxt:FlxText = new FlxText(safeX(20), safeY(15 + 56), 0, Language.getPhrase("blueballed", "Blueballed: {1}", [PlayState.deathCounter]),
+		var blueballedTxt:FlxText = new FlxText(safeX(20), safeY(15 + 56), 0,
+			Language.getPhrase('substates.pause.deaths', Language.getPhrase('blueballed', 'Blueballed: {1}', [PlayState.deathCounter]),
+				[PlayState.deathCounter]),
 			20);
 		blueballedTxt.scrollFactor.set();
 		blueballedTxt.setFormat(Paths.font('vcr.ttf'), 20);
@@ -251,14 +247,16 @@ class PauseSubState extends MusicBeatSubstate
 		add(blueballedTxt);
 
 		var author:String = getCurrentSongAuthor();
-		var authorTxt:FlxText = new FlxText(safeX(20), safeY(15 + 80), 0, author != null ? 'By: $author' : '', 16);
+		var authorTxt:FlxText = new FlxText(safeX(20), safeY(15 + 80), 0,
+			author != null ? Language.getPhrase('substates.pause.author', 'By: {1}', [author]) : '', 16);
 		authorTxt.scrollFactor.set();
 		authorTxt.setFormat(Paths.font('vcr.ttf'), 16);
 		authorTxt.updateHitbox();
 		authorTxt.visible = author != null;
 		add(authorTxt);
 
-		practiceText = new FlxText(safeX(20), safeY(15 + 101), 0, Language.getPhrase("Practice Mode").toUpperCase(), 32);
+		practiceText = new FlxText(safeX(20), safeY(15 + 101), 0,
+			Language.getPhrase('substates.pause.practice_mode', Language.getPhrase('Practice Mode', 'Practice Mode')).toUpperCase(), 32);
 		practiceText.scrollFactor.set();
 		practiceText.setFormat(Paths.font('vcr.ttf'), 24);
 		practiceText.x = safeX(safeWidth() - (practiceText.width + 20));
@@ -266,7 +264,8 @@ class PauseSubState extends MusicBeatSubstate
 		practiceText.visible = PlayState.instance.practiceMode;
 		add(practiceText);
 
-		var chartingText:FlxText = new FlxText(safeX(20), safeY(15 + 101), 0, Language.getPhrase("Charting Mode").toUpperCase(), 32);
+		var chartingText:FlxText = new FlxText(safeX(20), safeY(15 + 101), 0,
+			Language.getPhrase('substates.pause.charting_mode', Language.getPhrase('Charting Mode', 'Charting Mode')).toUpperCase(), 32);
 		chartingText.scrollFactor.set();
 		chartingText.setFormat(Paths.font('vcr.ttf'), 24);
 		chartingText.x = safeX(safeWidth() - (chartingText.width + 20));
@@ -473,11 +472,12 @@ class PauseSubState extends MusicBeatSubstate
 
 					var errorStr:String = e.message;
 					if (errorStr.startsWith('[lime.utils.Assets] ERROR:'))
-						errorStr = 'Missing file: ' + errorStr.substring(errorStr.indexOf(songLowercase), errorStr.length - 1); // Missing chart
+							errorStr = Language.getPhrase('substates.pause.errors.missing_file', 'Missing file: {1}',
+								[errorStr.substring(errorStr.indexOf(songLowercase), errorStr.length - 1)]); // Missing chart
 					else
 						errorStr += '\n\n' + e.stack;
 
-					missingText.text = 'ERROR WHILE LOADING CHART:\n$errorStr';
+					missingText.text = Language.getPhrase('substates.pause.errors.chart', 'ERROR WHILE LOADING CHART:\n{1}', [errorStr]);
 					missingText.screenCenter(Y);
 					missingText.visible = true;
 					missingTextBG.visible = true;
@@ -679,7 +679,9 @@ class PauseSubState extends MusicBeatSubstate
 
 		for (num => str in menuItems)
 		{
-			var item = new Alphabet(safeX(90), safeY(320), Language.getPhrase('pause_$str', str), true);
+			var key:String = str.toLowerCase().replace(' ', '_');
+			var item = new Alphabet(safeX(90), safeY(320), Language.getPhrase('substates.pause.menu.$key',
+				Language.getPhrase('pause_$str', str)), true);
 			item.isMenuItem = true;
 			item.targetY = num;
 			grpMenuShit.add(item);
@@ -712,9 +714,10 @@ class PauseSubState extends MusicBeatSubstate
 	}
 
 	function updateSkipTimeText()
-		skipTimeText.text = FlxStringUtil.formatTime(Math.max(0, Math.floor(curTime / 1000)), false)
-			+ ' / '
-			+ FlxStringUtil.formatTime(Math.max(0, Math.floor(FlxG.sound.music.length / 1000)), false);
+		skipTimeText.text = Language.getPhrase('substates.pause.time', '{1} / {2}', [
+			FlxStringUtil.formatTime(Math.max(0, Math.floor(curTime / 1000)), false),
+			FlxStringUtil.formatTime(Math.max(0, Math.floor(FlxG.sound.music.length / 1000)), false)
+		]);
 
 	function hasSkippableVideo():Bool
 	{
@@ -822,3 +825,4 @@ class PauseSubState extends MusicBeatSubstate
 	public function rebuildMenu():Void
 		regenMenu();
 }
+
