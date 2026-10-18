@@ -33,8 +33,8 @@ class LanguageSubState extends MusicBeatSubstate
 
 	public function new()
 	{
-		title = Language.getPhrase('options.menus.language.title', Language.getPhrase('language_menu', 'Language'));
-		rpcTitle = Language.getPhrase('options.menus.language.presence', 'Language Menu');
+		title = Language.getPhrase('language_menu', 'Language');
+		rpcTitle = 'Language Menu';
 
 		super();
 
@@ -56,8 +56,7 @@ class LanguageSubState extends MusicBeatSubstate
 		titleText.antialiasing = ClientPrefs.data.antialiasing;
 		add(titleText);
 
-		hintText = new FlxText(66, 80, 780,
-			Language.getPhrase('options.language.hint', Language.getPhrase('substates.language.hint', 'ACCEPT applies the selected language.')), 16);
+		hintText = new FlxText(66, 80, 780, Language.getPhrase('language_substate_hint', 'ACCEPT applies the selected language.'), 16);
 		hintText.setFormat(Paths.font("vcr.ttf"), 16, OptionsMenuTheme.bodyTextColor(), LEFT);
 		hintText.antialiasing = ClientPrefs.data.antialiasing;
 		add(hintText);
@@ -206,12 +205,11 @@ class LanguageSubState extends MusicBeatSubstate
 
 	function refreshLanguageText():Void
 	{
-		title = Language.getPhrase('options.menus.language.title', Language.getPhrase('language_menu', 'Language'));
+		title = Language.getPhrase('language_menu', 'Language');
 		if (titleText != null)
 			titleText.text = title;
 		if (hintText != null)
-			hintText.text = Language.getPhrase('options.language.hint',
-				Language.getPhrase('substates.language.hint', 'ACCEPT applies the selected language.'));
+			hintText.text = Language.getPhrase('language_substate_hint', 'ACCEPT applies the selected language.');
 
 		for (card in grpLanguages.members)
 		{
@@ -509,8 +507,7 @@ private class LanguageCard extends FlxSpriteGroup
 	public function setApplied(value:Bool):Void
 	{
 		applied = value;
-		appliedText.text = applied ? Language.getPhrase('options.language.applied_badge',
-			Language.getPhrase('substates.language.applied_badge', 'Active')) : '';
+		appliedText.text = applied ? Language.getPhrase('language_applied_badge', 'Active') : '';
 		positionMetaText();
 	}
 

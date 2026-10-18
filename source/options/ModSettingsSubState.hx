@@ -17,7 +17,7 @@ class ModSettingsSubState extends BaseOptionsMenu
 
 		title = '';
 		// title = name;
-		rpcTitle = Language.getPhrase('options.menus.mod_settings.presence', 'Mod Settings ({1})', [name]); // for Discord Rich Presence
+		rpcTitle = 'Mod Settings ($name)'; // for Discord Rich Presence
 
 		if (FlxG.save.data.modSettings == null)
 			FlxG.save.data.modSettings = new Map<String, Dynamic>();
@@ -163,9 +163,6 @@ class ModSettingsSubState extends BaseOptionsMenu
 
 	private function convertType(str:String):OptionType
 	{
-		if (str == null || str.trim().length == 0)
-			return BOOL;
-
 		switch (str.toLowerCase().trim())
 		{
 			case 'bool':

@@ -45,7 +45,7 @@ class CreditsState extends MusicBeatState
 		#end
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence(Language.getPhrase('states.credits.presence', 'In the Menus'), null);
+		DiscordClient.changePresence("In the Menus", null);
 		#end
 
 		persistentUpdate = true;
@@ -93,39 +93,39 @@ class CreditsState extends MusicBeatState
 				"9EFFAF"
 			],
 			[''],
-			[Language.getPhrase('states.credits.sections.plus_engine', 'Plus Engine Team')],
+			['Plus Engine Team'],
 			[
 				'Lenin Asto',
 				"len",
-				Language.getPhrase('states.credits.roles.lenin_asto', 'Programmer of Plus Engine'),
+				"Programmer of Plus Engine",
 				"https://www.youtube.com/@Lenin_Anonimo_Of",
 				"03FC88"
 			],
 			[
 				'sirthegamercoder',
 				'sir',
-				Language.getPhrase('states.credits.roles.sirthegamercoder', 'Indonesian translation and Helper coder of Plus Engine'),
+				'Indonesian translation and Helper coder of Plus Engine',
 				'https://bsky.app/profile/stgmd.bsky.social',
 				'7FDBFF'
 			],
 			[
 				'Andres',
 				'slushi',
-				Language.getPhrase('states.credits.roles.andres', 'Creator and owner of several codes used based on the Slushi Engine'),
+				'Creator and owner of several codes used based on the Slushi Engine',
 				'https://github.com/Slushi-Github',
 				'8FD9D1'
 			],
 			[
 				'TheoDev',
 				"theo",
-				Language.getPhrase('states.credits.roles.theodev', 'Owner, Lead coder of Funkin Modchart'),
+				"Owner, Lead coder of Funkin Modchart",
 				"https://github.com/TheoDevelops",
 				"FFB347"
 			],
 			[
 				"AutisticLulu",
 				"lulu",
-				Language.getPhrase('states.credits.roles.autistic_lulu', 'Psych Engine 1.0.x fixes and maintenance'),
+				"Psych Engine 1.0.x fixes and maintenance",
 				"https://github.com/MeguminBOT/FNF-PsychEngine",
 				"C7A0FF"
 			],
@@ -155,163 +155,163 @@ class CreditsState extends MusicBeatState
 				"A3DBFF"
 			],
 			[''],
-			[Language.getPhrase('states.credits.sections.mobile', 'Mobile Porting Team')],
+			['Mobile Porting Team'],
 			[
 				'HomuHomu833',
 				'homura',
-				Language.getPhrase('states.credits.roles.homuhomu833', 'Head Porter of Psych Engine and Author of linc_luajit-rewriten'),
+				'Head Porter of Psych Engine and Author of linc_luajit-rewriten',
 				'https://youtube.com/@HomuHomu833',
 				'FFE7C0'
 			],
 			[
 				'Karim Akra',
 				'karim',
-				Language.getPhrase('states.credits.roles.karim_akra', 'Second Porter of Psych Engine'),
+				'Second Porter of Psych Engine',
 				'https://youtube.com/@Karim0690',
 				'FFB4F0'
 			],
 			[
 				'Moxie',
 				'moxie',
-				Language.getPhrase('states.credits.roles.moxie', 'Helper of Psych Engine Mobile'),
+				'Helper of Psych Engine Mobile',
 				'https://twitter.com/moxie_specalist',
 				'F592C4'
 			],
 			[''],
-			[Language.getPhrase('states.credits.sections.psych_engine', 'Psych Engine Team')],
+			["Psych Engine Team"],
 			[
 				"Shadow Mario",
 				"shadowmario",
-				Language.getPhrase('states.credits.roles.shadow_mario', 'Main Programmer and Head of Psych Engine'),
+				"Main Programmer and Head of Psych Engine",
 				"https://ko-fi.com/shadowmario",
 				"444444"
 			],
 			[
 				"Riveren",
 				"riveren",
-				Language.getPhrase('states.credits.roles.riveren', 'Main Artist/Animator of Psych Engine'),
+				"Main Artist/Animator of Psych Engine",
 				"https://x.com/riverennn",
 				"14967B"
 			],
 			[
 				"bb-panzu",
 				"bb",
-				Language.getPhrase('states.credits.roles.bb_panzu', 'Ex-Programmer of Psych Engine'),
+				"Ex-Programmer of Psych Engine",
 				"https://x.com/bbsub3",
 				"3E813A"
 			],
 			[""],
-			[Language.getPhrase('states.credits.sections.contributors', 'Engine Contributors')],
+			["Engine Contributors"],
 			[
 				"crowplexus",
 				"crowplexus",
-				Language.getPhrase('states.credits.roles.crowplexus', 'Linux Support, HScript Iris, Input System v3, and Other PRs'),
+				"Linux Support, HScript Iris, Input System v3, and Other PRs",
 				"https://twitter.com/IamMorwen",
 				"CFCFCF"
 			],
 			[
 				"Kamizeta",
 				"kamizeta",
-				Language.getPhrase('states.credits.roles.kamizeta', "Creator of Pessy, Psych Engine's mascot."),
+				"Creator of Pessy, Psych Engine's mascot.",
 				"https://www.instagram.com/cewweey/",
 				"D21C11"
 			],
 			[
 				"MaxNeton",
 				"maxneton",
-				Language.getPhrase('states.credits.roles.maxneton', 'Loading Screen Easter Egg Artist/Animator.'),
+				"Loading Screen Easter Egg Artist/Animator.",
 				"https://bsky.app/profile/maxneton.bsky.social",
 				"3C2E4E"
 			],
 			[
 				"Keoiki",
 				"keoiki",
-				Language.getPhrase('states.credits.roles.keoiki', 'Note Splash Animations and Latin Alphabet'),
+				"Note Splash Animations and Latin Alphabet",
 				"https://x.com/Keoiki_",
 				"D2D2D2"
 			],
 			[
 				"SqirraRNG",
 				"sqirra",
-				Language.getPhrase('states.credits.roles.sqirrarng', "Crash Handler and Base code for\nChart Editor's Waveform"),
+				"Crash Handler and Base code for\nChart Editor's Waveform",
 				"https://x.com/gedehari",
 				"E1843A"
 			],
 			[
 				"EliteMasterEric",
 				"mastereric",
-				Language.getPhrase('states.credits.roles.elitemastereric', 'Runtime Shaders support and Other PRs'),
+				"Runtime Shaders support and Other PRs",
 				"https://x.com/EliteMasterEric",
 				"FFBD40"
 			],
 			[
 				"MAJigsaw77",
 				"majigsaw",
-				Language.getPhrase('states.credits.roles.majigsaw77', '.MP4 Video Loader Library (hxvlc)'),
+				".MP4 Video Loader Library (hxvlc)",
 				"https://x.com/MAJigsaw77",
 				"5F5F5F"
 			],
 			[
 				"iFlicky",
 				"flicky",
-				Language.getPhrase('states.credits.roles.iflicky', 'Composer of Psync and Tea Time\nAnd some sound effects'),
+				"Composer of Psync and Tea Time\nAnd some sound effects",
 				"https://x.com/flicky_i",
 				"9E29CF"
 			],
 			[
 				"KadeDev",
 				"kade",
-				Language.getPhrase('states.credits.roles.kadedev', 'Fixed some issues on Chart Editor and Other PRs'),
+				"Fixed some issues on Chart Editor and Other PRs",
 				"https://x.com/kade0912",
 				"64A250"
 			],
 			[
 				"superpowers04",
 				"superpowers04",
-				Language.getPhrase('states.credits.roles.superpowers04', 'LUA JIT Fork'),
+				"LUA JIT Fork",
 				"https://x.com/superpowers04",
 				"B957ED"
 			],
 			[
 				"CheemsAndFriends",
 				"cheems",
-				Language.getPhrase('states.credits.roles.cheems_and_friends', 'Creator of FlxAnimate'),
+				"Creator of FlxAnimate",
 				"https://x.com/CheemsnFriendos",
 				"E1E1E1"
 			],
 			[""],
-			[Language.getPhrase('states.credits.sections.funkin', "Funkin' Crew")],
+			["Funkin' Crew"],
 			[
 				"ninjamuffin99",
 				"ninjamuffin99",
-				Language.getPhrase('states.credits.roles.ninjamuffin99', "Programmer of Friday Night Funkin'"),
+				"Programmer of Friday Night Funkin'",
 				"https://x.com/ninja_muffin99",
 				"CF2D2D"
 			],
 			[
 				"PhantomArcade",
 				"phantomarcade",
-				Language.getPhrase('states.credits.roles.phantom_arcade', "Animator of Friday Night Funkin'"),
+				"Animator of Friday Night Funkin'",
 				"https://x.com/PhantomArcade3K",
 				"FADC45"
 			],
 			[
 				"evilsk8r",
 				"evilsk8r",
-				Language.getPhrase('states.credits.roles.evilsk8r', "Artist of Friday Night Funkin'"),
+				"Artist of Friday Night Funkin'",
 				"https://x.com/evilsk8r",
 				"5ABD4B"
 			],
 			[
 				"kawaisprite",
 				"kawaisprite",
-				Language.getPhrase('states.credits.roles.kawaisprite', "Composer of Friday Night Funkin'"),
+				"Composer of Friday Night Funkin'",
 				"https://x.com/kawaisprite",
 				"378FC7"
 			],
 			[""],
-			[Language.getPhrase('states.credits.sections.psych_discord', 'Psych Engine Discord')],
-			[Language.getPhrase('states.credits.psych_discord_join', 'Join the Psych Ward!'), "discord", "", "https://discord.gg/2ka77eMXDv", "5165F6"]
+			["Psych Engine Discord"],
+			["Join the Psych Ward!", "discord", "", "https://discord.gg/2ka77eMXDv", "5165F6"]
 		];
 
 		for (i in defaultList)
@@ -464,7 +464,7 @@ class CreditsState extends MusicBeatState
 			}
 			if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 			{
-				if (colorTween != null)
+				if(colorTween != null) {
 					colorTween.cancel();
 					colorTween2.cancel();
 					colorTween3.cancel();
@@ -511,25 +511,34 @@ class CreditsState extends MusicBeatState
 		while (unselectableCheck(curSelected));
 
 		var newColor:FlxColor = CoolUtil.colorFromString(creditsStuff[curSelected][4]);
-		if (newColor != intendedColor)
-		{
-			intendedColor = newColor;
-			if (colorTween != null)
+		if(newColor != intendedColor) {
+			if(colorTween != null) {
 				colorTween.cancel();
-
-			colorTween = FlxTween.color(bg, 0.8, bg.color, intendedColor, {
-				onComplete: function(twn:FlxTween) colorTween = null
+				colorTween2.cancel();
+				colorTween3.cancel();
+			}
+			intendedColor = newColor;
+			colorTween3 = FlxTween.color(side, 1, bg.color, intendedColor);
+			colorTween2 = FlxTween.color(checker, 1, bg.color, intendedColor);
+			colorTween = FlxTween.color(bg, 1, bg.color, intendedColor, {
+				onComplete: function(twn:FlxTween) {
+					colorTween = null;
+					colorTween2 = null;
+					colorTween3 = null;
+				}
 			});
 		}
 
-		for (num => item in grpOptions.members)
+		var bullShit:Int = 0;
+
+		for (item in grpOptions.members)
 		{
-			item.targetY = num - curSelected;
-			if (!unselectableCheck(num))
-			{
+			item.targetY = bullShit - curSelected;
+			bullShit++;
+
+			if(!unselectableCheck(bullShit-1)) {
 				item.alpha = 0.6;
-				if (item.targetY == 0)
-				{
+				if (item.targetY == 0) {
 					item.alpha = 1;
 				}
 			}

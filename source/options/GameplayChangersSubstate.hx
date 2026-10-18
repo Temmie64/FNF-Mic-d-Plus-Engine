@@ -1,6 +1,5 @@
 package options;
 
-import backend.AudioTempo;
 import backend.BotplayCPU;
 import objects.AttachedText;
 import objects.CheckboxThingie;
@@ -43,26 +42,15 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		optionsArray.push(option);
 
 		#if FLX_PITCH
-		var playbackRateOption:GameplayOption = new GameplayOption('Playback Rate', 'songspeed', FLOAT, 1);
-		playbackRateOption.scrollSpeed = 1;
-		playbackRateOption.minValue = 0.5;
-		playbackRateOption.maxValue = 3.0;
-		playbackRateOption.changeValue = 0.05;
-		playbackRateOption.displayFormat = '%vX';
-		playbackRateOption.decimals = 2;
-		optionsArray.push(playbackRateOption);
+		var option:GameplayOption = new GameplayOption('Playback Rate', 'songspeed', FLOAT, 1);
+		option.scrollSpeed = 1;
+		option.minValue = 0.5;
+		option.maxValue = 3.0;
+		option.changeValue = 0.05;
+		option.displayFormat = '%vX';
+		option.decimals = 2;
+		optionsArray.push(option);
 		var preservePitch = new GameplayOption('Preserve Voice Pitch', 'preservepitch', BOOL, false);
-		preservePitch.showCondition = function()
-			return cast(playbackRateOption.getValue(), Float) <= AudioTempo.MAX_STABLE_TEMPO;
-		playbackRateOption.onChange = function()
-		{
-			if (cast(playbackRateOption.getValue(), Float) > AudioTempo.MAX_STABLE_TEMPO && preservePitch.getValue() == true)
-				preservePitch.setValue(false);
-			reloadCheckboxes();
-			refreshOptionAlphas();
-		};
-		if (!preservePitch.isSelectable() && preservePitch.getValue() == true)
-			preservePitch.setValue(false);
 		optionsArray.push(preservePitch);
 		#end
 
@@ -423,17 +411,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		if (optionsArray == null || optionsArray.length == 0)
 			return;
 
-		curSelected = wrapSelectable(curSelected + change, change < 0 ? -1 : 1);
-		refreshOptionAlphas();
-		callOnCompanionScript('onGameplayChangerSelectionChange', [curSelected, curOption]);
-		FlxG.sound.play(Paths.sound('scrollMenu'));
-	}
-
-	function refreshOptionAlphas():Void
-	{
-		if (grpOptions == null || grpTexts == null || checkboxGroup == null)
-			return;
-
+		curSelected = wrapSelectable(curSelected + change);
 		for (num => item in grpOptions.members)
 		{
 			if (item == null)
@@ -450,6 +428,8 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		{
 			checkbox.alpha = optionAlpha(checkbox.ID, checkbox.ID == curSelected);
 		}
+		callOnCompanionScript('onGameplayChangerSelectionChange', [curSelected, curOption]);
+		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
 	function reloadCheckboxes()
@@ -582,16 +562,15 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		callOnCompanionScript('onGameplayChangerRebuild', [getOptionsCopy()]);
 	}
 
-	function wrapSelectable(index:Int, direction:Int = 1):Int
+	function wrapSelectable(index:Int):Int
 	{
 		if (optionsArray == null || optionsArray.length == 0)
 			return 0;
 
-		direction = direction < 0 ? -1 : 1;
 		var idx:Int = FlxMath.wrap(index, 0, optionsArray.length - 1);
 		for (i in 0...optionsArray.length)
 		{
-			var check:Int = FlxMath.wrap(idx + (i * direction), 0, optionsArray.length - 1);
+			var check:Int = FlxMath.wrap(idx + i, 0, optionsArray.length - 1);
 			if (optionsArray[check].isSelectable())
 				return check;
 		}
@@ -638,9 +617,8 @@ class GameplayOption
 	public function new(name:String, variable:String, type:OptionType, defaultValue:Dynamic = 'null variable value', ?options:Array<String> = null)
 	{
 		_name = name;
+		this.name = Language.getPhrase('setting_$name', name);
 		this.variable = variable;
-		var key = Option.normalizeTranslationKey(variable);
-		this.name = Language.getPhrase('options.gameplay_changers.$key.name', Language.getPhrase('setting_$name', name));
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.options = options;
@@ -727,10 +705,7 @@ class GameplayOption
 		if (child != null)
 		{
 			_text = newValue;
-			var key = Option.normalizeTranslationKey(variable);
-			var valueKey = Option.normalizeTranslationKey(_text);
-			child.text = Language.getPhrase('options.gameplay_changers.$key.values.$valueKey',
-				Language.getPhrase('setting_$_name-$_text', _text));
+			child.text = Language.getPhrase('setting_$_name-$_text', _text);
 			return _text;
 		}
 		return null;

@@ -80,7 +80,7 @@ class StoryMenuState extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence(Language.getPhrase('states.story_menu.presence', 'In the Menus'), null);
+		DiscordClient.changePresence("In the Menus", null);
 		#end
 
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
@@ -91,8 +91,8 @@ class StoryMenuState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
-				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_weeks',
-					'NO WEEKS ADDED FOR STORY MODE\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
+				new states.ErrorState("NO WEEKS ADDED FOR STORY MODE\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject
+					+ " to return to Main Menu.",
 					function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
 					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
 			return;
@@ -101,8 +101,37 @@ class StoryMenuState extends MusicBeatState
 		if (curWeek >= WeekData.weeksList.length)
 			curWeek = 0;
 
-		scoreText = new FlxText(safeX(10), 10, 0,
-			Language.getPhrase('states.story_menu.score', Language.getPhrase('week_score', 'WEEK SCORE: {1}'), [lerpScore]), 36);
+		storyModeBackground = new FlxSprite(-89).loadGraphic(Paths.image('MicUp/wBG_Main'));
+		storyModeBackground.scrollFactor.set(0, 0);
+		storyModeBackground.setGraphicSize(Std.int(storyModeBackground.width * 1.1));
+		storyModeBackground.updateHitbox();
+		storyModeBackground.screenCenter();
+		storyModeBackground.antialiasing = ClientPrefs.data.antialiasing;
+		storyModeBackground.alpha = 0;
+		add(storyModeBackground);
+
+		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00FF0000, 0x55F8FFAB, 0xAAFFDEF2], 1, 90, true);
+		gradientBar.y = FlxG.height - gradientBar.height;
+		gradientBar.scrollFactor.set(0, 0);
+		add(gradientBar);
+
+		checker = new FlxBackdrop(Paths.image('MicUp/Week_Checker'), flixel.util.FlxAxes.XY);
+		checker.scrollFactor.set(0, 0.07);
+		add(checker);
+
+		storyModeTop = new FlxSprite().loadGraphic(Paths.image('MicUp/Week_Top'));
+		storyModeTop.antialiasing = ClientPrefs.data.antialiasing;
+		storyModeTop.scrollFactor.set(0, 0);
+		storyModeTop.screenCenter();
+		storyModeTop.y = -storyModeTop.height;
+
+		storyModeBottom = new FlxSprite().loadGraphic(Paths.image('MicUp/Week_Bottom'));
+		storyModeBottom.antialiasing = ClientPrefs.data.antialiasing;
+		storyModeBottom.scrollFactor.set(0, 0);
+		storyModeBottom.screenCenter();
+		storyModeBottom.y = FlxG.height + storyModeBottom.height;
+
+		scoreText = new FlxText(safeX(10), 10, 0, Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]), 36);
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32);
 		scoreText.alignment = CENTER;
 		scoreText.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
@@ -171,8 +200,7 @@ class StoryMenuState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
-				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_visible_weeks',
-					'NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress {1} to return to Main Menu.', [reject]), null,
+				new states.ErrorState("NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress " + reject + " to return to Main Menu.", null,
 					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
 			return;
 		}
@@ -182,12 +210,12 @@ class StoryMenuState extends MusicBeatState
 
 		WeekData.setDirectoryFromWeek(loadedWeeks[0]);
 		var charArray:Array<String> = loadedWeeks[0].weekCharacters;
-		for (char in 0...3)
-		{
-			var weekCharacterThing:MenuCharacter = new MenuCharacter(safeX((safeWidth() * 0.25) * (1 + char) - 150), charArray[char]);
-			weekCharacterThing.y += 70;
-			grpWeekCharacters.add(weekCharacterThing);
-		}
+		weekCharacterThing = new MenuCharacter((FlxG.width * 0.25) * 1 - 150, charArray[0]);
+		weekCharacterThing.scale.set(0.8, 0.8);
+		weekCharacterThing.updateHitbox();
+		weekCharacterThing.x = 1240 - weekCharacterThing.width;
+		weekCharacterThing.y = 300;
+		grpWeekCharacters.add(weekCharacterThing);
 
 		difficultySelectors = new FlxGroup();
 		add(difficultySelectors);
@@ -278,7 +306,8 @@ class StoryMenuState extends MusicBeatState
 			if (Math.abs(intendedScore - lerpScore) < 10)
 				lerpScore = intendedScore;
 
-			scoreText.text = Language.getPhrase('states.story_menu.score', Language.getPhrase('week_score', 'WEEK SCORE: {1}'), [lerpScore]);
+			scoreText.text = Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]);
+			scoreText.x = safeX((safeWidth() - scoreText.width) / 2);
 		}
 
 		// FlxG.watch.addQuick('font', scoreText.font);

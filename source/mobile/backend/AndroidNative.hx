@@ -3,7 +3,6 @@ package mobile.backend;
 #if android
 import android.Tools;
 import android.widget.Toast;
-import lime.system.JNI;
 #end
 
 class AndroidNative
@@ -13,11 +12,14 @@ class AndroidNative
 		#if android
 		try
 		{
-			// The bridge always marshals this call to Android's UI thread. Sending it
-			// through ThreadUtil could leave the dialog queued behind unrelated work
-			// and reported success even when that worker later failed.
-			return JNI.createStaticMethod('com/leninasto/plusengine/EngineAndroidBridge', 'showAlert',
-				'(Ljava/lang/String;Ljava/lang/String;)Z', false, true)(title, message);
+			backend.ThreadUtil.execAsync(function()
+			{
+				try
+					Tools.showAlertDialog(title, message, {name: "OK", func: null}, null)
+				catch(e:Dynamic)
+					trace('Android alert dialog failed: $e');
+			});
+			return true;
 		}
 		catch(e:Dynamic)
 		{

@@ -484,10 +484,7 @@ class TitleState extends MusicBeatState
 		}
 
 		if (swagGoodArray.length == 0)
-			swagGoodArray.push([
-				Language.getPhrase('states.title.intro.fallback_first', 'Psych Engine'),
-				Language.getPhrase('states.title.intro.fallback_second', 'Plus Engine')
-			]);
+			swagGoodArray.push(['Psych Engine', 'Plus Engine']);
 
 		return swagGoodArray;
 	}
@@ -768,9 +765,9 @@ class TitleState extends MusicBeatState
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
 				case 3:
-					createCoolText([Language.getPhrase('states.title.intro.plus_engine_by', 'Plus Engine by'), 'Lenin Astoo'], -90);
+					createCoolText(['Plus Engine by', 'Lenin Astoo'], -90);
 				case 5:
-					createCoolText([Language.getPhrase('states.title.intro.mic_engine_by', 'Plus Engine by'), 'The One From 2005'], 250);
+					createCoolText(["Mic'd Plus by", "The One From 2005"], 250);
 				case 7:
 					deleteCoolText();
 					createCoolText(['A modification', 'for']);
