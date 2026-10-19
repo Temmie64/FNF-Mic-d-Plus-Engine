@@ -559,19 +559,21 @@ class FreeplayState extends MusicBeatState
 				{
 					colors = [146, 113, 253];
 				}
+
 				var checkerColors:Array<Int> = song[3];
 				if (checkerColors == null || checkerColors.length < 3)
 				{
-					checkerColors = [0, 0, 0];
+					checkerColors = colors;
 				}
+
 				var bottomColors:Array<Int> = song[4];
 				if (bottomColors == null || bottomColors.length < 3)
 				{
 					bottomColors = colors;
 				}
 				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]),
-					FlxColor.fromRGB(checkerColors[0], checkerColors[1], checkerColors[2]),
-					FlxColor.fromRGB(bottomColors[0], bottomColors[1], bottomColors[2]));
+				FlxColor.fromRGB(checkerColors[0], checkerColors[1], checkerColors[2]),
+				FlxColor.fromRGB(bottomColors[0], bottomColors[1], bottomColors[2]));
 			}
 		}
 		Mods.loadTopMod();
@@ -889,8 +891,7 @@ class FreeplayState extends MusicBeatState
 		});
 	}
 
-	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int, ?checkerColor:Int = 0xFF000000,
-		?bottomColor:Int = 0xFF000000)
+	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int, ?checkerColor:Int = 0xFF000000, ?bottomColor:Int = 0xFF000000)
 	{
 		songs.push(new SongMetadata(songName, weekNum, songCharacter, color, checkerColor, bottomColor));
 	}
@@ -1565,6 +1566,14 @@ class FreeplayState extends MusicBeatState
 				}
 				LoadingState.prepareToSong();
 				LoadingState.returnState = FreeplayStateSelector.create(); // Establecer estado de retorno
+				LoadingState.loadAndSwitchState(new PlayState());
+				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
+				stopMusicPlay = true;
+				destroyFreeplayVocals();
+				#if (MODS_ALLOWED && DISCORD_ALLOWED)
+				DiscordClient.loadModRPC();
+				#end
+
 				if (bgSwapTimer != null)
 					bgSwapTimer.cancel();
 				if (bgFadeTweenIn != null)
@@ -1576,13 +1585,6 @@ class FreeplayState extends MusicBeatState
 				FlxTween.tween(checker, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
 				FlxTween.tween(gradientBar, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
 				FlxTween.tween(side, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
-				LoadingState.loadAndSwitchState(new PlayState());
-				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
-				stopMusicPlay = true;
-				destroyFreeplayVocals();
-				#if (MODS_ALLOWED && DISCORD_ALLOWED)
-				DiscordClient.loadModRPC();
-				#end
 			}
 		}
 		else if (!searchFocused && (controls.RESET || touchY) && !player.playingMusic)
@@ -1733,6 +1735,7 @@ class FreeplayState extends MusicBeatState
 					FlxTween.color(vizBar, 1, vizBar.color, lightBar);
 			}
 		}
+		
 		if (newCheckerColor != intendedCheckerColor)
 		{
 			intendedCheckerColor = newCheckerColor;
@@ -3534,8 +3537,7 @@ class SongMetadata
 	public var folder:String = "";
 	public var lastDifficulty:String = null;
 
-	public function new(song:String, week:Int, songCharacter:String, color:Int, checkerColor:Int = 0xFF000000,
-		bottomColor:Int = 0xFF000000)
+	public function new(song:String, week:Int, songCharacter:String, color:Int, checkerColor:Int = 0xFF000000, bottomColor:Int = 0xFF000000)
 	{
 		this.songName = song;
 		this.week = week;
@@ -3830,4 +3832,3 @@ class DifficultySelector
 		}
 	}
 }
-
