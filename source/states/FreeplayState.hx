@@ -1402,18 +1402,6 @@ class FreeplayState extends MusicBeatState
 				}
 				playFreeplayMenuMusic(0.7);
 				stopMusicPlay = true;
-				if (bgSwapTimer != null)
-					bgSwapTimer.cancel();
-				if (bgFadeTweenIn != null)
-					bgFadeTweenIn.cancel();
-				if (bgFadeTweenOut != null)
-					bgFadeTweenOut.cancel();
-				FlxTween.tween(FlxG.camera, {zoom: 0.6, alpha: -0.6}, 0.7, {ease: FlxEase.quartInOut});
-				FlxTween.tween(bg, {alpha: 0}, 0.7, {ease: FlxEase.quartInOut});
-				FlxTween.tween(bgTransition, {alpha: 0}, 0.7, {ease: FlxEase.quartInOut});
-				FlxTween.tween(checker, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-				FlxTween.tween(gradientBar, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-				FlxTween.tween(side, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				MusicBeatState.switchState(backend.ScriptableState.tryCreate('PlaySelectionState', new PlaySelectionState()));
 			}
 		}
@@ -1573,18 +1561,6 @@ class FreeplayState extends MusicBeatState
 				#if (MODS_ALLOWED && DISCORD_ALLOWED)
 				DiscordClient.loadModRPC();
 				#end
-
-				if (bgSwapTimer != null)
-					bgSwapTimer.cancel();
-				if (bgFadeTweenIn != null)
-					bgFadeTweenIn.cancel();
-				if (bgFadeTweenOut != null)
-					bgFadeTweenOut.cancel();
-				FlxTween.tween(bg, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
-				FlxTween.tween(bgTransition, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
-				FlxTween.tween(checker, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
-				FlxTween.tween(gradientBar, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
-				FlxTween.tween(side, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 			}
 		}
 		else if (!searchFocused && (controls.RESET || touchY) && !player.playingMusic)
@@ -3832,4 +3808,3 @@ class DifficultySelector
 		}
 	}
 }
-
