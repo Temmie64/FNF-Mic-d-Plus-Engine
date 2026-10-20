@@ -489,11 +489,6 @@ class FreeplayState_Psych extends MusicBeatState
 			else
 			{
 				persistentUpdate = false;
-				if(colorTween != null) {
-					colorTween.cancel();
-					colorTween2.cancel();
-					colorTween3.cancel();
-				}
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				MusicBeatState.switchState(new PlaySelection());
 				FlxTween.tween(FlxG.camera, {zoom: 0.6, alpha: -0.6}, 0.7, {ease: FlxEase.quartInOut});
