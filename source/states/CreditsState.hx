@@ -93,7 +93,7 @@ class CreditsState extends MusicBeatState
 				"9EFFAF"
 			],
 			[''],
-			['Plus Engine Team'],
+			[Language.getPhrase('states.credits.sections.plus_engine', 'Plus Engine Team')],
 			[
 				'Lenin Asto',
 				"len",
@@ -155,7 +155,7 @@ class CreditsState extends MusicBeatState
 				"A3DBFF"
 			],
 			[''],
-			['Mobile Porting Team'],
+			[Language.getPhrase('states.credits.sections.mobile', 'Mobile Porting Team')],
 			[
 				'HomuHomu833',
 				'homura',

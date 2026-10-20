@@ -3832,3 +3832,4 @@ class DifficultySelector
 		}
 	}
 }
+
