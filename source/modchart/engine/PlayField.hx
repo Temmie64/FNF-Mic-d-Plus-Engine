@@ -14,6 +14,7 @@ import modchart.backend.graphics.*;
 import modchart.backend.graphics.renderers.*;
 import modchart.engine.events.types.*;
 import openfl.geom.Matrix;
+import backend.native.NativeGeometry;
 
 using flixel.util.FlxColorTransformUtil;
 
@@ -140,6 +141,10 @@ final class PlayField extends FlxSprite
 	public inline function getReceptorPathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
 			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
 		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR);
+
+	public inline function getSplashPathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
+			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.SPLASH);
 
 	public inline function addEvent(event:Event)
 	{
@@ -339,15 +344,7 @@ final class PlayField extends FlxSprite
 		// 	matrix.ty = Math.floor(matrix.ty);
 		// }
 
-		for (c in 0...vc)
-		{
-			var i = c * 2;
-			var x = vertex[i];
-			var y = vertex[i + 1];
-
-			vertex[i] = matrix.transformX(x, y);
-			vertex[i + 1] = matrix.transformY(x, y);
-		}
+		NativeGeometry.affine2D(vertex, matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 		}
 
 		final identityColor = colorTransform.redMultiplier == 1 && colorTransform.greenMultiplier == 1

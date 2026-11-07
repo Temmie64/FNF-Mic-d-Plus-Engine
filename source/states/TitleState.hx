@@ -3,6 +3,7 @@ package states;
 import backend.AssetLoader;
 import backend.ClientPrefs;
 import flixel.input.keyboard.FlxKey;
+import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
@@ -44,6 +45,7 @@ class TitleState extends MusicBeatState
 
 	public static var initialized:Bool = false;
 	public static var introVideoPlayed:Bool = false;
+	static var loadedModContext:String = null;
 
 	public var forceShowIntro:Bool = false; // Si debe forzar mostrar la intro
 
@@ -79,6 +81,22 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
+		#if MODS_ALLOWED
+		// TitleState can be reached after the mod browser, a reset or a launcher.
+		// Resolve its asset context here instead of depending on the previous
+		// state having done it in the correct order.
+		Mods.loadTopMod();
+		var modContext:String = Mods.currentModDirectory + '|' + Mods.getGlobalMods().join('|');
+		if (loadedModContext != modContext)
+		{
+			loadedModContext = modContext;
+			initialized = false;
+			introVideoPlayed = false;
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.stop();
+		}
+		#end
+
 		Paths.clearStoredMemory();
 		super.create();
 		Paths.clearUnusedMemory();
@@ -111,11 +129,10 @@ class TitleState extends MusicBeatState
 
 		if (!initialized || forceShowIntro)
 		{
-			if (FlxG.save.data != null && FlxG.save.data.fullscreen)
-			{
-				backend.WindowMode.applyFullscreenPreference(FlxG.save.data.fullscreen);
-				// trace('LOADED FULLSCREEN SETTING!!');
-			}
+			if (FlxG.save.data != null && Reflect.hasField(FlxG.save.data, 'fullscreen'))
+				backend.WindowMode.applyFullscreenPreference(Reflect.field(FlxG.save.data, 'fullscreen') == true);
+			else
+				backend.WindowMode.markFullscreenPreferenceReady();
 			persistentUpdate = true;
 			persistentDraw = true;
 			if (!initialized)
@@ -194,7 +211,10 @@ class TitleState extends MusicBeatState
 		introVideo = null;
 		if (video != null)
 		{
-			remove(video, true);
+			// VideoSprite owns the media teardown after it calls this callback.
+			// Destroying it here races the skip/end callback and can leave hxvlc
+			// trying to build a frame from an already disposed bitmap.
+			remove(video, false);
 		}
 		startIntro();
 	}
@@ -299,47 +319,11 @@ class TitleState extends MusicBeatState
 		ngSpr.screenCenter(X);
 		ngSpr.antialiasing = ClientPrefs.data.antialiasing;
 
-		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00ff0000, 0x553D0468, 0xAABF1943], 1, 90, true);
-		gradientBar.y = FlxG.height - gradientBar.height;
-		gradientBar.scale.y = 0;
-		gradientBar.updateHitbox();
-		if (swagShader != null)
-			gradientBar.shader = swagShader.shader;
-		FlxTween.tween(gradientBar, {'scale.y': 1.3}, 4, {ease: FlxEase.quadInOut});
-
-		fnfSpr = new FlxSprite(0, FlxG.height * 0.47).loadGraphic(Paths.image('logo'));
-		fnfSpr.visible = false;
-		fnfSpr.setGraphicSize(Std.int(fnfSpr.width * 0.8));
-		fnfSpr.updateHitbox();
-		fnfSpr.antialiasing = ClientPrefs.data.antialiasing;
-
-		FNF_Logo = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_Logo'));
-		FNF_EX = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_MU'));
-		FNF_EX.scale.set(0.6, 0.6);
-		FNF_Logo.scale.set(0.6, 0.6);
-		FNF_EX.updateHitbox();
-		FNF_Logo.updateHitbox();
-		FNF_EX.antialiasing = ClientPrefs.data.antialiasing;
-		FNF_Logo.antialiasing = ClientPrefs.data.antialiasing;
-		if (swagShader != null)
-		{
-			FNF_EX.shader = swagShader.shader;
-			FNF_Logo.shader = swagShader.shader;
-		}
-		FNF_EX.setPosition(-1500, 300);
-		FNF_Logo.setPosition(-1500, 300);
-
-		logoBl.visible = false;
-		titleText.visible = false;
 		add(gfDance);
-		add(credGroup);
-		add(gradientBar);
 		add(logoBl); // FNF Logo
 		add(titleText); // "Press Enter to Begin" text
+		add(credGroup);
 		add(ngSpr);
-		add(fnfSpr);
-		add(FNF_EX);
-		add(FNF_Logo);
 
 		if (initialized && !forceShowIntro)
 			skipIntro();

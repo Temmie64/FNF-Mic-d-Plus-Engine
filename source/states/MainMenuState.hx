@@ -29,24 +29,9 @@ class MainMenuState extends MusicBeatState
 	public static var fnfVersion:String = '0.2.8';
 	public static var plusEngineVersion:String = '1.3'; // Nothing interesting =)
 	public static var micUP:String = '2.0.3'; // Mic'd Up Engine version
-	public static var isOpt(get, never):String;
-	public static var psychEngineVersion(get, never):String; // This is also used for Discord RPC
+	public static var psychEngineVersion:String = "1.0.4 (" + plusEngineVersion + ")"; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = MainMenuColumn.CENTER;
-	private var camGame:FlxCamera;
-
-	static function get_isOpt():String
-	#if OPT_VER
-		return "Optimized";
-	#else
-	    return "";
-	#end
-
-	static function get_psychEngineVersion():String
-	{
-		var suffix:String = isOpt;
-		return "1.0.4 (" + plusEngineVersion + ")" + (suffix.length > 0 ? " " + suffix : "");
-	}
 
 	public var allowMouse:Bool = true; // Turn this off to block mouse movement in menus
 
@@ -79,7 +64,6 @@ class MainMenuState extends MusicBeatState
 	public var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'achievements' #else null #end;
 	public var rightOption:String = null;
 
-	var magenta:FlxSprite;
 	var bg:FlxSprite;
 	var side:FlxSprite;
 	var camFollow:FlxObject;
@@ -96,18 +80,12 @@ class MainMenuState extends MusicBeatState
 	{
 		super.create();
 
-		#if MODS_ALLOWED
-		Mods.pushGlobalMods();
-		#end
 		Mods.loadTopMod();
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
 		DiscordClient.changePresence(Language.getPhrase('states.main_menu.presence', 'In the Menus'), null);
 		#end
-
-		//transIn = FlxTransitionableState.defaultTransIn;
-		//transOut = FlxTransitionableState.defaultTransOut;
 
 		camGame = new FlxCamera();
 		FlxG.cameras.reset(camGame);
@@ -152,16 +130,6 @@ class MainMenuState extends MusicBeatState
 		side.alpha = 0;
 		add(side);
 
-		magenta = new FlxSprite(-80).loadGraphic(Paths.image('menuDesat'));
-		magenta.antialiasing = ClientPrefs.data.antialiasing;
-		magenta.scrollFactor.set(0, yScroll);
-		magenta.setGraphicSize(Std.int(magenta.width * 1.175));
-		magenta.updateHitbox();
-		magenta.screenCenter();
-		magenta.visible = false;
-		magenta.color = 0xFFfd719b;
-		add(magenta);
-
 		menuItems = new PlusMainMenuItemGroup();
 		add(menuItems);
 
@@ -201,7 +169,7 @@ class MainMenuState extends MusicBeatState
 		psychVer.scrollFactor.set();
 		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(psychVer);
-
+		
 		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0,
 			Language.getPhrase('states.main_menu.version.friday_night_funkin', "Friday Night Funkin' v{1}", [fnfVersion]), 12);
 		fnfVer.scrollFactor.set();
@@ -584,9 +552,6 @@ class MainMenuState extends MusicBeatState
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
 
-				if (ClientPrefs.data.flashing)
-					FlxFlicker.flicker(magenta, 1.1, 0.15, false);
-
 				var item:FlxSprite;
 				var option:String;
 				switch (curColumn)
@@ -610,21 +575,11 @@ class MainMenuState extends MusicBeatState
 
 				for (memb in menuItems)
 				{
-					if (memb == null || memb == item)
+					if (memb == item)
 						continue;
-					tweenMenuItemOut(memb);
-				}
-				if (leftItem != null && leftItem != item)
-					tweenMenuItemOut(leftItem);
-				if (rightItem != null && rightItem != item)
-					tweenMenuItemOut(rightItem);
 
-				FlxTween.tween(FlxG.camera, {zoom: 5}, 0.8, {ease: FlxEase.expoIn});
-				FlxTween.tween(bg, {angle: 45}, 0.8, {ease: FlxEase.expoIn});
-				new FlxTimer().start(0.35, function(_)
-				{
-					switchMenuOption(option, item);
-				});
+					FlxTween.tween(memb, {alpha: 0}, 0.4, {ease: FlxEase.quadOut});
+				}
 			}
 			else if (controls.justPressed('debug_1') || touchPad.buttonE.justPressed)
 			{

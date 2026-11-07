@@ -16,9 +16,7 @@ typedef EventNote =
 	strumTime:Float,
 	event:String,
 	value1:String,
-	value2:String,
-	?value3:String,
-	?value4:String
+	value2:String
 }
 
 typedef NoteSplashData =
@@ -60,6 +58,8 @@ class Note extends FlxSprite
 
 	public var strumTime:Float = 0;
 	public var noteData:Int = 0;
+	/** Logical StrumLine owner: 0 opponent, 1 player, 2+ additional CPU lines. */
+	public var strumLineIndex:Int = -1;
 
 	public var mustPress:Bool = false;
 	public var canBeHit:Bool = false;
@@ -68,7 +68,6 @@ class Note extends FlxSprite
 	public var wasGoodHit:Bool = false;
 	public var missed:Bool = false;
 	public var holdMissed:Bool = false;
-	public var isOpponentMode:Bool = false; // Flag para detectar Opponent Mode
 
 	public var ignoreNote:Bool = false;
 	public var hitByOpponent:Bool = false;
@@ -77,6 +76,7 @@ class Note extends FlxSprite
 	public var nextNote:Note;
 
 	public var spawned:Bool = false;
+	private var sustainClipRect:FlxRect;
 
 	public var tail:Array<Note> = []; // for sustains
 	public var parent:Note;
@@ -733,26 +733,32 @@ class Note extends FlxSprite
 			{
 				if (PlayState.isPixelStage)
 				{
-					y -= PlayState.daPixelZoom * 9.5;
+					y -= PlayState.daPixelZoom * 9.5 * myStrum.layoutScale;
 				}
-				y -= (frameHeight * scale.y) - (Note.swagWidth / 2);
+				y -= (frameHeight * scale.y) - (myStrum.height / 2);
 			}
 		}
 	}
 
 	public function clipToStrumNote(myStrum:StrumNote)
 	{
-		var center:Float = myStrum.y + offsetY + Note.swagWidth / 2;
+		var center:Float = myStrum.y + offsetY + myStrum.height / 2;
 		if ((mustPress || !ignoreNote) && (wasGoodHit || (prevNote.wasGoodHit && !canBeHit)))
 		{
-			var swagRect:FlxRect = clipRect;
-			if (swagRect == null)
-				swagRect = new FlxRect(0, 0, frameWidth, frameHeight);
+			if (sustainClipRect == null)
+				sustainClipRect = new FlxRect();
+			var swagRect:FlxRect = sustainClipRect;
+			swagRect.x = 0;
+			swagRect.y = 0;
+			swagRect.width = frameWidth;
+			swagRect.height = frameHeight;
+			var shouldClip:Bool = false;
 
 			if (myStrum.downScroll)
 			{
 				if (y - offset.y * scale.y + height >= center)
 				{
+					shouldClip = true;
 					swagRect.width = frameWidth;
 					swagRect.height = (center - y) / scale.y;
 					swagRect.y = frameHeight - swagRect.height;
@@ -760,12 +766,17 @@ class Note extends FlxSprite
 			}
 			else if (y + offset.y * scale.y <= center)
 			{
+				shouldClip = true;
 				swagRect.y = (center - y) / scale.y;
 				swagRect.width = width / scale.x;
 				swagRect.height = (height / scale.y) - swagRect.y;
 			}
-			clipRect = swagRect;
+			// A nearly instant Psych tween can move the receptor across the hold in
+			// one frame. Never keep the clipping rectangle from its previous pose.
+			clipRect = shouldClip ? swagRect : null;
 		}
+		else if (clipRect != null)
+			clipRect = null;
 	}
 
 	@:noCompletion

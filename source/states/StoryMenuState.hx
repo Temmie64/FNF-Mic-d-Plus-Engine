@@ -369,13 +369,7 @@ class StoryMenuState extends MusicBeatState
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			movedBack = true;
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('PlaySelectionState', new PlaySelectionState()));
-			FlxTween.tween(FlxG.camera, {zoom: 0.6, alpha: -0.6}, 0.8, {ease: FlxEase.quartInOut});
-			FlxTween.tween(storyModeBackground, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
-			FlxTween.tween(checker, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-			FlxTween.tween(gradientBar, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-			FlxTween.tween(storyModeTop, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
-			FlxTween.tween(storyModeBottom, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 		}
 
 		var selectedItem:MenuItem = grpWeekText.members[curWeek];
@@ -610,7 +604,7 @@ class StoryMenuState extends MusicBeatState
 		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
 		{
 			for (i in 0...grpWeekCharacters.length)
-			{				
+			{
 				grpWeekCharacters.members[i].changeCharacter(weekArray[i]);
 			}
 		}
@@ -631,8 +625,7 @@ class StoryMenuState extends MusicBeatState
 
 		txtTracklist.text = txtTracklist.text.toUpperCase();
 
-		txtTracklist.screenCenter(X);
-		txtTracklist.x -= FlxG.width * 0.35;
+		txtTracklist.x = safeX((safeWidth() - txtTracklist.width) / 2 - safeWidth() * 0.35);
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);

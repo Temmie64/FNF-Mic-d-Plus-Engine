@@ -276,4 +276,3 @@ private final class DiscordPresence
 	}
 }
 #end
-

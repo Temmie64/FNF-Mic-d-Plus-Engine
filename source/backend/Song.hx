@@ -37,7 +37,19 @@ typedef SwagSong =
 	@:optional var splashSkin:String;
 	@:optional var isAnimated:Bool;
 	@:optional var useModcharts:Bool;
-	@:optional var extendedEventValues:Bool;
+	@:optional var extraStrumLines:Array<ExtraStrumLineData>;
+}
+
+typedef ExtraStrumLineData =
+{
+	var id:String;
+	var notes:Array<Dynamic>;
+	@:optional var character:String;
+	@:optional var visible:Bool;
+	@:optional var x:Float;
+	@:optional var y:Float;
+	@:optional var scale:Float;
+	@:optional var spacing:Float;
 }
 
 typedef SwagSection =
@@ -88,6 +100,10 @@ typedef SongCharactersV2 =
 class Song
 {
 	public static var chartCache:Map<String, String> = new Map();
+	static var chartCacheOrder:Array<String> = [];
+	static inline final MAX_CHART_CACHE_ENTRIES:Int = 4;
+	static inline final MAX_CACHED_CHART_BYTES:Int = 2 * 1024 * 1024;
+	static inline final MAX_AUTO_CONVERT_SAVE_BYTES:Int = 2 * 1024 * 1024;
 
 	public var song:String;
 	public var notes:Array<SwagSection>;
@@ -117,34 +133,12 @@ class Song
 				Reflect.deleteField(songJson, 'player3');
 		}
 
-		if (songJson.events == null)
-		{
-			songJson.events = [];
-			for (secNum in 0...songJson.notes.length)
-			{
-				var sec:SwagSection = songJson.notes[secNum];
-
-				var i:Int = 0;
-				var notes:Array<Dynamic> = sec.sectionNotes;
-				var len:Int = notes.length;
-				while (i < len)
-				{
-					var note:Array<Dynamic> = notes[i];
-					if (note[1] < 0)
-					{
-						songJson.events.push([note[0], [[note[2], note[3], note[4]]]]);
-						notes.remove(note);
-						len = notes.length;
-					}
-					else
-						i++;
-				}
-			}
-		}
-
 		var sectionsData:Array<SwagSection> = songJson.notes;
 		if (sectionsData == null)
 			return;
+		var extractEvents:Bool = songJson.events == null;
+		if (extractEvents)
+			songJson.events = [];
 
 		for (section in sectionsData)
 		{
@@ -156,13 +150,23 @@ class Song
 					Reflect.deleteField(section, 'lengthInSteps');
 			}
 
-			for (note in section.sectionNotes)
+			var notes:Array<Dynamic> = section.sectionNotes;
+			var i:Int = 0;
+			while (notes != null && i < notes.length)
 			{
+				var note:Array<Dynamic> = notes[i];
+				if (extractEvents && note[1] < 0)
+				{
+					songJson.events.push([note[0], [[note[2], note[3], note[4]]]]);
+					notes.splice(i, 1);
+					continue;
+				}
 				var gottaHitNote:Bool = (note[1] < 4) ? section.mustHitSection : !section.mustHitSection;
 				note[1] = (note[1] % 4) + (gottaHitNote ? 0 : 4);
 
 				if (!Std.isOfType(note[3], String))
 					note[3] = Note.defaultNoteTypes[note[3]]; // compatibility with Week 7 and 0.1-0.3 psych charts
+				i++;
 			}
 		}
 	}
@@ -211,12 +215,15 @@ class Song
 				needsSave = true;
 			}
 
-			if (needsSave)
+			var canAutoSave:Bool = sys.FileSystem.stat(_lastPath).size <= MAX_AUTO_CONVERT_SAVE_BYTES;
+			if (needsSave && canAutoSave)
 			{
 				trace('Saving converted chart: $conversionMsg');
 				PlayState.SONG.format = 'psych_v1';
 				saveChart(PlayState.SONG, _lastPath);
 			}
+			else if (needsSave)
+				trace('Skipping converted chart rewrite because the source is too large: $_lastPath');
 		}
 		#end
 
@@ -336,17 +343,17 @@ class Song
 			lastDetectedSourceFormat = 'compiled_cache';
 			return compiled;
 		}
-		var rawData:String = chartCache.get(_lastPath);
+		var rawData:String = getCachedChart(_lastPath);
 		if (rawData == null)
 		{
 			rawData = AssetLoader.loadText(_lastPath);
 			if (rawData != null)
-				chartCache.set(_lastPath, rawData);
+				cacheChart(_lastPath, rawData);
 		}
 
 		var parsed:SwagSong = rawData != null ? parseJSON(rawData, jsonInput) : null;
 		if (parsed != null)
-			CompiledChartCache.save(_lastPath, parsed);
+			CompiledChartCache.queueSave(_lastPath, parsed);
 		return parsed;
 	}
 
@@ -355,12 +362,12 @@ class Song
 		var sidecarPath:String = getChartSidecarPath('events');
 		if (sidecarPath != null && AssetLoader.exists(sidecarPath, TEXT))
 		{
-			var rawData:String = chartCache.get(sidecarPath);
+			var rawData:String = getCachedChart(sidecarPath);
 			if (rawData == null)
 			{
 				rawData = AssetLoader.loadText(sidecarPath);
 				if (rawData != null)
-					chartCache.set(sidecarPath, rawData);
+					cacheChart(sidecarPath, rawData);
 			}
 
 			if (rawData != null)
@@ -406,6 +413,48 @@ class Song
 	public static function clearChartCache():Void
 	{
 		chartCache.clear();
+		chartCacheOrder.resize(0);
+	}
+
+	/** Invalidates every cached representation of a chart after it is saved. */
+	public static function invalidateChartCache(path:String):Void
+	{
+		if (path == null || path.length == 0)
+			return;
+
+		var normalized:String = path.replace('\\', '/').toLowerCase();
+		var matches:Array<String> = [];
+		for (key in chartCache.keys())
+			if (key != null && key.replace('\\', '/').toLowerCase() == normalized)
+				matches.push(key);
+		for (key in matches)
+		{
+			chartCache.remove(key);
+			while (chartCacheOrder.remove(key)) {}
+		}
+		CompiledChartCache.invalidate(path);
+	}
+
+	static function getCachedChart(path:String):String
+	{
+		var data:String = chartCache.get(path);
+		if (data != null)
+		{
+			chartCacheOrder.remove(path);
+			chartCacheOrder.push(path);
+		}
+		return data;
+	}
+
+	static function cacheChart(path:String, data:String):Void
+	{
+		if (data.length > MAX_CACHED_CHART_BYTES)
+			return;
+		chartCache.set(path, data);
+		chartCacheOrder.remove(path);
+		chartCacheOrder.push(path);
+		while (chartCacheOrder.length > MAX_CHART_CACHE_ENTRIES)
+			chartCache.remove(chartCacheOrder.shift());
 	}
 
 	public static function parseJSON(rawData:String, ?nameForError:String = null, ?convertTo:String = 'psych_v1'):SwagSong
@@ -443,8 +492,9 @@ class Song
 		if (fmt == null || fmt.length == 0)
 		{
 			// Check if the raw data has no line breaks (single line = unformatted)
-			var lineCount:Int = rawData.split('\n').length;
-			if (lineCount <= 2) // Allow 1-2 lines for very compact JSON
+			var firstBreak:Int = rawData.indexOf('\n');
+			var compact:Bool = firstBreak < 0 || rawData.indexOf('\n', firstBreak + 1) < 0;
+			if (compact) // Allow 1-2 lines for very compact JSON
 			{
 				fmt = 'non_formatted';
 				trace('Detected non-formatted chart (single line): $nameForError');
@@ -503,6 +553,7 @@ class Song
 			var prettyJson:String = formatJson(obj, 0);
 
 			sys.io.File.saveContent(filePath, prettyJson);
+			invalidateChartCache(filePath);
 			trace('Chart saved: $filePath');
 		}
 		catch (e:Dynamic)
@@ -778,27 +829,5 @@ class Song
 		return song;
 	}
 
-	public static function chartUsesExtendedValues(song:SwagSong):Bool
-	{
-		if (song == null || song.events == null)
-			return false;
-
-		for (eventGroup in song.events)
-		{
-			if (eventGroup == null || eventGroup.length < 2)
-				continue;
-
-			var events:Array<Dynamic> = eventGroup[1];
-			if (events == null)
-				continue;
-
-			for (event in events)
-			{
-				if (event != null && event.length > 3)
-					return true;
-			}
-		}
-		return false;
-	}
 }
 

@@ -8,6 +8,7 @@ import flixel.FlxG;
 import backend.CoolUtil;
 import states.FlashingState;
 import states.TitleState;
+import backend.native.NativeBackend;
 
 /**
  * InitialState - Decides which state to start with.
@@ -22,11 +23,36 @@ class InitialState extends MusicBeatState
 		#end
 
 		super.create();
+		NativeBackend.init();
 
 		ClientPrefs.loadPrefs();
 		Highscore.load();
 		Language.reloadPhrases();
 		MobileData.init();
+		#if (debug && sys)
+		if (Sys.args().indexOf('--modchart-self-test') != -1)
+		{
+			try { tests.ModchartEditorChecks.run(); sys.io.File.saveContent('modchart-checks.txt', 'PASS: chart plans, 21001 dense notes, Lua/scene roundtrips, negative beats, localization, instruction limit, Manager forward/backward seek.' + tests.ModchartEditorChecks.report); Sys.exit(0); }
+			catch (error:Dynamic) { sys.io.File.saveContent('modchart-checks.txt', 'FAIL at ' + tests.ModchartEditorChecks.report + ': ' + error + '\n' + haxe.CallStack.toString(haxe.CallStack.exceptionStack())); Sys.exit(1); }
+			return;
+		}
+		if (Sys.args().indexOf('--modchart-editor') != -1)
+		{
+			MusicBeatState.switchState(new states.editors.ModchartEditorState());
+			return;
+		}
+		#end
+
+		#if DENSE_CHART_TEST
+		Mods.currentModDirectory = 'NewFall Tracks with chart';
+		Mods.pushGlobalMods();
+		states.PlayState.SONG = backend.Song.loadFromJson('floccinaucinihilipilificatiophobia-part6', 'floccinaucinihilipilificatiophobia');
+		states.PlayState.isStoryMode = false;
+		states.PlayState.startOnTime = 170500;
+		states.LoadingState.prepareToSong();
+		states.LoadingState.loadAndSwitchState(new states.PlayState());
+		return;
+		#end
 
 		// Apply preferences-dependent runtime settings.
 		#if !html5
@@ -41,8 +67,7 @@ class InitialState extends MusicBeatState
 		trace("Mod Launched: " + Mods.launchedMod);
 		if (Mods.launchedMod != null && Mods.launchedMod.length > 0 && Mods.isLaunchable(Mods.launchedMod))
 		{
-			Mods.currentModDirectory = Mods.launchedMod;
-			Mods.pushGlobalMods();
+			Mods.loadTopMod();
 			Mods.applyWindowBrand(Mods.launchedMod);
 			Language.reloadPhrases();
 			scripting.GlobalScriptManager.loadForMod(Mods.launchedMod);
@@ -60,13 +85,15 @@ class InitialState extends MusicBeatState
 			FlxG.save.data.launchedMod = null;
 			FlxG.save.flush();
 			Mods.launchedMod = null;
-			Mods.currentModDirectory = '';
-			Mods.pushGlobalMods();
+			Mods.loadTopMod();
 			Mods.resetWindowBrand();
 		}
+		else
+			Mods.loadTopMod();
 		MusicBeatState.switchState(new TitleState());
 		#else
 		trace("meh, hardcoded");
+		Mods.loadTopMod();
 		MusicBeatState.switchState(new TitleState());
 		#end
 	}

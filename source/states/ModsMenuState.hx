@@ -82,7 +82,7 @@ class ModsMenuState extends MusicBeatState {
 	var listY:Float;
 	var listW:Float;
 	var listH:Float;
-	var rowH:Float = 72;
+	var rowH:Float = 92;
 
 	public function new(startMod:String = null) {
 		this.startMod = startMod;
@@ -96,11 +96,6 @@ class ModsMenuState extends MusicBeatState {
 
 		modsList = Mods.parseList();
 		Mods.loadTopMod();
-		if (Mods.launchedMod != null && Mods.launchedMod.length > 0)
-			Mods.currentModDirectory = Mods.launchedMod;
-		else
-			Mods.currentModDirectory = '';
-		Mods.pushGlobalMods();
 		backend.Language.reloadPhrases();
 
 		#if DISCORD_ALLOWED
@@ -503,6 +498,9 @@ class ModsMenuState extends MusicBeatState {
 	inline function currentMod():ModItem
 		return (curSel >= 0 && curSel < view.length) ? view[curSel] : null;
 
+	inline function isLaunchedMod(folder:String):Bool
+		return folder != null && Mods.launchedMod != null && Mods.launchedMod == folder;
+
 	function changeSel(add:Int) {
 		if (view.length < 1)
 			return;
@@ -698,14 +696,26 @@ class ModsMenuState extends MusicBeatState {
 				: Language.getPhrase('states.mods_menu.buttons.enable', Language.getPhrase('enable_button', 'ENABLE'))));
 		enableBtn.enabled = !lockedGlobal;
 		settingsBtn.enabled = (m.settings != null && m.settings.length > 0);
-		launchBtn.enabled = enabled && m.launchable;
+		var launched = isLaunchedMod(m.folder);
+		launchBtn.setText(launched
+			? Language.getPhrase('states.mods_menu.buttons.unlaunch', 'UNLAUNCH')
+			: Language.getPhrase('states.mods_menu.buttons.launch', Language.getPhrase('launch_button', 'LAUNCH')));
+		var launchColor:FlxColor = launched ? FlxColor.RED : FlxColor.GREEN;
+		launchBtn.focusChangeCallback = function(f) if (!f)
+			launchBtn.bg.color = launchColor;
+		launchBtn.enabled = enabled && (m.launchable || launched);
+		if (!launchBtn.onFocus)
+			launchBtn.bg.color = launchColor;
 
 		updateLaunchStatus(m, enabled);
 	}
 
 	function updateLaunchStatus(m:ModItem, enabled:Bool) {
 		#if HSCRIPT_ALLOWED
-		if (!enabled) {
+		if (isLaunchedMod(m.folder)) {
+			launchStatus.text = Language.getPhrase('states.mods_menu.status.launched', '> Launched - press ENTER to Unlaunch');
+			launchStatus.color = 0xFF66FF66;
+		} else if (!enabled) {
 			launchStatus.text = Language.getPhrase('states.mods_menu.status.disabled', 'Disabled - enable to launch');
 			launchStatus.color = FlxColor.GRAY;
 		} else if (m.launchable) {
@@ -729,6 +739,11 @@ class ModsMenuState extends MusicBeatState {
 		var m = currentMod();
 		if (m == null)
 			return;
+		if (isLaunchedMod(m.folder)) {
+			FlxG.sound.play(Paths.sound('cancelMenu'));
+			scripting.ScriptedStates.exitToEngine();
+			return;
+		}
 		if (modsList.disabled.contains(m.folder) || !Mods.isLaunchable(m.folder)) {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			return;
@@ -990,9 +1005,26 @@ class ModsMenuState extends MusicBeatState {
 		saveTxt();
 		FlxG.sound.play(Paths.sound('cancelMenu'));
 		if (waitingToRestart) {
+			// A restart-required toggle only changes the enabled-mod list; it does
+			// not launch the selected mod.  Clear any old launch marker before the
+			// reset so InitialState always starts the regular engine flow instead of
+			// resolving a stale scripted entry point.
+			#if HSCRIPT_ALLOWED
+			scripting.ScriptedStates.clearLaunchedModContext();
+			#elseif MODS_ALLOWED
+			Mods.launchedMod = null;
+			Mods.currentModDirectory = '';
+			if (FlxG.save != null && FlxG.save.data != null) {
+				FlxG.save.data.launchedMod = null;
+				FlxG.save.flush();
+			}
+			Mods.pushGlobalMods();
+			Mods.resetWindowBrand();
+			#end
 			TitleState.initialized = false;
 			TitleState.closedState = false;
-			FlxG.sound.music.fadeOut(0.3);
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.fadeOut(0.3);
 			if (FreeplayState.vocals != null) {
 				FreeplayState.vocals.fadeOut(0.3);
 				FreeplayState.vocals = null;
@@ -1063,7 +1095,9 @@ class ModItem extends FlxSpriteGroup {
 			}
 		}
 
-		selectBg = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
+		// Fixed card size keeps multiline mod names from expanding into the
+		// following row. The 10px gap comes from ModsMenuState.rowH.
+		selectBg = new FlxSprite().makeGraphic(318, 82, FlxColor.WHITE);
 		selectBg.alpha = 0.8;
 		selectBg.visible = false;
 		add(selectBg);
@@ -1165,8 +1199,6 @@ class ModItem extends FlxSpriteGroup {
 			icon.animation.add("icon", [for (i in 0...totalFrames) i], iconFps);
 			icon.animation.play("icon");
 		}
-		selectBg.scale.set(width + 5, height + 5);
-		selectBg.updateHitbox();
 	}
 
 }
