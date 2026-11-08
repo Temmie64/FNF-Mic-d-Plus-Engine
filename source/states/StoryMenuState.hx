@@ -48,7 +48,6 @@ class StoryMenuState extends MusicBeatState
 	public var gradientBar:FlxSprite;
 
 	public var loadedWeeks:Array<WeekData> = [];
-	var characterUI:FlxSprite = new FlxSprite(20, 20);
 	var weekCharacterThing:MenuCharacter;
 	var selectable:Bool = false;
 
@@ -244,12 +243,11 @@ class StoryMenuState extends MusicBeatState
 		tracksSprite.visible = false;
 		add(tracksSprite);
 
-		txtTracklist = new FlxText(FlxG.width * 0.05, 200, 0, "INCLUDES FAMOUS\n TRACKS LIKE:\n\n", 32);
+		txtTracklist = new FlxText(safeX(safeWidth() * 0.05), tracksSprite.y + 100, 0, "INCLUDES FAMOUS\n TRACKS LIKE:\n\n", 32);
 		txtTracklist.alignment = CENTER;
-		txtTracklist.font = scoreText.font;
+		txtTracklist.font = Paths.font("vcr.ttf");
 		txtTracklist.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
-		txtTracklist.color = 0xFFE55777;
-		txtTracklist.y = storyModeBottom.y + 60;
+		txtTracklist.color = 0xFFe55777;
 
 		add(txtTracklist);
 		add(scoreText);
@@ -274,7 +272,7 @@ class StoryMenuState extends MusicBeatState
 		FlxG.camera.alpha = 0;
 		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.7, {ease: FlxEase.quartInOut});
 
-		scoreText.alpha = sprDifficulty.alpha = characterUI.alpha = txtWeekTitle.alpha = 0;
+		scoreText.alpha = 0;
 		txtTracklist.y = FlxG.height + storyModeBottom.height + 60;
 		FlxTween.tween(scoreText, {alpha: 1}, 0.8, {ease: FlxEase.quartInOut});
 		FlxTween.tween(txtTracklist, {y: characterUI.y + 300}, 0.8, {ease: FlxEase.quartInOut});
