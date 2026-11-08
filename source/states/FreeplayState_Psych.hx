@@ -26,6 +26,9 @@ import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
 #end
+#if (MODS_ALLOWED && sys && !mobile)
+import objects.ModImportOverlay;
+#end
 import haxe.Json;
 
 class FreeplayState_Psych extends MusicBeatState
@@ -77,6 +80,9 @@ class FreeplayState_Psych extends MusicBeatState
 
 	var player:MusicPlayerPsych;
 	var freeplayTouchInputBlockTime:Float = 0;
+	#if (MODS_ALLOWED && sys && !mobile)
+	var modImportOverlay:ModImportOverlay = null;
+	#end
 
 	override function create()
 	{
