@@ -211,10 +211,7 @@ class TitleState extends MusicBeatState
 		introVideo = null;
 		if (video != null)
 		{
-			// VideoSprite owns the media teardown after it calls this callback.
-			// Destroying it here races the skip/end callback and can leave hxvlc
-			// trying to build a frame from an already disposed bitmap.
-			remove(video, false);
+			remove(video, true);
 		}
 		startIntro();
 	}
@@ -258,7 +255,7 @@ class TitleState extends MusicBeatState
 		logoBl.scale.set(0.6, 0.6);
 		logoBl.updateHitbox();
 
-		gfDance = new FlxSprite(gfPosition.x, gfPosition.y + FlxG.height);
+		gfDance = new FlxSprite(FlxG.width * 0.35, FlxG.height * 1.2);
 		gfDance.antialiasing = ClientPrefs.data.antialiasing;
 
 		if (ClientPrefs.data.shaders)
@@ -282,7 +279,7 @@ class TitleState extends MusicBeatState
 		}
 
 		var animFrames:Array<FlxFrame> = [];
-		titleText = new FlxSprite(enterPosition.x, enterPosition.y);
+		titleText = new FlxSprite(100, FlxG.height * 0.8);
 		titleText.frames = Paths.getSparrowAtlas('titleEnter');
 		@:privateAccess
 		{
@@ -312,62 +309,52 @@ class TitleState extends MusicBeatState
 		credTextShit.screenCenter();
 		credTextShit.visible = false;
 
-		var newgroundsLogo:FlxGraphic = Paths.image('newgrounds_logo');
-		ngSpr = new FlxSprite(0, FlxG.height * 0.52);
-		if (newgroundsLogo != null)
-			ngSpr.loadGraphic(newgroundsLogo);
-		else
-		{
-			// A disabled mod can leave a stale asset cache during the restart.
-			// The intro must remain runnable even if the optional logo was evicted.
-			trace('[WARN] Missing newgrounds_logo; continuing title intro without it.');
-			ngSpr.makeGraphic(1, 1, FlxColor.TRANSPARENT);
-		}
+		ngSpr = new FlxSprite(0, FlxG.height * 0.52).loadGraphic(Paths.image('newgrounds_logo'));
 		ngSpr.visible = false;
 		ngSpr.setGraphicSize(Std.int(ngSpr.width * 0.8));
 		ngSpr.updateHitbox();
 		ngSpr.screenCenter(X);
 		ngSpr.antialiasing = ClientPrefs.data.antialiasing;
 
-		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00FF0000, 0x553D0468, 0xAABF1943], 1, 90, true);
+		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00ff0000, 0x553D0468, 0xAABF1943], 1, 90, true);
 		gradientBar.y = FlxG.height - gradientBar.height;
 		gradientBar.scale.y = 0;
 		gradientBar.updateHitbox();
 		if (swagShader != null)
 			gradientBar.shader = swagShader.shader;
+		FlxTween.tween(gradientBar, {'scale.y': 1.3}, 4, {ease: FlxEase.quadInOut});
 
 		fnfSpr = new FlxSprite(0, FlxG.height * 0.47).loadGraphic(Paths.image('logo'));
-		add(fnfSpr);
 		fnfSpr.visible = false;
 		fnfSpr.setGraphicSize(Std.int(fnfSpr.width * 0.8));
 		fnfSpr.updateHitbox();
-		fnfSpr.antialiasing = ClientPrefs.globalAntialiasing;
+		fnfSpr.antialiasing = ClientPrefs.data.antialiasing;
 
-		FNF_Logo = new FlxSprite().loadGraphic(Paths.image('FNF_Logo'));
-		FNF_EX = new FlxSprite().loadGraphic(Paths.image('FNF_MU'));
-		FNF_Logo.antialiasing = ClientPrefs.data.antialiasing;
-		FNF_EX.antialiasing = ClientPrefs.data.antialiasing;
-		FNF_Logo.scale.set(0.6, 0.6);
+		FNF_Logo = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_Logo'));
+		FNF_EX = new FlxSprite(0, 0).loadGraphic(Paths.image('FNF_MU'));
 		FNF_EX.scale.set(0.6, 0.6);
-		FNF_Logo.updateHitbox();
+		FNF_Logo.scale.set(0.6, 0.6);
 		FNF_EX.updateHitbox();
+		FNF_Logo.updateHitbox();
+		FNF_EX.antialiasing = ClientPrefs.data.antialiasing;
+		FNF_Logo.antialiasing = ClientPrefs.data.antialiasing;
 		if (swagShader != null)
 		{
-			FNF_Logo.shader = swagShader.shader;
 			FNF_EX.shader = swagShader.shader;
+			FNF_Logo.shader = swagShader.shader;
 		}
-		FNF_Logo.setPosition(-1500, 300);
 		FNF_EX.setPosition(-1500, 300);
-		FNF_Logo.visible = false;
-		FNF_EX.visible = false;
+		FNF_Logo.setPosition(-1500, 300);
 
+		logoBl.visible = false;
+		titleText.visible = false;
 		add(gfDance);
+		add(credGroup);
+		add(gradientBar);
 		add(logoBl); // FNF Logo
 		add(titleText); // "Press Enter to Begin" text
-		add(credGroup);
 		add(ngSpr);
-		add(gradientBar);
-		FlxTween.tween(gradientBar, {'scale.y': 1.3}, 4, {ease: FlxEase.quadInOut});
+		add(fnfSpr);
 		add(FNF_EX);
 		add(FNF_Logo);
 
@@ -420,8 +407,7 @@ class TitleState extends MusicBeatState
 						danceRightFrames = titleJSON.dance_right;
 					useIdle = (titleJSON.idle == true);
 
-					if (titleJSON.backgroundSprite != null && StringTools.trim(titleJSON.backgroundSprite).length > 0
-						&& StringTools.trim(titleJSON.backgroundSprite).toLowerCase() != 'none')
+					if (titleJSON.backgroundSprite != null && StringTools.trim(titleJSON.backgroundSprite).length > 0 && StringTools.trim(titleJSON.backgroundSprite).toLowerCase() != 'none')
 					{
 						var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image(titleJSON.backgroundSprite));
 						bg.antialiasing = ClientPrefs.data.antialiasing;
@@ -574,15 +560,15 @@ class TitleState extends MusicBeatState
 
 		if (!showingIntro)
 		{
-			titleMotionTimer += elapsed * 60;
+			titleMotionTimer += 1;
 			if (gradientBar != null)
 			{
-				gradientBar.scale.y += Math.sin(titleMotionTimer / 10) * 0.001 * elapsed * 60;
+				gradientBar.scale.y += Math.sin(titleMotionTimer / 10) * 0.001 / (ClientPrefs.data.framerate / 60);
 				gradientBar.updateHitbox();
 				gradientBar.y = FlxG.height - gradientBar.height;
 			}
 			if (skippedIntro && logoBl != null)
-				logoBl.angle = Math.sin(titleMotionTimer / 270) * 5;
+				logoBl.angle = Math.sin(titleMotionTimer / 270) * 5 / (ClientPrefs.data.framerate / 60);
 
 			if (FlxG.sound.music != null)
 				Conductor.songPosition = FlxG.sound.music.time;
@@ -731,8 +717,8 @@ class TitleState extends MusicBeatState
 		{
 			var money:Alphabet = new Alphabet(0, 0, textArray[i], true);
 			money.x = -1500;
-			FlxTween.quadMotion(money, -300, -100 + offset, 30 + (i * 70), 150 + (i * 130) + offset,
-				100 + (i * 70), 80 + (i * 130) + offset, 0.4, true, {ease: FlxEase.quadInOut});
+			FlxTween.quadMotion(money, -300, -100 + offset, 30 + (i * 70), 150 + (i * 130) + offset, 100 + (i * 70), 80 + (i * 130) + offset, 0.4, true,
+				{ease: FlxEase.quadInOut});
 			if (credGroup != null && textGroup != null)
 			{
 				credGroup.add(money);
@@ -747,9 +733,8 @@ class TitleState extends MusicBeatState
 		{
 			var coolText:Alphabet = new Alphabet(0, 0, text, true);
 			coolText.x = -1500;
-			FlxTween.quadMotion(coolText, -300, -100 + offset, 10 + (textGroup.length * 40),
-				150 + (textGroup.length * 130) + offset, 30 + (textGroup.length * 40),
-				80 + (textGroup.length * 130) + offset, 0.4, true, {ease: FlxEase.quadInOut});
+			FlxTween.quadMotion(coolText, -300, -100 + offset, 10 + (textGroup.length * 40), 150 + (textGroup.length * 130) + offset,
+				30 + (textGroup.length * 40), 80 + (textGroup.length * 130) + offset, 0.4, true, {ease: FlxEase.quadInOut});
 			credGroup.add(coolText);
 			textGroup.add(coolText);
 		}
@@ -842,18 +827,19 @@ class TitleState extends MusicBeatState
 
 	function finishIntroVisuals(flashDuration:Float = 2):Void
 	{
+		remove(fnfSpr);
 		remove(FNF_Logo);
 		remove(FNF_EX);
-		remove(fnfSpr);
+		remove(ngSpr);
 		remove(credGroup);
 		FlxG.camera.flash(FlxColor.WHITE, flashDuration);
 		FlxTween.tween(logoBl, {
-			'scale.x': logoBl.scale.x * 0.75,
-			'scale.y': logoBl.scale.y * 0.75,
-			x: logoPosition.x - 15,
-			y: logoPosition.y - 25
+			'scale.x': 0.45,
+			'scale.y': 0.45,
+			x: -165,
+			y: -125
 		}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-		FlxTween.tween(gfDance, {y: gfPosition.y}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+		FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
 		titleText.visible = true;
 		logoBl.visible = true;
 	}
@@ -862,7 +848,6 @@ class TitleState extends MusicBeatState
 	{
 		if (!skippedIntro)
 		{
-			remove(fnfSpr);
 			remove(FNF_Logo);
 			remove(FNF_EX);
 			#if TITLE_SCREEN_EASTER_EGG
