@@ -26,9 +26,6 @@ import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
 #end
-#if (MODS_ALLOWED && sys && !mobile)
-import objects.ModImportOverlay;
-#end
 import haxe.Json;
 
 class FreeplayState_Psych extends MusicBeatState
@@ -67,17 +64,9 @@ class FreeplayState_Psych extends MusicBeatState
 	var innerDiscBottom:FlxSprite;
 	var discIcon:HealthIcon;
 	var sprDifficulty:FlxSprite;
+	var intendedColor:Int;
 	var intendedCheckerColor:Int;
 	var intendedBottomColor:Int;
-	var intendedColor:Int;
-	var intendedColor2:Int;
-	var intendedColor3:Int;
-	var intendedColor4:Int;
-	var intendedColor5:Int;
-	var colorTween:FlxTween;
-	var colorTween2:FlxTween;
-	var colorTween3:FlxTween;
-	var colorTween4:FlxTween;
 
 	var missingTextBG:FlxSprite;
 	var missingText:FlxText;
@@ -88,9 +77,6 @@ class FreeplayState_Psych extends MusicBeatState
 
 	var player:MusicPlayerPsych;
 	var freeplayTouchInputBlockTime:Float = 0;
-	#if (MODS_ALLOWED && sys && !mobile)
-	var modImportOverlay:ModImportOverlay = null;
-	#end
 
 	override function create()
 	{
@@ -270,19 +256,6 @@ class FreeplayState_Psych extends MusicBeatState
 		discIcon.antialiasing = ClientPrefs.data.antialiasing;
 		add(discIcon);
 
-		if (curSelected >= songs.length)
-			curSelected = 0;
-		bg.color = songs[curSelected].color;
-		checker.color = songs[curSelected].checkerColor;
-		innerDiscTop.color = songs[curSelected].discBottomColor;
-		innerDiscBottom.color = songs[curSelected].discTopColor;
-		side.color = songs[curSelected].bottomColor;
-		intendedColor = bg.color;
-		intendedColor2 = checker.color;
-		intendedColor3 = side.color;
-		intendedColor4 = innerDiscTop.color;
-		intendedColor5 = innerDiscBottom.color;
-
 		missingTextBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		missingTextBG.alpha = 0.6;
 		missingTextBG.visible = false;
@@ -294,18 +267,14 @@ class FreeplayState_Psych extends MusicBeatState
 		missingText.visible = false;
 		add(missingText);
 
-		if (curSelected >= songs.length)
-			curSelected = 0;
 		bg.color = songs[curSelected].color;
 		checker.color = songs[curSelected].checkerColor;
-		innerDiscBottom.color = songs[curSelected].discBottomColor;
-		innerDiscTop.color = songs[curSelected].discTopColor;
 		side.color = songs[curSelected].bottomColor;
+		innerDiscTop.color = songs[curSelected].discTopColor;
+		innerDiscBottom.color = songs[curSelected].discBottomColor;
 		intendedColor = bg.color;
-		intendedColor2 = checker.color;
-		intendedColor3 = side.color;
-		intendedColor4 = innerDiscTop.color;
-		intendedColor5 = innerDiscBottom.color;
+		intendedCheckerColor = checker.color;
+		intendedBottomColor = side.color;
 		lerpSelected = curSelected;
 
 		curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(lastDifficultyName)));
@@ -809,44 +778,30 @@ class FreeplayState_Psych extends MusicBeatState
 			FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		var newColor:Int = songs[curSelected].color;
-		var newCheckerColor:Int = songs[curSelected].checkerColor;
-		var newBottomColor:Int = songs[curSelected].bottomColor;
-		var newDiscTopColor:Int = songs[curSelected].discTopColor;
-		var newDiscBottomColor:Int = songs[curSelected].discBottomColor;
-		if(newColor != intendedColor) {
-			if(colorTween != null) {
-				colorTween.cancel();
-				colorTween2.cancel();
-				colorTween3.cancel();
-			}
-			intendedColor = newColor;
-			intendedColor2 = newCheckerColor;
-			intendedColor3 = newBottomColor;
-			intendedColor4 = newDiscTopColor;
-			intendedColor5 = newDiscBottomColor;
-
-			innerDiscTop.color = intendedColor4;
-			innerDiscBottom.color = intendedColor5;
-			colorTween3 = FlxTween.color(checker, 0.5, checker.color, intendedColor2, {ease: FlxEase.backIn});
-			colorTween2 = FlxTween.color(side, 0.5, side.color, intendedColor3, {ease: FlxEase.backIn});
-
-
-			colorTween = FlxTween.color(bg, 0.5, bg.color, intendedColor, {ease: FlxEase.backIn});
-
-				new FlxTimer().start(0.5, function(tmr:FlxTimer)
-				{
-					colorTween = null;
-					colorTween2 = null;
-					colorTween3 = null;
-				});
-
-		}
 		if (newColor != intendedColor)
 		{
 			intendedColor = newColor;
 			FlxTween.cancelTweensOf(bg);
-			FlxTween.color(bg, 1, bg.color, intendedColor);
+			FlxTween.color(bg, 0.5, bg.color, intendedColor, {ease: FlxEase.backIn});
 		}
+		var newCheckerColor:Int = songs[curSelected].checkerColor;
+		if (newCheckerColor != intendedCheckerColor)
+		{
+			intendedCheckerColor = newCheckerColor;
+			FlxTween.cancelTweensOf(checker);
+			FlxTween.color(checker, 0.5, checker.color, intendedCheckerColor, {ease: FlxEase.backIn});
+		}
+		var newBottomColor:Int = songs[curSelected].bottomColor;
+		if (newBottomColor != intendedBottomColor)
+		{
+			intendedBottomColor = newBottomColor;
+			FlxTween.cancelTweensOf(side);
+			FlxTween.color(side, 0.5, side.color, intendedBottomColor, {ease: FlxEase.backIn});
+		}
+		innerDiscTop.color = songs[curSelected].discTopColor;
+		innerDiscBottom.color = songs[curSelected].discBottomColor;
+		Mods.currentModDirectory = songs[curSelected].folder;
+		discIcon.changeIcon(songs[curSelected].songCharacter);
 
 		for (num => item in grpSongs.members)
 		{
@@ -855,7 +810,6 @@ class FreeplayState_Psych extends MusicBeatState
 			icon.alpha = 0;
 		}
 
-		Mods.currentModDirectory = songs[curSelected].folder;
 		PlayState.storyWeek = songs[curSelected].week;
 		Difficulty.loadFromWeek();
 
