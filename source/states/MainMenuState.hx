@@ -61,6 +61,7 @@ class MainMenuState extends MusicBeatState
 	// Centered/Text options
 	public var optionShit:Array<String> = ['play', #if MODS_ALLOWED 'mods', #end 'credits', 'options'];
 
+	public var camGame:FlxCamera;
 	public var leftOption:String = #if ACHIEVEMENTS_ALLOWED 'achievements' #else null #end;
 	public var rightOption:String = null;
 
