@@ -55,6 +55,7 @@ class TitleState extends MusicBeatState
 	public var credTextShit:Alphabet;
 	public var ngSpr:FlxSprite;
 	var gradientBar:FlxSprite;
+	var fnfSpr:FlxSprite;
 	var FNF_Logo:FlxSprite;
 	var FNF_EX:FlxSprite;
 
