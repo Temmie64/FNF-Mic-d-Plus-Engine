@@ -48,6 +48,7 @@ class StoryMenuState extends MusicBeatState
 	public var gradientBar:FlxSprite;
 
 	public var loadedWeeks:Array<WeekData> = [];
+	var characterUI:FlxSprite = new FlxSprite(20, 20);
 	var weekCharacterThing:MenuCharacter;
 	var selectable:Bool = false;
 
