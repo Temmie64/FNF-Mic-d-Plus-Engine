@@ -336,6 +336,13 @@ class TitleState extends MusicBeatState
 		if (swagShader != null)
 			gradientBar.shader = swagShader.shader;
 
+		fnfSpr = new FlxSprite(0, FlxG.height * 0.47).loadGraphic(Paths.image('logo'));
+		add(fnfSpr);
+		fnfSpr.visible = false;
+		fnfSpr.setGraphicSize(Std.int(fnfSpr.width * 0.8));
+		fnfSpr.updateHitbox();
+		fnfSpr.antialiasing = ClientPrefs.globalAntialiasing;
+
 		FNF_Logo = new FlxSprite().loadGraphic(Paths.image('FNF_Logo'));
 		FNF_EX = new FlxSprite().loadGraphic(Paths.image('FNF_MU'));
 		FNF_Logo.antialiasing = ClientPrefs.data.antialiasing;
@@ -837,7 +844,7 @@ class TitleState extends MusicBeatState
 	{
 		remove(FNF_Logo);
 		remove(FNF_EX);
-		remove(ngSpr);
+		remove(fnfSpr);
 		remove(credGroup);
 		FlxG.camera.flash(FlxColor.WHITE, flashDuration);
 		FlxTween.tween(logoBl, {
@@ -855,6 +862,7 @@ class TitleState extends MusicBeatState
 	{
 		if (!skippedIntro)
 		{
+			remove(fnfSpr);
 			remove(FNF_Logo);
 			remove(FNF_EX);
 			#if TITLE_SCREEN_EASTER_EGG
