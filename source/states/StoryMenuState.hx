@@ -249,7 +249,7 @@ class StoryMenuState extends MusicBeatState
 		txtTracklist.font = scoreText.font;
 		txtTracklist.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
 		txtTracklist.color = 0xFFE55777;
-		txtTracklist.y = bottom.y + 60;
+		txtTracklist.y = storyModeBottom.y + 60;
 
 		add(txtTracklist);
 		add(scoreText);
