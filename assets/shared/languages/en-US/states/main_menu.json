@@ -3,6 +3,7 @@
   "$namespace": "states.main_menu",
   "presence": "In the Menus",
   "version": {
+    "mic_engine": "Mic'd Up v{1}",
     "psych_engine": "Psych Engine v{1}",
     "friday_night_funkin": "Friday Night Funkin' v{1}"
   }
