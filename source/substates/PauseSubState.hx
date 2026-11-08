@@ -206,7 +206,7 @@ class PauseSubState extends MusicBeatSubstate
 
 			final opponentIcon:HealthIcon = PlayState.instance.iconP2;
 			icon = new HealthIcon(opponentIcon.getCharacter(), false, true, opponentIcon.animFPS, opponentIcon.isAnimated);
-			HealthIconHud.frames(PlayState.instance.healthBar, PlayState.instance.playOpponent, '', null, icon, null);
+			HealthIconHud.frames(PlayState.instance.healthBar, '', null, icon, null);
 			icon.setGraphicSize(Std.int(icon.width * 1.7));
 			icon.antialiasing = ClientPrefs.data.antialiasing;
 			icon.x = FlxG.width - 230;

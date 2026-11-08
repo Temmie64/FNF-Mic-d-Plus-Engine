@@ -67,7 +67,6 @@ class FreeplayState_Psych extends MusicBeatState
 	var innerDiscBottom:FlxSprite;
 	var discIcon:HealthIcon;
 	var sprDifficulty:FlxSprite;
-	var intendedColor:Int;
 	var intendedCheckerColor:Int;
 	var intendedBottomColor:Int;
 	var intendedColor:Int;
