@@ -70,6 +70,15 @@ class FreeplayState_Psych extends MusicBeatState
 	var intendedColor:Int;
 	var intendedCheckerColor:Int;
 	var intendedBottomColor:Int;
+	var intendedColor:Int;
+	var intendedColor2:Int;
+	var intendedColor3:Int;
+	var intendedColor4:Int;
+	var intendedColor5:Int;
+	var colorTween:FlxTween;
+	var colorTween2:FlxTween;
+	var colorTween3:FlxTween;
+	var colorTween4:FlxTween;
 
 	var missingTextBG:FlxSprite;
 	var missingText:FlxText;
@@ -261,6 +270,19 @@ class FreeplayState_Psych extends MusicBeatState
 		discIcon = new HealthIcon(songs[curSelected].songCharacter);
 		discIcon.antialiasing = ClientPrefs.data.antialiasing;
 		add(discIcon);
+
+		if (curSelected >= songs.length)
+			curSelected = 0;
+		bg.color = songs[curSelected].color;
+		checker.color = songs[curSelected].checkerColor;
+		innerDiscTop.color = songs[curSelected].discBottomColor;
+		innerDiscBottom.color = songs[curSelected].discTopColor;
+		side.color = songs[curSelected].bottomColor;
+		intendedColor = bg.color;
+		intendedColor2 = checker.color;
+		intendedColor3 = side.color;
+		intendedColor4 = innerDiscTop.color;
+		intendedColor5 = innerDiscBottom.color;
 
 		missingTextBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		missingTextBG.alpha = 0.6;
