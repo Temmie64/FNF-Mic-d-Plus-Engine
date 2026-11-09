@@ -909,6 +909,14 @@ class TitleState extends MusicBeatState
 			{
 				finishIntroVisuals(4);
 
+				FlxTween.tween(logoBl, {
+					'scale.x': 0.45,
+					'scale.y': 0.45,
+					x: -165,
+					y: -125
+					}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
+				FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
+
 				var easteregg:String = FlxG.save.data.psychDevsEasterEgg;
 				if (easteregg == null)
 					easteregg = '';
@@ -925,6 +933,8 @@ class TitleState extends MusicBeatState
 				#end
 			}
 			skippedIntro = true;
+			titleText.visible = true;
+			logoBl.visible = true;
 		}
 	}
 
