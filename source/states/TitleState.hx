@@ -374,7 +374,7 @@ class TitleState extends MusicBeatState
 	var animationName:String = 'gfDance';
 
 	var gfPosition:FlxPoint = FlxPoint.get(512, 40);
-	var logoPosition:FlxPoint = FlxPoint.get(-150, -100);
+	var logoPosition:FlxPoint = FlxPoint.get(142, -17);
 	var enterPosition:FlxPoint = FlxPoint.get(100, 576);
 
 	var useIdle:Bool = false;
@@ -567,7 +567,7 @@ class TitleState extends MusicBeatState
 				gradientBar.updateHitbox();
 				gradientBar.y = FlxG.height - gradientBar.height;
 			}
-			if (skippedIntro && logoBl != null)
+			if (skippedIntro)
 				logoBl.angle = Math.sin(titleMotionTimer / 270) * 5 / (ClientPrefs.data.framerate / 60);
 
 			if (FlxG.sound.music != null)
@@ -908,14 +908,6 @@ class TitleState extends MusicBeatState
 			#end // Default! Edit this one!!
 			{
 				finishIntroVisuals(4);
-
-				FlxTween.tween(logoBl, {
-					'scale.x': 0.45,
-					'scale.y': 0.45,
-					x: -165,
-					y: -125
-					}, 1.3, {ease: FlxEase.expoInOut, startDelay: 1.3});
-				FlxTween.tween(gfDance, {y: 20}, 2.3, {ease: FlxEase.expoInOut, startDelay: 0.8});
 
 				var easteregg:String = FlxG.save.data.psychDevsEasterEgg;
 				if (easteregg == null)

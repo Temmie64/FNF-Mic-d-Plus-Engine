@@ -608,9 +608,9 @@ class StoryMenuState extends MusicBeatState
 		weekCharacterThing.scale.set(0.8, 0.8);
 		weekCharacterThing.updateHitbox();
 		weekCharacterThing.x = 1240 - weekCharacterThing.width;
-		weekCharacterThing.y = 300;
+		weekCharacterThing.y = -300;
 
-		switch (weekCharacterThing.character)
+		/*switch (weekCharacterThing.character)
 		{
 			case 'parents-christmas':
 				weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width / 2);
@@ -618,7 +618,7 @@ class StoryMenuState extends MusicBeatState
 				weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width / 1.5);
 		}
 
-		/*var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
+		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
 		{
 			for (i in 0...grpWeekCharacters.length)
 			{				
