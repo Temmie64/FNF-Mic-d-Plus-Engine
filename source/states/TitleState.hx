@@ -374,7 +374,7 @@ class TitleState extends MusicBeatState
 	var animationName:String = 'gfDance';
 
 	var gfPosition:FlxPoint = FlxPoint.get(512, 40);
-	var logoPosition:FlxPoint = FlxPoint.get(142, -17);
+	var logoPosition:FlxPoint = FlxPoint.get(-150, -100);
 	var enterPosition:FlxPoint = FlxPoint.get(100, 576);
 
 	var useIdle:Bool = false;
@@ -567,7 +567,7 @@ class TitleState extends MusicBeatState
 				gradientBar.updateHitbox();
 				gradientBar.y = FlxG.height - gradientBar.height;
 			}
-			if (skippedIntro)
+			if (skippedIntro && logoBl != null)
 				logoBl.angle = Math.sin(titleMotionTimer / 270) * 5 / (ClientPrefs.data.framerate / 60);
 
 			if (FlxG.sound.music != null)
@@ -925,8 +925,6 @@ class TitleState extends MusicBeatState
 				#end
 			}
 			skippedIntro = true;
-			titleText.visible = true;
-			logoBl.visible = true;
 		}
 	}
 

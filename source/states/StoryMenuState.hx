@@ -604,27 +604,26 @@ class StoryMenuState extends MusicBeatState
 		grpWeekCharacters.visible = true;
 
 		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
+		/*{
+			for (i in 0...grpWeekCharacters.length)
+			{				
+				grpWeekCharacters.members[i].changeCharacter(weekArray[i]);
+			}
+		}*/
+
 		weekCharacterThing.changeCharacter(weekArray[0]);
 		weekCharacterThing.scale.set(0.8, 0.8);
 		weekCharacterThing.updateHitbox();
 		weekCharacterThing.x = 1240 - weekCharacterThing.width;
-		weekCharacterThing.y = -300;
+		weekCharacterThing.y = 300;
 
-		/*switch (weekCharacterThing.character)
+		switch (weekCharacterThing.character)
 		{
 			case 'parents-christmas':
 				weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width / 2);
 			case 'senpai':
 				weekCharacterThing.x = safeX(safeWidth() - weekCharacterThing.width / 1.5);
 		}
-
-		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
-		{
-			for (i in 0...grpWeekCharacters.length)
-			{				
-				grpWeekCharacters.members[i].changeCharacter(weekArray[i]);
-			}
-		}*/
 
 		var stringThing:Array<String> = [];
 		{
@@ -644,7 +643,6 @@ class StoryMenuState extends MusicBeatState
 
 		txtTracklist.screenCenter(X);
 		txtTracklist.x -= FlxG.width * 0.35;
-
 
 		#if !switch
 		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
