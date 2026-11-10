@@ -26,6 +26,7 @@ import backend.Paths;
 import backend.Language;
 import backend.AssetLoader;
 import haxe.Json;
+import states.play.HealthIconHud;
 import mobile.input.TouchScrollHandler;
 #if mobile
 import mobile.backend.MobileScaleMode;
