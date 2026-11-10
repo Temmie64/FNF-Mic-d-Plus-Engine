@@ -47,6 +47,8 @@ class StoryMenuState extends MusicBeatState
 	public var storyModeBottom:FlxSprite;
 	public var storyModeTop:FlxSprite;
 	public var gradientBar:FlxSprite;
+	var leftArrow:FlxSprite;
+	var rightArrow:FlxSprite;
 
 	public var loadedWeeks:Array<WeekData> = [];
 	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
@@ -226,6 +228,22 @@ class StoryMenuState extends MusicBeatState
 		difficultySelectors = new FlxGroup();
 		add(difficultySelectors);
 
+		leftArrow = new FlxSprite(grpWeekText.members[0].x + grpWeekText.members[0].width + 10, grpWeekText.members[0].y + 10);
+		leftArrow.frames = ui_tex;
+		leftArrow.animation.addByPrefix('idle', "arrow left");
+		leftArrow.animation.addByPrefix('press', "arrow push left");
+		leftArrow.animation.play('idle');
+		leftArrow.antialiasing = ClientPrefs.globalAntialiasing;
+		//difficultySelectors.add(leftArrow);
+
+		rightArrow = new FlxSprite(leftArrow.x + 376, leftArrow.y);
+		rightArrow.frames = ui_tex;
+		rightArrow.animation.addByPrefix('idle', 'arrow right');
+		rightArrow.animation.addByPrefix('press', "arrow push right", 24, false);
+		rightArrow.animation.play('idle');
+		rightArrow.antialiasing = ClientPrefs.globalAntialiasing;
+		//difficultySelectors.add(rightArrow);
+
 		Difficulty.resetList();
 		if (lastDifficultyName == '')
 		{
@@ -364,6 +382,16 @@ class StoryMenuState extends MusicBeatState
 				changeWeek(-FlxG.mouse.wheel);
 				changeDifficulty();
 			}
+
+			if (controls.UI_RIGHT)
+				rightArrow.animation.play('press')
+			else
+				rightArrow.animation.play('idle');
+
+			if (controls.UI_LEFT)
+				leftArrow.animation.play('press');
+			else
+				leftArrow.animation.play('idle');
 
 			if (controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed))
 				changeDifficulty(1);
