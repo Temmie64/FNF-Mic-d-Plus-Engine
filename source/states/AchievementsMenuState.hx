@@ -3,6 +3,7 @@ package states;
 import flixel.FlxObject;
 import flixel.util.FlxSort;
 import objects.Bar;
+import mobile.input.TouchScrollHandler;
 
 #if ACHIEVEMENTS_ALLOWED
 class AchievementsMenuState extends MusicBeatState
@@ -19,6 +20,7 @@ class AchievementsMenuState extends MusicBeatState
 	public var camFollow:FlxObject;
 
 	public var MAX_PER_ROW:Int = 4;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	override function create()
 	{
@@ -33,8 +35,9 @@ class AchievementsMenuState extends MusicBeatState
 		for (achievement => data in Achievements.achievements)
 		{
 			var unlocked:Bool = Achievements.isUnlocked(achievement);
-			if (data.hidden != true || unlocked)
-				options.push(makeAchievement(achievement, data, unlocked, data.mod));
+			// Hidden achievements should be shown as locked instead of silently
+			// disappearing from the collection screen.
+			options.push(makeAchievement(achievement, data, unlocked, data.mod));
 		}
 
 		camFollow = new FlxObject(0, 0, 1, 1);
@@ -125,7 +128,8 @@ class AchievementsMenuState extends MusicBeatState
 
 		_changeSelection();
 
-		addTouchPad('LEFT_FULL', 'B_C');
+		addTouchPad('NONE', 'B_C');
+		addTouchPadCamera();
 
 		super.create();
 
@@ -137,7 +141,8 @@ class AchievementsMenuState extends MusicBeatState
 	{
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('LEFT_FULL', 'B_C');
+		addTouchPad('NONE', 'B_C');
+		addTouchPadCamera();
 	}
 
 	function makeAchievement(achievement:String, data:Achievement, unlocked:Bool, mod:String = null)
@@ -165,6 +170,8 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (!goingBack && touchHandler.update(true, true, getTouchAchievementAt, onTouchAchievement, changeTouchRow))
+			return;
 
 		if (!goingBack && options.length > 1)
 		{
@@ -243,6 +250,38 @@ class AchievementsMenuState extends MusicBeatState
 
 	public var barTween:FlxTween = null;
 
+	function getTouchAchievementAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpOptions.members)
+			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchAchievement(index:Int, x:Float, y:Float):Void
+	{
+		if (index >= 0 && index < options.length)
+		{
+			curSelected = index;
+			_changeSelection();
+		}
+	}
+
+	function changeTouchRow(direction:Int):Void
+	{
+		var column:Int = curSelected % MAX_PER_ROW;
+		var target:Int = curSelected + direction * MAX_PER_ROW;
+		if (target < 0)
+		{
+			var lastRow:Int = Math.ceil(options.length / MAX_PER_ROW) - 1;
+			target = Std.int(Math.min(lastRow * MAX_PER_ROW + column, options.length - 1));
+		}
+		else if (target >= options.length)
+			target = column < options.length ? column : 0;
+		curSelected = target;
+		_changeSelection();
+	}
+
 	function _changeSelection()
 	{
 		FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -293,6 +332,7 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 	var onYes:Bool = false;
 	var yesText:Alphabet;
 	var noText:Alphabet;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	public function new()
 	{
@@ -335,12 +375,23 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		add(noText);
 		updateOptions();
 
-		addTouchPad('LEFT_RIGHT', 'A');
+		// YES/NO is handled by direct taps and swipes; Back is the only button.
+		addTouchPad('NONE', 'B');
+		addTouchPadCamera();
 	}
 
 	override function update(elapsed:Float)
 	{
-		if (controls.BACK)
+		var touchAccept:Bool = false;
+		touchHandler.update(true, true, getTouchChoiceAt, function(index:Int, x:Float, y:Float)
+		{
+			if ((index == 0) == onYes)
+				touchAccept = true;
+			else
+				setChoice(index == 0);
+		}, function(direction:Int) setChoice(!onYes));
+
+		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 		{
 			close();
 			controls.isInSubstate = false;
@@ -351,12 +402,9 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		super.update(elapsed);
 
 		if (controls.UI_LEFT_P || controls.UI_RIGHT_P)
-		{
-			onYes = !onYes;
-			updateOptions();
-		}
+			setChoice(!onYes);
 
-		if (controls.ACCEPT)
+		if (controls.ACCEPT || touchAccept)
 		{
 			if (onYes)
 			{
@@ -406,6 +454,22 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		noText.scale.set(scales[1 - confirmInt], scales[1 - confirmInt]);
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
+
+	function setChoice(yes:Bool):Void
+	{
+		if (onYes == yes)
+			return;
+		onYes = yes;
+		updateOptions();
+	}
+
+	function getTouchChoiceAt(x:Float, y:Float):Int
+	{
+		if (yesText != null && x >= yesText.x && x <= yesText.x + yesText.width && y >= yesText.y && y <= yesText.y + yesText.height)
+			return 0;
+		if (noText != null && x >= noText.x && x <= noText.x + noText.width && y >= noText.y && y <= noText.y + noText.height)
+			return 1;
+		return TouchScrollHandler.NO_TARGET;
+	}
 }
 #end
-

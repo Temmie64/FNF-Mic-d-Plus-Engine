@@ -11,6 +11,7 @@ import objects.MusicPlayer;
 import options.GameplayChangersSubstate;
 import options.OptionsMenuTheme;
 import substates.ResetScoreSubState;
+import mobile.input.TouchScrollHandler;
 import backend.ui.md3.MD3ShapeTools;
 import backend.ui.md3.MaterialTextField;
 import backend.ui.md3.MaterialWavyProgressIndicator;
@@ -141,6 +142,7 @@ class FreeplayState extends MusicBeatState
 	public var player:MusicPlayer;
 
 	var freeplayTouchInputBlockTime:Float = 0;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	public var inDifficultySelect:Bool = false;
 	public var difficultySelector:DifficultySelector;
@@ -455,6 +457,7 @@ class FreeplayState extends MusicBeatState
 			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, darkestColor, OptionsMenuTheme.cardStroke(false));
 		}
 		card.antialiasing = ClientPrefs.data.antialiasing;
+		card.ID = index;
 		card.visible = false;
 		cardArray[index] = card;
 		cardGroup.add(card);
@@ -773,7 +776,7 @@ class FreeplayState extends MusicBeatState
 		FlxG.stage.window.onDropFile.add(onDropFile);
 		#end
 
-		addTouchPad('UP_DOWN', 'A_B_C_X_Y_Z');
+		addTouchPad('NONE', 'B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 		{
@@ -789,7 +792,7 @@ class FreeplayState extends MusicBeatState
 		persistentUpdate = true;
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('UP_DOWN', 'A_B_C_X_Y_Z');
+		addTouchPad('NONE', 'B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 		{
@@ -1068,6 +1071,7 @@ class FreeplayState extends MusicBeatState
 		var touchX:Bool = touchPad != null && touchPad.buttonX != null && touchPad.buttonX.justPressed;
 		var touchY:Bool = touchPad != null && touchPad.buttonY != null && touchPad.buttonY.justPressed;
 		var touchZ:Bool = touchPad != null && touchPad.buttonZ != null && touchPad.buttonZ.justPressed;
+		var touchSongAccept:Bool = false;
 
 		if (searchFocused && FlxG.keys.justPressed.ESCAPE)
 		{
@@ -1082,6 +1086,23 @@ class FreeplayState extends MusicBeatState
 			updateTexts(elapsed);
 			return;
 		}
+
+		if (!searchFocused && !player.playingMusic && !inDifficultySelect)
+			touchHandler.update(true, true, getTouchSongAt, function(index:Int, x:Float, y:Float)
+			{
+				if (index == curSelected)
+					touchSongAccept = true;
+				else
+					selectTouchSong(index);
+			}, function(direction:Int) changeSelection(direction));
+		else if (!searchFocused && !player.playingMusic && inDifficultySelect)
+			touchHandler.update(true, true, getTouchDifficultyAt, function(index:Int, x:Float, y:Float)
+			{
+				if (index == difficultySelector.curSelected)
+					touchSongAccept = true;
+				else
+					changeDifficultySelection(index - difficultySelector.curSelected);
+			}, function(direction:Int) changeDifficultySelection(direction));
 
 		if (handleSongInfoLinkMouse())
 		{
@@ -1286,8 +1307,8 @@ class FreeplayState extends MusicBeatState
 		bgZoom = FlxMath.lerp(defaultBgZoom, bgZoom, Math.exp(-elapsed * 3.125));
 		bg.scale.set(bgZoom, bgZoom);
 		centerScaledFreeplayBackground(bg);
-		checker.x += 0.27 * elapsed * 60;
-		checker.y -= 0.63 * elapsed * 60;
+		checker.x += 0.27 / (ClientPrefs.data.framerate / 60);
+		checker.y -= 0.63 / (ClientPrefs.data.framerate / 60);
 		if (bgTransition != null)
 		{
 			bgTransition.scale.set(bgZoom, bgZoom);
@@ -1368,6 +1389,8 @@ class FreeplayState extends MusicBeatState
 				{
 					changeDifficultySelection(1);
 				}
+				if (FlxG.mouse.wheel != 0)
+					changeDifficultySelection(-FlxG.mouse.wheel);
 			}
 		}
 
@@ -1517,7 +1540,7 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 		else if (!searchFocused
-			&& (controls.ACCEPT || touchA)
+			&& (controls.ACCEPT || touchA || touchSongAccept)
 			&& !player.playingMusic)
 		{
 			if (!inDifficultySelect)
@@ -1662,6 +1685,44 @@ class FreeplayState extends MusicBeatState
 
 		// Actualizar textos de score cuando cambia la selección
 		difficultySelector.updateScoreTexts();
+	}
+
+	function getTouchSongAt(x:Float, y:Float):Int
+	{
+		// Cards and labels live in different groups. Use the stable song ID,
+		// never a group's transient member position.
+		for (card in cardArray)
+		{
+			if (card != null && card.visible && x >= card.x && x <= card.x + card.width && y >= card.y && y <= card.y + card.height)
+				return card.ID;
+		}
+		for (item in grpSongs.members)
+		{
+			if (item == null || !item.visible)
+				continue;
+			if (x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return item.ID;
+		}
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function selectTouchSong(index:Int):Void
+	{
+		if (index < 0 || index >= songs.length || index == curSelected)
+			return;
+		curSelected = index;
+		// Resolve the visual carousel before the next tap, otherwise the user can
+		// release over a card that moved to another logical index.
+		lerpSelected = curSelected;
+		changeSelection(0);
+	}
+
+	function getTouchDifficultyAt(x:Float, y:Float):Int
+	{
+		for (index => card in difficultySelector.cards.members)
+			if (card != null && card.visible && x >= card.x && x <= card.x + card.width && y >= card.y && y <= card.y + card.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
 	}
 
 	function changeSelection(change:Int = 0, playSound:Bool = true)

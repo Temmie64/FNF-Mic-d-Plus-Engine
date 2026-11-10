@@ -13,6 +13,7 @@ import objects.HealthIcon;
 import objects.MusicPlayerPsych;
 import options.GameplayChangersSubstate;
 import substates.ResetScoreSubState;
+import mobile.input.TouchScrollHandler;
 import flixel.math.FlxMath;
 import flixel.addons.display.FlxBackdrop;
 import flixel.tweens.FlxEase;
@@ -80,6 +81,7 @@ class FreeplayState_Psych extends MusicBeatState
 
 	var player:MusicPlayerPsych;
 	var freeplayTouchInputBlockTime:Float = 0;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 	#if (MODS_ALLOWED && sys && !mobile)
 	var modImportOverlay:ModImportOverlay = null;
 	#end
@@ -318,7 +320,7 @@ class FreeplayState_Psych extends MusicBeatState
 		changeSelection();
 		updateTexts();
 
-		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
+		addTouchPad('LEFT_RIGHT', 'B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 			touchPad.updateTrackedButtons();
@@ -351,7 +353,7 @@ class FreeplayState_Psych extends MusicBeatState
 		persistentUpdate = true;
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
+		addTouchPad('LEFT_RIGHT', 'B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 			touchPad.updateTrackedButtons();
@@ -410,6 +412,17 @@ class FreeplayState_Psych extends MusicBeatState
 
 		if (Math.abs(lerpScore - intendedScore) <= 10)
 			lerpScore = intendedScore;
+
+		var touchSongAccept:Bool = false;
+		if (!player.playingMusic)
+			touchHandler.update(true, true, getTouchSongAt, function(index:Int, x:Float, y:Float)
+			{
+				if (index == curSelected)
+					touchSongAccept = true;
+				else
+					changeSelection(index - curSelected);
+			}, function(direction:Int) changeSelection(direction));
+
 		if (Math.abs(lerpRating - intendedRating) <= 0.01)
 			lerpRating = intendedRating;
 
@@ -604,7 +617,7 @@ class FreeplayState_Psych extends MusicBeatState
 				player.pauseOrResume(!player.playing);
 			}
 		}
-		else if ((controls.ACCEPT || touchPad.buttonA.justPressed) && !player.playingMusic)
+		else if ((controls.ACCEPT || touchPad.buttonA.justPressed || touchSongAccept) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 
@@ -771,6 +784,14 @@ class FreeplayState_Psych extends MusicBeatState
 		positionHighscore();
 		missingText.visible = false;
 		missingTextBG.visible = false;
+	}
+
+	function getTouchSongAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpSongs.members)
+			if (item != null && item.visible && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
 	}
 
 	function changeSelection(change:Int = 0, playSound:Bool = true)

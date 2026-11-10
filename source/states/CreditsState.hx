@@ -10,6 +10,7 @@ import flixel.tweens.FlxEase;
 import flixel.util.FlxAxes;
 import flixel.addons.display.FlxBackdrop;
 import flixel.util.FlxGradient;
+import mobile.input.TouchScrollHandler;
 
 class CreditsState extends MusicBeatState
 {
@@ -26,6 +27,7 @@ class CreditsState extends MusicBeatState
 	var colorTween:FlxTween;
 	var colorTween2:FlxTween;
 	var colorTween3:FlxTween;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Play_Checker'), flixel.util.FlxAxes.XY);
 	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFBDF8, 0xAAFFFDF3], 1, 90, true);
@@ -383,9 +385,12 @@ class CreditsState extends MusicBeatState
 		intendedColor = bg.color;
 		changeSelection();
 
-		addTouchPad('UP_DOWN', 'A_B');
-
 		super.create();
+
+		// MusicBeatState.create() resets the Psych cameras. Attach afterwards so
+		// TouchButton never retains a stale camera when the Credits are opened.
+		addTouchPad('NONE', 'B');
+		addTouchPadCamera();
 
 		FlxG.camera.zoom = 0.6;
 		FlxG.camera.alpha = 0;
@@ -413,6 +418,8 @@ class CreditsState extends MusicBeatState
 
 		if (!quitting)
 		{
+			if (touchHandler.update(true, true, getTouchCreditAt, onTouchCredit, function(direction:Int) changeSelection(direction)))
+				return;
 			if (creditsStuff.length > 1)
 			{
 				var shiftMult:Int = 1;
@@ -500,6 +507,26 @@ class CreditsState extends MusicBeatState
 	}
 
 	var moveTween:FlxTween = null;
+
+	function getTouchCreditAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpOptions.members)
+			if (item != null && !unselectableCheck(index) && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchCredit(index:Int, x:Float, y:Float):Void
+	{
+		if (index != curSelected)
+		{
+			changeSelection(index - curSelected);
+			return;
+		}
+		var link = creditsStuff[curSelected][3];
+		if (link != null && link.length > 4)
+			CoolUtil.browserLoad(link);
+	}
 
 	function changeSelection(change:Int = 0)
 	{
@@ -596,4 +623,3 @@ class CreditsState extends MusicBeatState
 		return creditsStuff[num].length <= 1;
 	}
 }
-

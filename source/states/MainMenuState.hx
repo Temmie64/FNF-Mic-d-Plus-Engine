@@ -406,8 +406,8 @@ class MainMenuState extends MusicBeatState
 		if (FlxG.sound.music != null && FlxG.sound.music.volume < 0.8)
 			FlxG.sound.music.volume = Math.min(FlxG.sound.music.volume + 0.5 * elapsed, 0.8);
 
-		checker.x -= 0.45 * elapsed * 60;
-		checker.y -= 0.16 * elapsed * 60;
+		checker.x -= 0.45 / (ClientPrefs.data.framerate / 60);
+		checker.y -= 0.16 / (ClientPrefs.data.framerate / 60);
 
 		#if CHECK_FOR_UPDATES
 		tryShowOutdatedWarning();
