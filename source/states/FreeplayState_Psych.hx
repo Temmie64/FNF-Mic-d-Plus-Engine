@@ -148,9 +148,9 @@ class FreeplayState_Psych extends MusicBeatState
 				if (bottomColors == null || bottomColors.length < 3)
 					bottomColors = colors;
 				if (discTopColors == null || discTopColors.length < 3)
-					discTopColors = [0, 0, 0];
+					discTopColors = colors;
 				if (discBottomColors == null || discBottomColors.length < 3)
-					discBottomColors = [0, 0, 0];
+					discBottomColors = colors;
 				addSong(song[0], i, song[1], FlxColor.fromRGB(colors[0], colors[1], colors[2]),
 				FlxColor.fromRGB(checkerColors[0], checkerColors[1], checkerColors[2]),
 				FlxColor.fromRGB(bottomColors[0], bottomColors[1], bottomColors[2]),
@@ -542,82 +542,7 @@ class FreeplayState_Psych extends MusicBeatState
 			openSubState(backend.ScriptableSubstate.tryCreate('options.GameplayChangersSubstate', new GameplayChangersSubstate()));
 			removeTouchPad();
 		}
-		else if (FlxG.keys.justPressed.SPACE || touchPad.buttonX.justPressed)
-		{
-			if (instPlaying != curSelected && !player.playingMusic)
-			{
-				destroyFreeplayVocals();
-				FlxG.sound.music.volume = 0;
-
-				Mods.currentModDirectory = songs[curSelected].folder;
-				var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
-				if (!loadChartWithChecker(poop, songs[curSelected].songName.toLowerCase()))
-				{
-					updateTexts(elapsed);
-					super.update(elapsed);
-					return;
-				}
-				if (PlayState.SONG.needsVoices)
-				{
-					vocals = new FlxSound();
-					try
-					{
-						var playerVocals:String = getVocalFromCharacter(PlayState.SONG.player1);
-						var loadedVocals = Paths.voices(PlayState.SONG.song, (playerVocals != null && playerVocals.length > 0) ? playerVocals : 'Player');
-						if (loadedVocals == null)
-							loadedVocals = Paths.voices(PlayState.SONG.song);
-
-						if (loadedVocals != null && loadedVocals.length > 0)
-						{
-							vocals.loadEmbedded(loadedVocals);
-							FlxG.sound.list.add(vocals);
-							vocals.persist = vocals.looped = true;
-							vocals.volume = 0.8;
-							vocals.play();
-							vocals.pause();
-						}
-						else
-							vocals = FlxDestroyUtil.destroy(vocals);
-					}
-					catch (e:Dynamic)
-					{
-						vocals = FlxDestroyUtil.destroy(vocals);
-					}
-
-					opponentVocals = new FlxSound();
-					try
-					{
-						var oppVocals:String = getVocalFromCharacter(PlayState.SONG.player2);
-						var loadedVocals = Paths.voices(PlayState.SONG.song, (oppVocals != null && oppVocals.length > 0) ? oppVocals : 'Opponent');
-
-						if (loadedVocals != null && loadedVocals.length > 0)
-						{
-							opponentVocals.loadEmbedded(loadedVocals);
-							FlxG.sound.list.add(opponentVocals);
-							opponentVocals.persist = opponentVocals.looped = true;
-							opponentVocals.volume = 0.8;
-							opponentVocals.play();
-							opponentVocals.pause();
-						}
-						else
-							opponentVocals = FlxDestroyUtil.destroy(opponentVocals);
-					}
-					catch (e:Dynamic)
-					{
-						opponentVocals = FlxDestroyUtil.destroy(opponentVocals);
-					}
-				}
-
-				FlxG.sound.playMusic(Paths.inst(PlayState.SONG.song), 0.8);
-				FlxG.sound.music.pause();
-				instPlaying = curSelected;
-
-				player.playingMusic = true;
-				player.curTime = 0;
-				player.switchPlayMusic();
-				player.pauseOrResume(true);
-			}
-			else if (instPlaying == curSelected && player.playingMusic)
+		else if (instPlaying == curSelected && player.playingMusic)
 			{
 				player.pauseOrResume(!player.playing);
 			}
@@ -637,6 +562,11 @@ class FreeplayState_Psych extends MusicBeatState
 				return;
 			}
 			PlayState.isStoryMode = false;
+			PlayState.isStoryMode = false;
+			PlayState.isEndless = false;
+			PlayState.isMarathon = false;
+			PlayState.isFreeplay = true;
+			PlayState.isSurvival = false;
 			PlayState.storyDifficulty = curDifficulty;
 			trace('CURRENT WEEK: ' + WeekData.getWeekFileName());
 			@:privateAccess
@@ -645,10 +575,10 @@ class FreeplayState_Psych extends MusicBeatState
 				trace('CHANGED MOD DIRECTORY, RELOADING STUFF');
 				Paths.freeGraphicsFromMemory();
 			}
-			LoadingState.prepareToSong();
+			/*LoadingState.prepareToSong();
 			LoadingState.loadAndSwitchState(new PlayState());
 			#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
-			stopMusicPlay = true;
+			stopMusicPlay = true;*/
 
 			destroyFreeplayVocals();
 			#if (MODS_ALLOWED && DISCORD_ALLOWED)
@@ -840,9 +770,13 @@ class FreeplayState_Psych extends MusicBeatState
 			intendedBottomColor = newBottomColor;
 			FlxTween.cancelTweensOf(side);
 			FlxTween.color(side, 0.5, side.color, intendedBottomColor, {ease: FlxEase.backIn});
+
+			FlxTween.cancelTweensOf(innerDiscTop);
+			FlxTween.color(innerDiscTop, 0.5, innerDiscTop.color, songs[curSelected].discTopColor, {ease: FlxEase.backIn});
+
+			FlxTween.cancelTweensOf(innerDiscBottom);
+			FlxTween.color(innerDiscBottom, 0.5, innerDiscBottom.color, songs[curSelected].discBottomColor, {ease: FlxEase.backIn});
 		}
-		innerDiscTop.color = songs[curSelected].discTopColor;
-		innerDiscBottom.color = songs[curSelected].discBottomColor;
 		Mods.currentModDirectory = songs[curSelected].folder;
 		discIcon.changeIcon(songs[curSelected].songCharacter);
 

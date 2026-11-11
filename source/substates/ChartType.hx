@@ -147,6 +147,12 @@ class ChartType extends MusicBeatSubstate
                     PlayState.chartType = selectedChartType;
 					LoadingState.prepareToSong();
 			        LoadingState.loadAndSwitchState(new PlayState());
+			        #if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
+			        stopMusicPlay = true;
+
+			        #if (MODS_ALLOWED && DISCORD_ALLOWED)
+			        DiscordClient.loadModRPC();
+			        #end
 				});
             }
         }
