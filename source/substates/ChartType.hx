@@ -122,12 +122,9 @@ class ChartType extends MusicBeatSubstate
             {
                 selectedSomethin = true;
 
-                FlxG.sound.playMusic(Paths.music("titleShoot"), ClientPrefs.data.soundVolume / 100);
-
-                FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
-
+                FlxG.sound.playMusic(Paths.music("titleShoot"), 100);
+                FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 				DiscordClient.changePresence("Time to play!", null);
-
                 FlxG.sound.music.fadeOut(2.1, 0);
 
                 FlxTween.tween(FlxG.camera, { zoom:1.4}, 1.3, { ease: FlxEase.quartInOut});
@@ -167,24 +164,24 @@ class ChartType extends MusicBeatSubstate
     }
 
     function changeItem(huh:Int = 0)
-        {
-            curSelected += huh;
+    {
+        curSelected += huh;
         
-            if (curSelected >= menuItems.length)
-                curSelected = 0;
-            if (curSelected < 0)
-                curSelected = menuItems.length - 1;
+        if (curSelected >= menuItems.length)
+            curSelected = 0;
+        if (curSelected < 0)
+            curSelected = menuItems.length - 1;
 
-            menuItems.forEach(function(spr:FlxSprite)
-                {
-                    spr.animation.play('idle');
+        menuItems.forEach(function(spr:FlxSprite)
+        {
+            spr.animation.play('idle');
         
-                    if (spr.ID == curSelected)
-                    {
-                        spr.animation.play('select'); 
-                    }
+            if (spr.ID == curSelected)
+            {
+                spr.animation.play('select'); 
+            }
             
-                    spr.updateHitbox();
-                });
-        }
+            spr.updateHitbox();
+        });
+    }
 }
