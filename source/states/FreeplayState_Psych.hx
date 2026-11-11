@@ -12,6 +12,7 @@ import backend.AccuracyTools;
 import objects.HealthIcon;
 import objects.MusicPlayerPsych;
 import options.GameplayChangersSubstate;
+import substates.ChartType;
 import substates.ResetScoreSubState;
 import mobile.input.TouchScrollHandler;
 import flixel.math.FlxMath;
@@ -90,6 +91,10 @@ class FreeplayState_Psych extends MusicBeatState
 	{
 		persistentUpdate = true;
 		PlayState.isStoryMode = false;
+		PlayState.isEndless = false;
+		PlayState.isMarathon = false;
+		PlayState.isFreeplay = true;
+		PlayState.isSurvival = false;
 		WeekData.reloadWeekFiles(false);
 
 		#if DISCORD_ALLOWED
@@ -141,7 +146,7 @@ class FreeplayState_Psych extends MusicBeatState
 				if (checkerColors == null || checkerColors.length < 3)
 					checkerColors = [0, 0, 0];
 				if (bottomColors == null || bottomColors.length < 3)
-					bottomColors = [0, 0, 0];
+					bottomColors = colors;
 				if (discTopColors == null || discTopColors.length < 3)
 					discTopColors = [0, 0, 0];
 				if (discBottomColors == null || discBottomColors.length < 3)
@@ -173,8 +178,8 @@ class FreeplayState_Psych extends MusicBeatState
 		add(checker);
 
 		side = new FlxSprite().loadGraphic(Paths.image('MicUp/Free_Bottom'));
+		side.scrollFactor.set(0, 0);
 		side.antialiasing = ClientPrefs.data.antialiasing;
-		side.scrollFactor.set();
 		side.screenCenter();
 		side.y = FlxG.height;
 		add(side);
@@ -651,15 +656,15 @@ class FreeplayState_Psych extends MusicBeatState
 			#end
 
 			FlxTween.tween(bg, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
-				FlxTween.tween(checker, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
-				FlxTween.tween(gradientBar, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
-				FlxTween.tween(side, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
-				FlxTween.tween(disc, {alpha: 0, 'scale.x': 0}, 0.8, {ease: FlxEase.quartInOut});
-				FlxTween.tween(innerDiscTop, {alpha: 0, 'scale.x': 0}, 0.8, {ease: FlxEase.quartInOut});
-				FlxTween.tween(innerDiscBottom, {alpha: 0, 'scale.x': 0}, 0.8, {ease: FlxEase.quartInOut});
-				FlxTween.tween(scoreText, {y: 750, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
-				FlxTween.tween(navi, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
-				FlxTween.tween(sprDifficulty, {y: 750, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(checker, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+			FlxTween.tween(gradientBar, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+			FlxTween.tween(side, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(disc, {alpha: 0, 'scale.x': 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(innerDiscTop, {alpha: 0, 'scale.x': 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(innerDiscBottom, {alpha: 0, 'scale.x': 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(scoreText, {y: 750, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(navi, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(sprDifficulty, {y: 750, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 		}
 		else if ((controls.RESET || touchPad.buttonY.justPressed) && !player.playingMusic)
 		{
@@ -707,12 +712,23 @@ class FreeplayState_Psych extends MusicBeatState
 			{
 				var song = Song.loadFromJson(chartName, songFolder);
 				SongChecker.inspectSong(report, song);
+				PlayState.isStoryMode = false;
+				PlayState.isEndless = false;
+				PlayState.isMarathon = false;
+				PlayState.isFreeplay = true;
+				PlayState.isSurvival = false;
+				PlayState.storyDifficulty = curDifficulty;
 			}
 			catch (e:Dynamic)
 			{
 				report.add(SongCheckSeverity.ERROR, 'chart-load-exception',
 					Language.getPhrase('freeplay.errors.chart_load_exception', 'Unexpected error while loading the chart: {1}', [Std.string(e)]), report.chartPath);
 			}
+
+			new FlxTimer().start(0.9, function(tmr:FlxTimer)
+			{
+				openSubState(new ChartType());
+			});
 		}
 		SongLoadMetrics.recordChecker((Timer.stamp() - checkerStarted) * 1000 - SongLoadMetrics.chartMs);
 

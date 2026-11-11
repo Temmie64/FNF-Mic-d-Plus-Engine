@@ -170,7 +170,12 @@ class PlayState extends MusicBeatState
 		return stageUI == "pixel" || stageUI.endsWith("-pixel");
 
 	public static var SONG:SwagSong = null;
+	public static var chartType:String = "standard";
 	public static var isStoryMode:Bool = false;
+	public static var isFreeplay:Bool = false;
+	public static var isEndless:Bool = false;
+	public static var isMarathon:Bool = false;
+	public static var isSurvival:Bool = false;
 	public static var storyWeek:Int = 0;
 	public static var storyPlaylist:Array<String> = [];
 	public static var storyDifficulty:Int = 1;
@@ -362,6 +367,13 @@ class PlayState extends MusicBeatState
 	private var luaDebugGroup:FlxTypedGroup<psychlua.backend.DebugLuaText>;
 	#end
 	public var introSoundsSuffix:String = '';
+
+	//Arrows and stuff
+	public static var arrowLane:Int = 0;
+	public static var arrowLane2:Int = 0;
+	public static var arrowLaneRando:Int = 0;
+	public static var arrowLaneRando2:Int = 0;
+	public static var arrowLaneRando3:Int = 0;
 
 	// Less laggy controls
 	private var keysArray:Array<String>;
@@ -640,6 +652,10 @@ class PlayState extends MusicBeatState
 			timeTxt.size = 24;
 			timeTxt.y += 3;
 		}
+
+		arrowLaneRando = FlxG.random.int(0, 3);
+		arrowLaneRando2 = FlxG.random.int(0, 3);
+		arrowLaneRando3 = FlxG.random.int(0, 3);
 
 		generateSong();
 
@@ -1976,6 +1992,7 @@ class PlayState extends MusicBeatState
 	private var noteTypes:Array<String> = [];
 	private var eventsPushed:Array<String> = [];
 	private var totalColumns: Int = 4;
+	var stair:Int = 0;
 
 	private function generateSong():Void
 	{
@@ -2059,6 +2076,39 @@ class PlayState extends MusicBeatState
 				var gottaHitNote:Bool = chartNote.gottaHit;
 				var mustPress:Bool = gottaHitNote;
 				var strumLineIndex:Int = chartNote.strumLineIndex >= 0 ? chartNote.strumLineIndex : (mustPress ? 1 : 0);
+
+				if (strumLineIndex < 2)
+				{
+					switch (chartType)
+					{
+						case "standard":
+							// Do nothing, just use the chart's column.
+						case "flip":
+							if (mustPress)
+								noteColumn = 3 - noteColumn;
+						case "chaos":
+							noteColumn = FlxG.random.int(0, 3);
+						case "onearrow":
+							noteColumn = arrowLaneRando;
+						case "stair":
+							noteColumn = stair % 4;
+							stair += chartNote.density;
+						case "dualarrow":
+							noteColumn = stair % 2 == 0 ? arrowLaneRando : arrowLaneRando2;
+							stair += chartNote.density;
+						case "wave":
+							switch (stair % 6)
+							{
+								case 0 | 1 | 2 | 3:
+									noteColumn = stair % 6;
+								case 4:
+									noteColumn = 2;
+								case 5:
+									noteColumn = 1;
+							}
+							stair += chartNote.density;
+					}
+				}
 
 				// A map avoids rescanning every generated note for each chart entry.
 				var chartNoteKey:String = '$spawnTime|$noteColumn|$strumLineIndex|$noteType';
