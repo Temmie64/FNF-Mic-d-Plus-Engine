@@ -24,8 +24,8 @@ class ChartType extends MusicBeatSubstate
     var camLerp:Float = 0.32;
 
     var boombox:FlxSprite = new FlxSprite(0,0).loadGraphic(Paths.image('MicUp/Boombox'));
-    var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Substate_Checker'), 0.2, 0.2, true, true);
-	var gradientBar:FlxSprite = new FlxSprite(0,0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
+    var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Substate_Checker'), flixel.util.FlxAxes.XY);
+	var gradientBar:FlxSprite = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width),512, [0x00ff0000, 0x55FFC461, 0xAAFBFF89], 1, 90, true);
 
     var blackBarThingie:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 
@@ -36,8 +36,7 @@ class ChartType extends MusicBeatSubstate
         add(blackBarThingie);
         blackBarThingie.scrollFactor.set();
 
-        gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512, [0x00ff0000, 0x55FF70E7, 0xAA94EBFF], 1, 90, true); 
-		gradientBar.y = FlxG.height - gradientBar.height;
+        gradientBar.y = FlxG.height - gradientBar.height;
 		add(gradientBar);
 		gradientBar.scrollFactor.set(0, 0);
 
