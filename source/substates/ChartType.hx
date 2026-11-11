@@ -124,7 +124,7 @@ class ChartType extends MusicBeatSubstate
                 selectedSomethin = true;
 
                 FlxG.sound.playMusic(Paths.music("titleShoot"), 100);
-                FlxG.sound.play(Paths.sound('confirmMenu'), 100);
+                //FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 				DiscordClient.changePresence("Time to play!", null);
                 FlxG.sound.music.fadeOut(2.1, 0);
 
@@ -144,7 +144,6 @@ class ChartType extends MusicBeatSubstate
                     FlxG.sound.music.stop();
                     FlxG.sound.music.kill();
 					boombox.visible = false;
-			        LoadingState.returnState = states.FreeplayStateSelector.create();
                     PlayState.chartType = selectedChartType;
 					LoadingState.prepareToSong();
 			        LoadingState.loadAndSwitchState(new PlayState());

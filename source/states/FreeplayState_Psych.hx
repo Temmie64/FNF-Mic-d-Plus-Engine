@@ -292,13 +292,13 @@ class FreeplayState_Psych extends MusicBeatState
 
 		curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(lastDifficultyName)));
 
-		final space:String = (controls.mobileC) ? "X" : "SPACE";
+		//final space:String = (controls.mobileC) ? "X" : "SPACE";
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
 
 		var leText:String = Language.getPhrase('freeplay.psych.tip', Language.getPhrase('freeplay_tip',
-			'Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.'),
-			[space, control, reset]);
+			'Press {1} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.'),
+			[control, reset]);
 		#if (MODS_ALLOWED && sys && !mobile)
 		leText += Language.getPhrase('freeplay.psych.desktop_mod_tip', ' / F5 reloads mods / drop a mod folder to import it.');
 		#end
@@ -343,6 +343,7 @@ class FreeplayState_Psych extends MusicBeatState
 		FlxTween.tween(scoreText, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 		sprDifficulty.alpha = 0;
 		FlxTween.tween(sprDifficulty, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
+		FlxTween.tween(diffText, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 		FlxG.camera.zoom = 0.6;
 		FlxG.camera.alpha = 0;
 		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
@@ -529,6 +530,7 @@ class FreeplayState_Psych extends MusicBeatState
 				FlxTween.tween(gradientBar, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(side, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(sprDifficulty, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
+				FlxTween.tween(diffText, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(scoreText, {alpha: 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(disc, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(innerDiscTop, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
@@ -580,10 +582,7 @@ class FreeplayState_Psych extends MusicBeatState
 			#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
 			stopMusicPlay = true;*/
 
-			destroyFreeplayVocals();
-			#if (MODS_ALLOWED && DISCORD_ALLOWED)
-			DiscordClient.loadModRPC();
-			#end
+			FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 
 			FlxTween.tween(bg, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
 			FlxTween.tween(checker, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
@@ -595,6 +594,21 @@ class FreeplayState_Psych extends MusicBeatState
 			FlxTween.tween(scoreText, {y: 750, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 			FlxTween.tween(navi, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 			FlxTween.tween(sprDifficulty, {y: 750, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
+			FlxTween.tween(diffText, {y: 750, alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
+			for (item in grpSongs.members)
+			{
+				FlxTween.tween(item, {alpha: 0}, 0.9, {ease: FlxEase.quartInOut});
+			}
+
+			new FlxTimer().start(0.9, function(tmr:FlxTimer)
+			{
+				openSubState(new ChartType());
+			});
+
+			destroyFreeplayVocals();
+			#if (MODS_ALLOWED && DISCORD_ALLOWED)
+			DiscordClient.loadModRPC();
+			#end
 		}
 		else if ((controls.RESET || touchPad.buttonY.justPressed) && !player.playingMusic)
 		{
@@ -654,11 +668,6 @@ class FreeplayState_Psych extends MusicBeatState
 				report.add(SongCheckSeverity.ERROR, 'chart-load-exception',
 					Language.getPhrase('freeplay.errors.chart_load_exception', 'Unexpected error while loading the chart: {1}', [Std.string(e)]), report.chartPath);
 			}
-
-			new FlxTimer().start(0.9, function(tmr:FlxTimer)
-			{
-				openSubState(new ChartType());
-			});
 		}
 		SongLoadMetrics.recordChecker((Timer.stamp() - checkerStarted) * 1000 - SongLoadMetrics.chartMs);
 
