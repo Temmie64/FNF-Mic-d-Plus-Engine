@@ -4,11 +4,15 @@ import backend.ClientPrefs;
 import backend.Mods;
 import backend.ScriptableState;
 import flixel.FlxState;
+import substates.ChartType;
 
 class FreeplayStateSelector
 {
 	public static function create():FlxState
 	{
+		PlayState.chartType = 'standard';
+		ChartType.curSelected = 0;
+
 		#if HSCRIPT_ALLOWED
 		if (Mods.launchedMod != null && Mods.launchedMod.length > 0 && ScriptableState.hasScript('FreeplayState'))
 			return ScriptableState.tryCreate('FreeplayState', new FreeplayState());
@@ -20,4 +24,3 @@ class FreeplayStateSelector
 		return ScriptableState.tryCreate('FreeplayState', new FreeplayState());
 	}
 }
-
