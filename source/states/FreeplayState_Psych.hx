@@ -7,7 +7,6 @@ import backend.SongChecker;
 import backend.SongChecker.SongCheckReport;
 import backend.SongChecker.SongCheckSeverity;
 import backend.SongLoadMetrics;
-import backend.TransitionManager;
 import haxe.Timer;
 import backend.AccuracyTools;
 import objects.HealthIcon;
@@ -728,12 +727,7 @@ class FreeplayState_Psych extends MusicBeatState
 
 			new FlxTimer().start(0.9, function(tmr:FlxTimer)
 			{
-				openSubState(TransitionManager.create(0.7, false));
-				TransitionManager.setFinishCallback(function()
-				{
-					openSubState(new ChartType());
-					persistentUpdate = false;
-				});
+				openSubState(new ChartType());
 			});
 		}
 		SongLoadMetrics.recordChecker((Timer.stamp() - checkerStarted) * 1000 - SongLoadMetrics.chartMs);

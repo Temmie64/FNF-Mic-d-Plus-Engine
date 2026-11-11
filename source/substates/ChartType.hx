@@ -1,6 +1,5 @@
 package substates;
 
-import backend.TransitionManager;
 import flixel.FlxObject;
 import flixel.util.FlxTimer;
 import flixel.tweens.FlxEase;
@@ -75,17 +74,11 @@ class ChartType extends MusicBeatSubstate
         camFollow = new FlxObject(0, 0, 1, 1);
 		add(camFollow);
 
-        new FlxTimer().start(0.8, function(tmr:FlxTimer)
+        new FlxTimer().start(0.1, function(tmr:FlxTimer)
 			{
 				selectable = true;
                 FlxG.camera.follow(camFollow, null, camLerp);
 			});
-    }
-
-    override function create():Void
-    {
-        super.create();
-        openSubState(TransitionManager.create(0.7, true));
     }
 
     var selectable:Bool = false;
@@ -118,13 +111,14 @@ class ChartType extends MusicBeatSubstate
 				changeItem(-FlxG.mouse.wheel);
 			}
 
-            if (controls.BACK || FlxG.mouse.justPressedRight)
+            if (controls.BACK)
             {
                 selectedSomethin = true;
+                FlxG.resetState();
                 MusicBeatState.switchState(states.FreeplayStateSelector.create());
             }
         
-            else if (controls.ACCEPT || FlxG.mouse.justPressed)
+            else if (controls.ACCEPT)
             {
                 selectedSomethin = true;
 
@@ -151,7 +145,8 @@ class ChartType extends MusicBeatSubstate
 					boombox.visible = false;
 			        LoadingState.returnState = states.FreeplayStateSelector.create();
                     PlayState.chartType = selectedChartType;
-					LoadingState.loadAndSwitchState(new PlayState(), true);
+					LoadingState.prepareToSong();
+			        LoadingState.loadAndSwitchState(new PlayState());
 				});
             }
         }
