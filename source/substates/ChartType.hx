@@ -22,6 +22,7 @@ class ChartType extends MusicBeatSubstate
     public static var curSelected:Int = 0;
     var camFollow:FlxObject;
     var camLerp:Float = 0.32;
+    var stopMusicPlay:Bool = false;
 
     var boombox:FlxSprite = new FlxSprite(0,0).loadGraphic(Paths.image('MicUp/Boombox'));
     var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Substate_Checker'), flixel.util.FlxAxes.XY);
