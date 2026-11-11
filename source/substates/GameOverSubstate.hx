@@ -7,6 +7,7 @@ import flixel.FlxSubState;
 import flixel.math.FlxPoint;
 import states.StoryMenuState;
 import states.FreeplayState;
+import states.PlaySelectionState;
 import lime.ui.Haptic;
 
 class GameOverSubstate extends MusicBeatSubstate
@@ -196,7 +197,7 @@ class GameOverSubstate extends MusicBeatSubstate
 					else if (PlayState.isFreeplay)
 						MusicBeatState.switchState(states.FreeplayStateSelector.create());
 					else
-						MusicBeatState.switchState(states.PlaySelection.create());
+						MusicBeatState.switchState(new PlaySelectionState());
 
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
