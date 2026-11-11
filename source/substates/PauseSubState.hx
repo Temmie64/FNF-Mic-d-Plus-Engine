@@ -592,12 +592,11 @@ class PauseSubState extends MusicBeatSubstate
 					if (!PlayState.exitToScriptedStateIfNeeded())
 					{
 						Mods.loadTopMod();
-						if (PlayState.isStoryMode)
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
-						else if (PlayState.isFreeplay)
-							MusicBeatState.switchState(states.FreeplayStateSelector.create());
-						else
-							MusicBeatState.switchState(new PlaySelectionState());
+						var target = PlayState.isStoryMode ?
+							() -> backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()) :
+							PlayState.isFreeplay ?
+								() -> states.FreeplayStateSelector.create() :
+								() -> new PlaySelectionState();
 
 						if (ClientPrefs.data.stickerTransition)
 						{
