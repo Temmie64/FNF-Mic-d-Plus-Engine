@@ -542,7 +542,7 @@ class FreeplayState_Psych extends MusicBeatState
 			openSubState(backend.ScriptableSubstate.tryCreate('options.GameplayChangersSubstate', new GameplayChangersSubstate()));
 			removeTouchPad();
 		}
-		else if (instPlaying == curSelected && player.playingMusic)
+		else if (instPlaying == curSelected && player.playingMusic){
 			{
 				player.pauseOrResume(!player.playing);
 			}
