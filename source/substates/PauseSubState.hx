@@ -17,6 +17,7 @@ import flixel.math.FlxMath;
 import flixel.sound.FlxSound;
 import states.StoryMenuState;
 import states.FreeplayState;
+import states.PlaySelection;
 import options.OptionsState;
 import objects.Alphabet;
 import backend.ClientPrefs;
@@ -596,7 +597,7 @@ class PauseSubState extends MusicBeatSubstate
 						else if (PlayState.isFreeplay)
 							MusicBeatState.switchState(states.FreeplayStateSelector.create());
 						else
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('PlaySelection', new PlaySelection()));
+							MusicBeatState.switchState(new PlaySelectionState());
 
 						if (ClientPrefs.data.stickerTransition)
 						{
