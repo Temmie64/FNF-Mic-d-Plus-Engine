@@ -318,6 +318,13 @@ class PlayState extends MusicBeatState
 	var gfIconSide:String = '';
 	var gfIconSwapOnSing:Bool = false;
 
+	// mic up stuff
+	public var micUpTextGroup:FlxSpriteGroup;
+	var missTxt:FlxText;
+	var accuracyTxt:FlxText;
+	var npsTxt:FlxText;
+	var rateTxt:FlxText;
+
 	public static var campaignScore:Int = 0;
 	public static var campaignMisses:Int = 0;
 	public static var campaignFlawlesss:Int = 0;
@@ -727,12 +734,61 @@ class PlayState extends MusicBeatState
 			uiGroup.add(iconGF);
 		}
 
-		scoreTxt = new FlxText(0, healthBar.y + 40, FlxG.width, "", 20);
-		scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		scoreTxt.scrollFactor.set();
-		scoreTxt.borderSize = 1.25;
-		scoreTxt.visible = !ClientPrefs.data.hideHud;
-		uiGroup.add(scoreTxt);
+		if (ClientPrefs.uiStyle == 'Psych'){
+			scoreTxt = new FlxText(0, healthBar.y + 40, FlxG.width, "", 20);
+			scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			scoreTxt.scrollFactor.set();
+			scoreTxt.borderSize = 1.25;
+			scoreTxt.visible = !ClientPrefs.data.hideHud;
+			uiGroup.add(scoreTxt);
+		}
+
+		if (ClientPrefs.uiStyle == "Mic'd Up"){
+			micUpTextGroup = new FlxSpriteGroup();
+			scoreTxt = new FlxText(healthBar.x - healthBar.width / 2, healthBar.y + 26, 0, "", 20);
+			if(ClientPrefs.data.downScroll)
+				scoreTxt.y = healthBar.y - 18;
+			scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
+			scoreTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
+			scoreTxt.scrollFactor.set();
+			micUpTextGroup.add(scoreTxt);
+
+			missTxt = new FlxText(scoreTxt.x, scoreTxt.y - 26, 0, "", 20);
+			if (ClientPrefs.data.downScroll)
+				missTxt.y = scoreTxt.y + 26;
+			missTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
+			missTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
+			missTxt.scrollFactor.set();
+			micUpTextGroup.add(missTxt);
+
+			accuracyTxt = new FlxText(missTxt.x, missTxt.y - 26, 0, "", 20);
+			if (ClientPrefs.data.downScroll)
+				accuracyTxt.y = missTxt.y + 26;
+			accuracyTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
+			accuracyTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
+			accuracyTxt.scrollFactor.set();
+			micUpTextGroup.add(accuracyTxt);
+
+			npsTxt = new FlxText(accuracyTxt.x, accuracyTxt.y - 26, 0, "", 20);
+			if (ClientPrefs.data.downScroll)
+				npsTxt.y = accuracyTxt.y + 26;
+			npsTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
+			npsTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
+			npsTxt.scrollFactor.set();
+			micUpTextGroup.add(npsTxt);
+
+			rateTxt = new FlxText(npsTxt.x, npsTxt.y - 26, 0, "", 20);
+			if (ClientPrefs.data.downScroll)
+				rateTxt.y = npsTxt.y + 26;
+			rateTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
+			rateTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
+			rateTxt.scrollFactor.set();
+			rateTxt.visible = false;
+			micUpTextGroup.add(rateTxt);
+			micUpTextGroup.visible = !ClientPrefs.data.hideHud;
+			uiGroup.add(micUpTextGroup);
+			updateMicUpText();
+		}
 
 		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, botplayLabel(), 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -887,7 +943,28 @@ class PlayState extends MusicBeatState
 		if (iconP2 != null) iconP2.y = oldBounce ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
 		if (iconGF != null) iconGF.y = oldBounce ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
 
-		if (scoreTxt != null)  { scoreTxt.x = 0;  scoreTxt.fieldWidth  = FlxG.width;  scoreTxt.y  = healthBar.y + 40; }
+		if (scoreTxt != null)
+		{
+			if (ClientPrefs.uiStyle == "Mic'd Up")
+			{
+				scoreTxt.x = healthBar.x - healthBar.width / 2;
+				scoreTxt.y = ClientPrefs.data.downScroll ? healthBar.y - 18 : healthBar.y + 26;
+				missTxt.x = scoreTxt.x;
+				missTxt.y = scoreTxt.y + (ClientPrefs.data.downScroll ? 26 : -26);
+				accuracyTxt.x = missTxt.x;
+				accuracyTxt.y = missTxt.y + (ClientPrefs.data.downScroll ? 26 : -26);
+				npsTxt.x = accuracyTxt.x;
+				npsTxt.y = accuracyTxt.y + (ClientPrefs.data.downScroll ? 26 : -26);
+				rateTxt.x = npsTxt.x;
+				rateTxt.y = npsTxt.y + (ClientPrefs.data.downScroll ? 26 : -26);
+			}
+			else
+			{
+				scoreTxt.x = 0;
+				scoreTxt.fieldWidth = FlxG.width;
+				scoreTxt.y = healthBar.y + 40;
+			}
+		}
 		if (botplayTxt != null){ botplayTxt.x = 400; botplayTxt.fieldWidth = FlxG.width - 800;
 								botplayTxt.y = ClientPrefs.data.downScroll ? healthBar.y + 70 : healthBar.y - 90; }
 		if (versionText != null){ versionText.x = 0; versionText.fieldWidth = FlxG.width; }
@@ -1745,7 +1822,15 @@ class PlayState extends MusicBeatState
 	{
 		if (cpuControlled && !isBotplayCPU())
 		{
+			if (micUpTextGroup != null)
+				updateMicUpText();
 			scoreTxt.text = Language.getPhrase('playstate.hud.botplay_mode', 'BOTPLAY MODE');
+			return;
+		}
+
+		if (micUpTextGroup != null)
+		{
+			updateMicUpText();
 			return;
 		}
 
@@ -1757,6 +1842,7 @@ class PlayState extends MusicBeatState
 
 		var tempScore:String;
 		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(songScore) : Std.string(songScore);
+
 		if(ClientPrefs.data.psychScoreText)
 		{
 			if(!instakillOnMiss) tempScore = Language.getPhrase('playstate.hud.score.psych',
@@ -1775,6 +1861,21 @@ class PlayState extends MusicBeatState
 				[score, combo, tps, str]);
 		}
 		scoreTxt.text = tempScore;
+	}
+
+	function updateMicUpText():Void
+	{
+		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(songScore) : Std.string(songScore);
+		var rating:String = Language.getPhrase('rating_$ratingName', ratingName);
+		if(totalPlayed != 0)
+			rating += ' (${AccuracyTools.format(ratingPercent)}) - ' + Language.getPhrase(ratingFC);
+
+		scoreTxt.text = Language.getPhrase('playstate.hud.mic_up.score', 'Score: {1}', [score]);
+		missTxt.text = Language.getPhrase('playstate.hud.mic_up.misses', 'Misses: {1}', [songMisses]);
+		accuracyTxt.text = Language.getPhrase('playstate.hud.mic_up.accuracy', 'Accuracy: {1}%',
+			[CoolUtil.floorDecimal(ratingPercent * 100, 2)]);
+		npsTxt.text = Language.getPhrase('playstate.hud.mic_up.tps', 'TPS: {1}', [getTPS()]);
+		rateTxt.text = Language.getPhrase('playstate.hud.mic_up.rating', 'Rating: {1}', [rating]);
 	}
 
 	function botplayLabel():String

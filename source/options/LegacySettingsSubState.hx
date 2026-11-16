@@ -23,6 +23,10 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			STRING, ['Plus', 'Psych']);
 		addOption(option);
 
+		var option:Option = new Option('UI Style', 'Changes which UI style is shown during gameplay.', 'uiStyle',
+			STRING, ["Mic'd Up", 'Psych']);
+		addOption(option);
+
         #if (cpp && windows)
 		var option:Option = new Option('Instant Window Close', 'If checked, closing the game exits instantly instead of fading the window out.',
 			'instantWindowClose', BOOL);

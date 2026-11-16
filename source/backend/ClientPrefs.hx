@@ -126,6 +126,7 @@ import mobile.backend.PsychJNI;
 	public var nfRatingStyle:Bool = false;
 	public var endCountdown:Bool = false; // Enables/disables the end countdown
 	public var endCountSecs:Int = 10; // End countdown seconds (10-30)
+	public static var uiStyle:String = "Mic'd Up"; // Change the UI style
 
 	// Notes / modchart visuals
 	public var noteSkin:String = 'Default';

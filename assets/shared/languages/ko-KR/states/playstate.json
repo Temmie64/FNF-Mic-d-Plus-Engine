@@ -19,6 +19,13 @@
       "psych_instakill": "점수: {1} 랭킹: {2}",
       "plus": "점수: {1} 맙소사 {2} 콤보: {3} | TPS: {4} 랭킹: {5}",
       "plus_instakill": "점수: {1} 콤보: {2} | TPS: {3} 랭킹: {4}"
+    },
+    "mic_up": {
+      "score": "점수: {1}",
+      "misses": "맙소사: {1}",
+      "accuracy": "정확도: {1}%",
+      "tps": "TPS: {1}",
+      "rating": "평가: {1}"
     }
   },
   "modes": {

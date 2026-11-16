@@ -19,6 +19,13 @@
       "psych_instakill": "Skor: {1} | Peringkat: {2}",
       "plus": "Skor: {1} | Hilang: {2} | Kombo: {3} | TPS : {4} | Peringkat: {5}",
       "plus_instakill": "Skor: {1} | Kombo: {2} | TPS : {3} | Peringkat: {4}"
+    },
+    "mic_up": {
+      "score": "Skor: {1}",
+      "misses": "Hilang: {1}",
+      "accuracy": "Akurasi: {1}%",
+      "tps": "TPS: {1}",
+      "rating": "Peringkat: {1}"
     }
   },
   "modes": {

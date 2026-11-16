@@ -19,6 +19,13 @@
       "psych_instakill": "Puntuación: {1} | Clasificación: {2}",
       "plus": "Puntuación: {1} | Fallos: {2} | Combinado: {3} | TPS: {4} | Clasificación: {5}",
       "plus_instakill": "Puntos: {1} | Combo: {2} | TPS: {3} | Calificación: {4}"
+    },
+    "mic_up": {
+      "score": "Puntuación: {1}",
+      "misses": "Fallos: {1}",
+      "accuracy": "Precisión: {1}%",
+      "tps": "TPS: {1}",
+      "rating": "Clasificación: {1}"
     }
   },
   "modes": {

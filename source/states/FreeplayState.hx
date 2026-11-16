@@ -9,6 +9,7 @@ import backend.AccuracyTools;
 import objects.HealthIcon;
 import objects.MusicPlayer;
 import options.GameplayChangersSubstate;
+import substates.ChartType;
 import options.OptionsMenuTheme;
 import substates.ResetScoreSubState;
 import mobile.input.TouchScrollHandler;
@@ -117,7 +118,6 @@ class FreeplayState extends MusicBeatState
 	private var checker:FlxBackdrop;
 	private var gradientBar:FlxSprite;
 	private var side:FlxSprite;
-	private var navi:FlxSprite;
 	private var intendedCheckerColor:Int;
 	private var intendedBottomColor:Int;
 
@@ -514,6 +514,11 @@ class FreeplayState extends MusicBeatState
 		freeplayMenuMusicActive = isFreeplayMenuMusicPlaying();
 		persistentUpdate = true;
 		PlayState.isStoryMode = false;
+		PlayState.isEndless = false;
+		PlayState.isMarathon = false;
+		PlayState.isFreeplay = true;
+		PlayState.isSurvival = false;
+		PlayState.storyDifficulty = curDifficulty;
 		WeekData.reloadWeekFiles(false);
 
 		#if DISCORD_ALLOWED
@@ -606,14 +611,6 @@ class FreeplayState extends MusicBeatState
 		side.screenCenter();
 		side.y = FlxG.height;
 		add(side);
-
-		navi = new FlxSprite().loadGraphic(Paths.image('MicUp/navi_Free'));
-		navi.scrollFactor.set(0, 0);
-		navi.antialiasing = ClientPrefs.data.antialiasing;
-		navi.screenCenter();
-		navi.y = FlxG.height / 1.25;
-		navi.x = FlxG.width / 1.05 - navi.width / 2;
-		add(navi);
 
 		blackOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		blackOverlay.alpha = 0.1;
@@ -1561,8 +1558,16 @@ class FreeplayState extends MusicBeatState
 					trace('CHANGED MOD DIRECTORY, RELOADING STUFF');
 					Paths.freeGraphicsFromMemory();
 				}
-				LoadingState.returnState = FreeplayStateSelector.create(); // Establecer estado de retorno
-				LoadingState.loadAndSwitchState(new PlayState());
+
+				new FlxTimer().start(0.9, function(tmr:FlxTimer)
+				{
+					openSubState(new ChartType());
+				});
+
+				FlxTween.tween(bg, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+				FlxTween.tween(checker, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+				FlxTween.tween(gradientBar, {alpha: 0}, 0.6, {ease: FlxEase.quartInOut});
+
 				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
 				stopMusicPlay = true;
 				destroyFreeplayVocals();
@@ -1652,6 +1657,7 @@ class FreeplayState extends MusicBeatState
 		FlxTween.tween(this, {songsOffsetX: -1000}, 0.3, {ease: FlxEase.expoOut});
 		FlxTween.tween(blackOverlay, {alpha: 0.6}, 1.0, {ease: FlxEase.sineInOut});
 		FlxTween.tween(difficultySelector, {enterProgress: 1}, 0.4, {ease: FlxEase.expoOut, startDelay: 0.1});
+		FlxTween.tween(side, {alpha: 0}, 0.8, {ease: FlxEase.quartInOut});
 	}
 
 	function exitDifficultySelect()
@@ -1670,6 +1676,7 @@ class FreeplayState extends MusicBeatState
 
 		FlxTween.tween(this, {songsOffsetX: 0}, 0.3, {ease: FlxEase.expoOut});
 		FlxTween.tween(blackOverlay, {alpha: 0.1}, 1.0, {ease: FlxEase.sineInOut});
+		FlxTween.tween(side, {alpha: 1}, 0.8, {ease: FlxEase.quartInOut});
 		showSongInfoCard();
 	}
 
