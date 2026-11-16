@@ -127,6 +127,9 @@ import mobile.backend.PsychJNI;
 	public var endCountdown:Bool = false; // Enables/disables the end countdown
 	public var endCountSecs:Int = 10; // End countdown seconds (10-30)
 	public var uiStyle:String = "Mic'd Up"; // Change the UI style
+	public var noteUnderlayOpacity:Float = 0; // Note underlay opacity (0-1)
+	public var noteUnderlayType:String = 'All-In-One'; // Note underlay type (All-In-One, By Note)
+	public var wavySustains:Bool = true; // Wiggly Note Things
 
 	// Notes / modchart visuals
 	public var noteSkin:String = 'Default';

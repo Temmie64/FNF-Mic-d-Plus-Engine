@@ -154,6 +154,21 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		option.decimals = 1;
 		addOption(option);
 
+		var option:Option = new Option('Note Underlay Opacity', 'If higher than 0%, an underlay will be displayed behind player notes.', 'noteUnderlayOpacity', PERCENT);
+		option.scrollSpeed = 1.6;
+		option.minValue = 0.0;
+		option.maxValue = 1;
+		option.changeValue = 0.05;
+		option.decimals = 2;
+		addOption(option);
+
+		var option:Option = new Option('Note Underlay Type', 'How should the game render note underlays.', 'noteUnderlayType',
+			STRING, ['All-In-One', 'By Note']);
+		addOption(option);
+
+		var option:Option = new Option('Wiggly Note Sustains', 'If enabled, a wavy shader effect is applied to sustains.', 'wavySustains', BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Smooth Health Bar', 'If checked, the health bar will move smoothly instead of instantly.', 'smoothHealthBar', BOOL);
 		addOption(option);
 

@@ -210,6 +210,7 @@ class PlayState extends MusicBeatState
 	public var strumLineNotes:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var opponentStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var playerStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
+	var noteUnderlays:FlxTypedGroup<FlxSprite>;
 	/** Flat compatibility group for Lua. It is indexed, but never added to the state. */
 	public var extraStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var strumLines:Array<StrumLine> = [];
@@ -293,6 +294,10 @@ class PlayState extends MusicBeatState
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 	public var luaTpadCam:FlxCamera;
+	#if !flash
+	var camSus:FlxCamera;
+	var sustainWiggle:shaders.WiggleEffect;
+	#end
 	public var cameraSpeed:Float = 1;
 
 	public var songScore:Int = 0;
@@ -319,7 +324,8 @@ class PlayState extends MusicBeatState
 	var gfIconSwapOnSing:Bool = false;
 
 	// mic up stuff
-	public var micUpTextGroup:FlxSpriteGroup;
+	public var scoreMTxt:FlxSpriteGroup;
+	var scoreLabelMTxt:FlxText;
 	var missTxt:FlxText;
 	var accuracyTxt:FlxText;
 	var npsTxt:FlxText;
@@ -455,6 +461,20 @@ class PlayState extends MusicBeatState
 
 		// var gameCam:FlxCamera = FlxG.camera;
 		camGame = initPsychCamera();
+		#if !flash
+		if (ClientPrefs.data.wavySustains && ClientPrefs.data.shaders)
+		{
+			camSus = new FlxCamera();
+			camSus.bgColor.alpha = 0;
+			sustainWiggle = new shaders.WiggleEffect();
+			sustainWiggle.waveAmplitude = 0.02;
+			sustainWiggle.effectType = shaders.WiggleEffect.WiggleEffectType.DREAMY;
+			sustainWiggle.waveFrequency = 0;
+			sustainWiggle.waveSpeed = 1.8;
+			camSus.setFilters([new ShaderFilter(sustainWiggle.shader)]);
+			FlxG.cameras.add(camSus, false);
+		}
+		#end
 		camHUD = new FlxCamera();
 		camOther = new FlxCamera();
 		luaTpadCam = new FlxCamera();
@@ -651,6 +671,11 @@ class PlayState extends MusicBeatState
 		uiGroup.add(timeBar);
 		uiGroup.add(timeTxt);
 
+		if (ClientPrefs.data.noteUnderlayOpacity > 0)
+		{
+			noteUnderlays = new FlxTypedGroup<FlxSprite>();
+			noteGroup.add(noteUnderlays);
+		}
 		noteGroup.add(strumLineNotes);
 		initStrumLines();
 
@@ -744,22 +769,22 @@ class PlayState extends MusicBeatState
 		}
 
 		if (ClientPrefs.data.uiStyle == "Mic'd Up"){
-			micUpTextGroup = new FlxSpriteGroup();
-			scoreTxt = new FlxText(healthBar.x - healthBar.width / 2, healthBar.y + 26, 0, "", 20);
+			scoreMTxt = new FlxSpriteGroup();
+			scoreLabelMTxt = new FlxText(healthBar.x - healthBar.width / 2, healthBar.y + 26, 0, "", 20);
 			if(ClientPrefs.data.downScroll)
-				scoreTxt.y = healthBar.y - 18;
-			scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
-			scoreTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
-			scoreTxt.scrollFactor.set();
-			micUpTextGroup.add(scoreTxt);
+				scoreLabelMTxt.y = healthBar.y - 18;
+			scoreLabelMTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
+			scoreLabelMTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
+			scoreLabelMTxt.scrollFactor.set();
+			scoreMTxt.add(scoreLabelMTxt);
 
-			missTxt = new FlxText(scoreTxt.x, scoreTxt.y - 26, 0, "", 20);
+			missTxt = new FlxText(scoreLabelMTxt.x, scoreLabelMTxt.y - 26, 0, "", 20);
 			if (ClientPrefs.data.downScroll)
-				missTxt.y = scoreTxt.y + 26;
+				missTxt.y = scoreLabelMTxt.y + 26;
 			missTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
 			missTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
 			missTxt.scrollFactor.set();
-			micUpTextGroup.add(missTxt);
+			scoreMTxt.add(missTxt);
 
 			accuracyTxt = new FlxText(missTxt.x, missTxt.y - 26, 0, "", 20);
 			if (ClientPrefs.data.downScroll)
@@ -767,7 +792,7 @@ class PlayState extends MusicBeatState
 			accuracyTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
 			accuracyTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
 			accuracyTxt.scrollFactor.set();
-			micUpTextGroup.add(accuracyTxt);
+			scoreMTxt.add(accuracyTxt);
 
 			npsTxt = new FlxText(accuracyTxt.x, accuracyTxt.y - 26, 0, "", 20);
 			if (ClientPrefs.data.downScroll)
@@ -775,7 +800,7 @@ class PlayState extends MusicBeatState
 			npsTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
 			npsTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
 			npsTxt.scrollFactor.set();
-			micUpTextGroup.add(npsTxt);
+			scoreMTxt.add(npsTxt);
 
 			rateTxt = new FlxText(npsTxt.x, npsTxt.y - 26, 0, "", 20);
 			if (ClientPrefs.data.downScroll)
@@ -783,10 +808,9 @@ class PlayState extends MusicBeatState
 			rateTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
 			rateTxt.setBorderStyle(OUTLINE, 0xFF000000, 3, 1);
 			rateTxt.scrollFactor.set();
-			rateTxt.visible = false;
-			micUpTextGroup.add(rateTxt);
-			micUpTextGroup.visible = !ClientPrefs.data.hideHud;
-			uiGroup.add(micUpTextGroup);
+			scoreMTxt.add(rateTxt);
+			scoreMTxt.visible = !ClientPrefs.data.hideHud;
+			uiGroup.add(scoreMTxt);
 			updateMicUpText();
 		}
 
@@ -943,14 +967,14 @@ class PlayState extends MusicBeatState
 		if (iconP2 != null) iconP2.y = oldBounce ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
 		if (iconGF != null) iconGF.y = oldBounce ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
 
-		if (scoreTxt != null)
+		if (scoreTxt != null || scoreMTxt != null)
 		{
 			if (ClientPrefs.data.uiStyle == "Mic'd Up")
 			{
-				scoreTxt.x = healthBar.x - healthBar.width / 2;
-				scoreTxt.y = ClientPrefs.data.downScroll ? healthBar.y - 18 : healthBar.y + 26;
-				missTxt.x = scoreTxt.x;
-				missTxt.y = scoreTxt.y + (ClientPrefs.data.downScroll ? 26 : -26);
+				scoreLabelMTxt.x = healthBar.x - healthBar.width / 2;
+				scoreLabelMTxt.y = ClientPrefs.data.downScroll ? healthBar.y - 18 : healthBar.y + 26;
+				missTxt.x = scoreLabelMTxt.x;
+				missTxt.y = scoreLabelMTxt.y + (ClientPrefs.data.downScroll ? 26 : -26);
 				accuracyTxt.x = missTxt.x;
 				accuracyTxt.y = missTxt.y + (ClientPrefs.data.downScroll ? 26 : -26);
 				npsTxt.x = accuracyTxt.x;
@@ -1822,13 +1846,17 @@ class PlayState extends MusicBeatState
 	{
 		if (cpuControlled && !isBotplayCPU())
 		{
-			if (micUpTextGroup != null)
+			if (scoreMTxt != null)
+			{
 				updateMicUpText();
-			scoreTxt.text = Language.getPhrase('playstate.hud.botplay_mode', 'BOTPLAY MODE');
+				scoreLabelMTxt.text = Language.getPhrase('playstate.hud.botplay_mode', 'BOTPLAY MODE');
+			}
+			else
+				scoreTxt.text = Language.getPhrase('playstate.hud.botplay_mode', 'BOTPLAY MODE');
 			return;
 		}
 
-		if (micUpTextGroup != null)
+		if (scoreMTxt != null)
 		{
 			updateMicUpText();
 			return;
@@ -1870,7 +1898,7 @@ class PlayState extends MusicBeatState
 		if(totalPlayed != 0)
 			rating += ' (${AccuracyTools.format(ratingPercent)}) - ' + Language.getPhrase(ratingFC);
 
-		scoreTxt.text = Language.getPhrase('playstate.hud.mic_up.score', 'Score: {1}', [score]);
+		scoreLabelMTxt.text = Language.getPhrase('playstate.hud.mic_up.score', 'Score: {1}', [score]);
 		missTxt.text = Language.getPhrase('playstate.hud.mic_up.misses', 'Misses: {1}', [songMisses]);
 		accuracyTxt.text = Language.getPhrase('playstate.hud.mic_up.accuracy', 'Accuracy: {1}%',
 			[CoolUtil.floorDecimal(ratingPercent * 100, 2)]);
@@ -1895,7 +1923,7 @@ class PlayState extends MusicBeatState
 	function refreshLocalizedHud():Void
 	{
 		languageRevision = Language.revision;
-		if (scoreTxt != null)
+		if (scoreTxt != null || scoreMTxt != null)
 			updateScoreText();
 		if (botplayTxt != null)
 			botplayTxt.text = botplayLabel();
@@ -1972,12 +2000,16 @@ class PlayState extends MusicBeatState
 		if(!ClientPrefs.data.scoreZoom)
 			return;
 
+		var scoreText:FlxText = scoreLabelMTxt != null ? scoreLabelMTxt : scoreTxt;
+		if (scoreText == null)
+			return;
+
 		if(scoreTxtTween != null)
 			scoreTxtTween.cancel();
 
-		scoreTxt.scale.x = 1.075;
-		scoreTxt.scale.y = 1.075;
-		scoreTxtTween = FlxTween.tween(scoreTxt.scale, {x: 1, y: 1}, 0.2, {
+		scoreText.scale.x = 1.075;
+		scoreText.scale.y = 1.075;
+		scoreTxtTween = FlxTween.tween(scoreText.scale, {x: 1, y: 1}, 0.2, {
 			onComplete: function(twn:FlxTween) {
 				scoreTxtTween = null;
 			}
@@ -2697,7 +2729,16 @@ class PlayState extends MusicBeatState
 			else babyArrow.alpha = targetAlpha;
 
 			if (player == 1)
+			{
 				playerStrums.add(babyArrow);
+				if (noteUnderlays != null && ClientPrefs.data.noteUnderlayType == 'By Note')
+				{
+					var underlay = new FlxSprite().makeGraphic(1, FlxG.width * 2, FlxColor.BLACK);
+					underlay.scale.x = babyArrow.width;
+					underlay.updateHitbox();
+					noteUnderlays.add(underlay);
+				}
+			}
 			else if (player == 0)
 			{
 				if (ClientPrefs.data.middleScroll)
@@ -2718,6 +2759,16 @@ class PlayState extends MusicBeatState
 			strumLineNotes.add(babyArrow);
 			if (player < 2) babyArrow.playerPosition();
 			else babyArrow.x += Note.swagWidth * i;
+		}
+
+		if (player == 1 && noteUnderlays != null && ClientPrefs.data.noteUnderlayType != 'By Note' && playerStrums.length > 0)
+		{
+			var underlay = new FlxSprite().makeGraphic(1, FlxG.width * 2, FlxColor.BLACK);
+			var firstStrum = playerStrums.members[0];
+			var lastStrum = playerStrums.members[playerStrums.length - 1];
+			underlay.scale.x = lastStrum.x + lastStrum.width - firstStrum.x;
+			underlay.updateHitbox();
+			noteUnderlays.add(underlay);
 		}
 	}
 
@@ -2895,6 +2946,48 @@ class PlayState extends MusicBeatState
 		RecalculateRating(badHit);
 	}
 
+	private function updateNoteUnderlays():Void
+	{
+		if (noteUnderlays == null || playerStrums == null || playerStrums.length == 0)
+			return;
+
+		var opacity:Float = Math.max(0, Math.min(1, ClientPrefs.data.noteUnderlayOpacity));
+		var byNote:Bool = ClientPrefs.data.noteUnderlayType == 'By Note';
+		for (i in 0...noteUnderlays.length)
+		{
+			var underlay = noteUnderlays.members[i];
+			var strum = playerStrums.members[byNote ? i : 0];
+			if (underlay == null || strum == null)
+				continue;
+
+			if (!strum.active || !strum.visible || opacity <= 0)
+			{
+				underlay.alpha = 0;
+				continue;
+			}
+
+			var left:Float = strum.x;
+			var right:Float = strum.x + strum.width;
+			if (!byNote)
+			{
+				for (lane in 0...playerStrums.length)
+				{
+					var laneStrum = playerStrums.members[lane];
+					if (laneStrum == null)
+						continue;
+					left = Math.min(left, laneStrum.x);
+					right = Math.max(right, laneStrum.x + laneStrum.width);
+				}
+			}
+
+			underlay.x = left;
+			underlay.angle = strum.direction - 90;
+			underlay.scale.x = Math.max(0, right - left);
+			underlay.updateHitbox();
+			underlay.alpha = Math.max(0, Math.min(1, opacity * strum.alpha));
+		}
+	}
+
 	override public function update(elapsed:Float)
 	{
 		#if DENSE_CHART_TEST
@@ -2938,6 +3031,7 @@ class PlayState extends MusicBeatState
 		if (Manager.instance != null)
 			Manager.instance.refreshFrameState();
 		#end
+		updateNoteUnderlays();
 		if (audioRecoveryPending && startedCountdown && !startingSong && !endingSong && !paused && FlxG.sound.music != null)
 		{
 			audioRecoveryPending = false;
@@ -3029,6 +3123,20 @@ class PlayState extends MusicBeatState
 			FlxG.camera.zoom = FlxMath.lerp(defaultCamZoom, FlxG.camera.zoom, Math.exp(-elapsed * 3.125 * camZoomingDecay * playbackRate));
 			camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, Math.exp(-elapsed * 3.125 * camZoomingDecay * playbackRate));
 		}
+		#if !flash
+		if (camSus != null)
+		{
+			camSus.zoom = camHUD.zoom;
+			camSus.angle = camHUD.angle;
+			camSus.x = camHUD.x;
+			camSus.y = camHUD.y;
+			camSus.scroll.set(camHUD.scroll.x, camHUD.scroll.y);
+			var waveDecay:Float = 0.035 / (ClientPrefs.data.framerate / 60);
+			sustainWiggle.waveAmplitude = FlxMath.lerp(sustainWiggle.waveAmplitude, 0, waveDecay);
+			sustainWiggle.waveFrequency = FlxMath.lerp(sustainWiggle.waveFrequency, 0, waveDecay);
+			sustainWiggle.update(elapsed);
+		}
+		#end
 
 		FlxG.watch.addQuick("secShit", curSection);
 		FlxG.watch.addQuick("beatShit", curBeat);
@@ -3059,6 +3167,10 @@ class PlayState extends MusicBeatState
 			while ((queuedNote = nextUnspawnNote()) != null && queuedNote.strumTime - Conductor.songPosition < time)
 			{
 				var dunceNote:Note = queuedNote;
+				#if !flash
+				if (camSus != null && dunceNote.isSustainNote)
+					dunceNote.cameras = [camSus];
+				#end
 				if (denseChartQueue)
 					notes.add(dunceNote);
 				else
@@ -3535,6 +3647,10 @@ class PlayState extends MusicBeatState
 
 					if(duration > 0 && intensity != 0) {
 						targetsArray[i].shake(intensity, duration);
+						#if !flash
+						if (i == 1 && camSus != null)
+							camSus.shake(intensity, duration);
+						#end
 					}
 				}
 
@@ -5704,6 +5820,14 @@ class PlayState extends MusicBeatState
 			camHUD.zoom += 0.03 * cameraBopIntensity;
 		}
 		lastBeatHit = curBeat;
+
+		#if !flash
+		if (sustainWiggle != null)
+		{
+			sustainWiggle.waveAmplitude = 0.035;
+			sustainWiggle.waveFrequency = 10;
+		}
+		#end
 
 		setOnScripts('curBeat', curBeat);
 		callOnScripts('onBeatHit');
