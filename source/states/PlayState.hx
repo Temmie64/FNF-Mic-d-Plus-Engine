@@ -734,7 +734,7 @@ class PlayState extends MusicBeatState
 			uiGroup.add(iconGF);
 		}
 
-		if (ClientPrefs.uiStyle == 'Psych'){
+		if (ClientPrefs.data.uiStyle == 'Psych'){
 			scoreTxt = new FlxText(0, healthBar.y + 40, FlxG.width, "", 20);
 			scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			scoreTxt.scrollFactor.set();
@@ -743,7 +743,7 @@ class PlayState extends MusicBeatState
 			uiGroup.add(scoreTxt);
 		}
 
-		if (ClientPrefs.uiStyle == "Mic'd Up"){
+		if (ClientPrefs.data.uiStyle == "Mic'd Up"){
 			micUpTextGroup = new FlxSpriteGroup();
 			scoreTxt = new FlxText(healthBar.x - healthBar.width / 2, healthBar.y + 26, 0, "", 20);
 			if(ClientPrefs.data.downScroll)
@@ -945,7 +945,7 @@ class PlayState extends MusicBeatState
 
 		if (scoreTxt != null)
 		{
-			if (ClientPrefs.uiStyle == "Mic'd Up")
+			if (ClientPrefs.data.uiStyle == "Mic'd Up")
 			{
 				scoreTxt.x = healthBar.x - healthBar.width / 2;
 				scoreTxt.y = ClientPrefs.data.downScroll ? healthBar.y - 18 : healthBar.y + 26;
