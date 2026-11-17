@@ -42,15 +42,17 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		if (hitsoundList.length > 0)
 		{
 			if (!hitsoundList.contains(ClientPrefs.data.hitsoundType))
-				ClientPrefs.data.hitsoundType = hitsoundList[0];
+				ClientPrefs.data.hitsoundType = hitsoundList.contains(ClientPrefs.defaultData.hitsoundType)
+					? ClientPrefs.defaultData.hitsoundType
+					: hitsoundList[0];
 
-			var option:Option = new Option('Hitsound Style', "What type of hitsound would you like?", 'hitsoundType', STRING, 'osu', hitsoundList);
+			var option:Option = new Option('Hitsound Style', "What type of hitsound would you like?", 'hitsoundType', STRING, hitsoundList);
 			option.onChange = onChangeHitsoundVolume;
 			addOption(option);
 		}
 
 		var option:Option = new Option('Rating Offset', 'Changes how late/early you have to hit for a "Sick!"\nHigher values mean you have to hit later.',
-			'ratingOffset', INT, 0);
+			'ratingOffset', INT);
 		option.displayFormat = '%vms';
 		option.scrollSpeed = 20;
 		option.minValue = -30;
