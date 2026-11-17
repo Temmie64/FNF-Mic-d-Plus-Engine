@@ -680,7 +680,8 @@ class PlayState extends MusicBeatState
 		if (ClientPrefs.data.noteUnderlayOpacity > 0)
 		{
 			noteUnderlays = new FlxTypedGroup<FlxSprite>();
-			noteGroup.add(noteUnderlays);
+			noteUnderlays.cameras = [camHUD];
+			insert(members.indexOf(noteGroup), noteUnderlays);
 		}
 		noteGroup.add(strumLineNotes);
 		initStrumLines();
@@ -5340,8 +5341,8 @@ class PlayState extends MusicBeatState
 		if (hitsoundImageToLoad == null || activeHitsoundImages.length >= 4)
 			return;
 
-		var sharedImagePath:String = Paths.getSharedPath('images/Hitsound_Image/${hitsoundImageToLoad}.png');
-		var modImagePath:String = Paths.modFolders('images/Hitsound_Image/${hitsoundImageToLoad}.png');
+		var sharedImagePath:String = Paths.getSharedPath('images/${hitsoundImageToLoad}.png');
+		var modImagePath:String = Paths.modFolders('images/${hitsoundImageToLoad}.png');
 		if (!FileSystem.exists(sharedImagePath) && !FileSystem.exists(modImagePath))
 			return;
 
