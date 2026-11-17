@@ -24,6 +24,39 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			'ghostTapping', BOOL);
 		addOption(option);
 
+		var option:Option = new Option('Ghost Tapping Miss Animation', "If checked, the player will do miss animations when you press the arrows while Ghost Tapping is enabled.\nIf unchecked, the player will do normal sing animations instead.",
+			'gsMiss', BOOL);
+		addOption(option);
+
+		var option:Option = new Option('Hitsound Volume', "How loud do you want the hit sounds?",
+			'hitsoundVolume', PERCENT);
+		option.scrollSpeed = 1.6;
+		option.minValue = 0.0;
+		option.maxValue = 1;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+		option.onChange = onChangeHitsoundVolume;
+		addOption(option);
+
+		final hitsoundList:Array<String> = Mods.mergeAllTextsNamed('sounds/hitsounds/list.txt');
+		if (hitsoundList.length > 0)
+		{
+			if (!hitsoundList.contains(ClientPrefs.data.hitsoundType))
+				ClientPrefs.data.hitsoundType = hitsoundList[0];
+
+			final option:Option = new Option('Hitsound:', "What type of hitsound would you like?", 'hitsoundType', 'string', 'osu', hitsoundList);
+			option.onChange = onChangeHitsoundVolume;
+			addOption(option);
+		}
+
+		final option:Option = new Option('Rating Offset', 'Changes how late/early you have to hit for a "Sick!"\nHigher values mean you have to hit later.',
+			'ratingOffset', 'int', 0);
+		option.displayFormat = '%vms';
+		option.scrollSpeed = 20;
+		option.minValue = -30;
+		option.maxValue = 30;
+		addOption(option);
+
 		var option:Option = new Option('Bad and Shit Break Combo',
 			"If checked, hitting Bad or Shit notes will break your combo\nand count as Combo Breaks instead of just Misses.", 'badShitBreakCombo', BOOL);
 		addOption(option);
@@ -137,6 +170,15 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 	{
 		if (ClientPrefs.data.gameOverVibration)
 			lime.ui.Haptic.vibrate(0, 500);
+	}
+
+	function onChangeHitsoundVolume()
+	{
+		if (ClientPrefs.data.hitsoundVolume <= 0 || ClientPrefs.data.hitsoundType == 'none')
+			return;
+
+		var hitSoundString:String = ClientPrefs.data.hitsoundType;
+		FlxG.sound.play(Paths.sound('hitsounds/${hitSoundString.toLowerCase()}'), ClientPrefs.data.hitsoundVolume);
 	}
 }
 

@@ -211,6 +211,11 @@ class PlayState extends MusicBeatState
 	public var opponentStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var playerStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	var noteUnderlays:FlxTypedGroup<FlxSprite>;
+	var hitsoundImageToLoad:String;
+	var activeHitsoundImages:Array<FlxSprite> = [];
+	var isPlayNoteNear:Bool = false;
+	var nearNoteValue:Float = 0;
+	final NEAR_NOTE_DISTANCE:Float = 1500;
 	/** Flat compatibility group for Lua. It is indexed, but never added to the state. */
 	public var extraStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var strumLines:Array<StrumLine> = [];
@@ -310,7 +315,7 @@ class PlayState extends MusicBeatState
 	public var scoreTxt:FlxText;
 	var timeTxt:FlxText;
 	var timeTween:FlxTween;
-	var scoreTxtTween:FlxTween;
+	var scoreTxtTweens:Array<FlxTween> = [];
 	var endCountdownText:FlxText = null;
 	var endCountdownTween:FlxTween = null;
 	var lastEndCountdown:Int = -1;
@@ -430,6 +435,7 @@ class PlayState extends MusicBeatState
 
 		PauseSubState.songName = null; //Reset to default
 		playbackRate = ClientPrefs.getGameplaySetting('songspeed');
+		prepareHitsound();
 
 		keysArray = [
 			'note_left',
@@ -2000,20 +2006,32 @@ class PlayState extends MusicBeatState
 		if(!ClientPrefs.data.scoreZoom)
 			return;
 
-		var scoreText:FlxText = scoreLabelMTxt != null ? scoreLabelMTxt : scoreTxt;
-		if (scoreText == null)
+		var scoreTexts:Array<FlxText> = scoreLabelMTxt != null
+			? [scoreLabelMTxt, missTxt, accuracyTxt, npsTxt, rateTxt]
+			: [scoreTxt];
+		if (scoreTexts.length == 0 || scoreTexts[0] == null)
 			return;
 
-		if(scoreTxtTween != null)
-			scoreTxtTween.cancel();
+		var previousTweens:Array<FlxTween> = scoreTxtTweens;
+		scoreTxtTweens = [];
+		for (tween in previousTweens)
+			if (tween != null)
+				tween.cancel();
 
-		scoreText.scale.x = 1.075;
-		scoreText.scale.y = 1.075;
-		scoreTxtTween = FlxTween.tween(scoreText.scale, {x: 1, y: 1}, 0.2, {
-			onComplete: function(twn:FlxTween) {
-				scoreTxtTween = null;
-			}
-		});
+		for (scoreText in scoreTexts)
+		{
+			if (scoreText == null)
+				continue;
+
+			scoreText.scale.x = 1.075;
+			scoreText.scale.y = 1.075;
+			var tween:FlxTween = FlxTween.tween(scoreText.scale, {x: 1, y: 1}, 0.2, {
+				onComplete: function(twn:FlxTween) {
+					scoreTxtTweens.remove(twn);
+				}
+			});
+			scoreTxtTweens.push(tween);
+		}
 	}
 
 	public function setSongTime(time:Float)
@@ -2984,7 +3002,7 @@ class PlayState extends MusicBeatState
 			underlay.angle = strum.direction - 90;
 			underlay.scale.x = Math.max(0, right - left);
 			underlay.updateHitbox();
-			underlay.alpha = Math.max(0, Math.min(1, opacity * strum.alpha));
+			underlay.alpha = Math.max(0, Math.min(1, opacity * strum.alpha)) * nearNoteValue;
 		}
 	}
 
@@ -3031,7 +3049,6 @@ class PlayState extends MusicBeatState
 		if (Manager.instance != null)
 			Manager.instance.refreshFrameState();
 		#end
-		updateNoteUnderlays();
 		if (audioRecoveryPending && startedCountdown && !startingSong && !endingSong && !paused && FlxG.sound.music != null)
 		{
 			audioRecoveryPending = false;
@@ -3195,6 +3212,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		isPlayNoteNear = false;
 		if (generatedMusic)
 		{
 			if(!inCutscene)
@@ -3226,6 +3244,8 @@ class PlayState extends MusicBeatState
 								continue;
 							}
 							daNote.followStrumNote(strum, fakeCrochet, songSpeed / playbackRate);
+							if (daNote.mustPress && daNote.strumTime - Conductor.songPosition < NEAR_NOTE_DISTANCE)
+								isPlayNoteNear = true;
 
 							if(daNote.strumLineIndex >= 2)
 							{
@@ -3298,6 +3318,12 @@ class PlayState extends MusicBeatState
 			flushDenseRatingRecalculation();
 			checkEventNote();
 		}
+
+		if (isPlayNoteNear)
+			nearNoteValue = Math.min(1.0, nearNoteValue + elapsed * (1000 / NEAR_NOTE_DISTANCE));
+		else
+			nearNoteValue = Math.max(0.0, nearNoteValue - elapsed * (1000 / NEAR_NOTE_DISTANCE));
+		updateNoteUnderlays();
 
 		#if debug
 		if(!endingSong && !startingSong) {
@@ -5058,7 +5084,10 @@ class PlayState extends MusicBeatState
 		else
 		{
 			if (ClientPrefs.data.ghostTapping)
+			{
 				callOnScripts('onGhostTap', [key]);
+				gsTap(key, ClientPrefs.data.gsMiss);
+			}
 			else
 				noteMissPress(key);
 		}
@@ -5077,6 +5106,22 @@ class PlayState extends MusicBeatState
 			spr.resetAnim = 0;
 		}
 		callOnScripts('onKeyPress', [key]);
+	}
+
+	private function gsTap(direction:Int, miss:Bool):Void
+	{
+		var section = SONG.notes[curSection];
+		var char:Character = section != null && section.gfSection && section.mustHitSection && gf != null ? gf : playerChar();
+		if (char == null || char.specialAnim)
+			return;
+
+		var missSuffix:String = miss && char.hasMissAnimations ? 'miss' : '';
+		var directionIndex:Int = Std.int(Math.abs(Math.min(singAnimations.length - 1, direction)));
+		var animToPlay:String = singAnimations[directionIndex] + missSuffix;
+		if (!char.hasAnimation(animToPlay))
+			animToPlay = singAnimations[2] + missSuffix;
+		if (char.hasAnimation(animToPlay))
+			char.playAnim(animToPlay, true);
 	}
 
 	public static function sortHitNotes(a:Note, b:Note):Int
@@ -5242,6 +5287,85 @@ class PlayState extends MusicBeatState
 			for (i in 0...releaseArray.length)
 				if(releaseArray[i] || strumsBlocked[i] == true)
 					keyReleased(i);
+	}
+
+	private function prepareHitsound():Void
+	{
+		hitsoundImageToLoad = null;
+		var hitSoundType:String = ClientPrefs.data.hitsoundType;
+		if (hitSoundType == null || hitSoundType.trim().length == 0 || hitSoundType.toLowerCase() == 'none')
+			return;
+
+		var soundPath:String = 'hitsounds/${hitSoundType.toLowerCase()}';
+		Paths.sound(soundPath);
+
+		var imageListPath:String = 'sounds/${soundPath}.txt';
+		var sharedImageListPath:String = Paths.getSharedPath(imageListPath);
+		var modImageListPath:String = Paths.modFolders(imageListPath);
+		if (FileSystem.exists(sharedImageListPath))
+			hitsoundImageToLoad = StringTools.trim(File.getContent(sharedImageListPath));
+		else if (FileSystem.exists(modImageListPath))
+			hitsoundImageToLoad = StringTools.trim(File.getContent(modImageListPath));
+
+		if (hitsoundImageToLoad != null && hitsoundImageToLoad.length == 0)
+			hitsoundImageToLoad = null;
+	}
+
+	private function playHitsound(note:Note):Void
+	{
+		if (note.isSustainNote || note.hitsoundDisabled)
+			return;
+
+		if (note.hitsoundForce)
+		{
+			var noteSound = FlxG.sound.play(Paths.sound(note.hitsound), note.hitsoundVolume);
+			if (noteSound != null)
+				noteSound.pitch = playbackRate;
+			return;
+		}
+
+		var volume:Float = ClientPrefs.data.hitsoundVolume;
+		var hitSoundType:String = ClientPrefs.data.hitsoundType;
+		if (volume <= 0 || hitSoundType == null || hitSoundType.trim().length == 0 || hitSoundType.toLowerCase() == 'none')
+			return;
+
+		var hitSound = FlxG.sound.play(Paths.sound('hitsounds/${hitSoundType.toLowerCase()}'), volume);
+		if (hitSound != null)
+			hitSound.pitch = playbackRate;
+		spawnHitsoundImage();
+	}
+
+	private function spawnHitsoundImage():Void
+	{
+		if (hitsoundImageToLoad == null || activeHitsoundImages.length >= 4)
+			return;
+
+		var sharedImagePath:String = Paths.getSharedPath('images/Hitsound_Image/${hitsoundImageToLoad}.png');
+		var modImagePath:String = Paths.modFolders('images/Hitsound_Image/${hitsoundImageToLoad}.png');
+		if (!FileSystem.exists(sharedImagePath) && !FileSystem.exists(modImagePath))
+			return;
+
+		var image:FlxSprite = new FlxSprite().loadGraphic(Paths.image(hitsoundImageToLoad));
+		image.antialiasing = ClientPrefs.data.antialiasing;
+		image.scrollFactor.set();
+		var cameraZoom:Float = FlxG.camera != null ? FlxG.camera.zoom : 1;
+		if (cameraZoom > 0)
+			image.setGraphicSize(Std.int(image.width / cameraZoom));
+		image.updateHitbox();
+		image.screenCenter();
+		image.cameras = [camGame];
+		add(image);
+		activeHitsoundImages.push(image);
+
+		var fadeDuration:Float = 100 / Math.max(1, SONG.bpm) / Math.max(0.01, playbackRate);
+		FlxTween.tween(image, {alpha: 0}, fadeDuration, {
+			onComplete: function(tween:FlxTween)
+			{
+				activeHitsoundImages.remove(image);
+				remove(image, true);
+				image.destroy();
+			}
+		});
 	}
 
 	function noteMiss(daNote:Note):Void { //You didn't hit the key and let it go offscreen, also used by Hurt Notes
@@ -5479,6 +5603,7 @@ class PlayState extends MusicBeatState
 		if(result == LuaUtils.Function_Stop) return;
 
 		note.wasGoodHit = true;
+		playHitsound(note);
 
 		#if windows
 		if (ClientPrefs.data.changeWindowBorderColorWithNoteHit && !cpuControlled)
@@ -5710,6 +5835,13 @@ class PlayState extends MusicBeatState
 			gameplayStateGuard.restore();
 			gameplayStateGuard = null;
 		}
+		for (image in activeHitsoundImages.copy())
+		{
+			FlxTween.cancelTweensOf(image);
+			remove(image, true);
+			image.destroy();
+		}
+		activeHitsoundImages.resize(0);
 		shutdownThread = true;
 		FlxG.signals.preUpdate.remove(checkForResync);
 

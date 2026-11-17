@@ -56,6 +56,9 @@ import mobile.backend.PsychJNI;
 	public var middleScroll:Bool = false;
 	public var opponentStrums:Bool = true;
 	public var ghostTapping:Bool = true;
+	public var gsMiss:Bool = false;
+	public var hitsoundVolume:Float = 0;
+	public var hitsoundType:String = 'osu';
 	public var noReset:Bool = false;
 	public var badShitBreakCombo:Bool = false; // When true, Bad and Shit will break the combo
 	public var systemScoreMultiplier:String = 'Psych'; // 'Psych', 'Codename'
