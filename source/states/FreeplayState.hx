@@ -1551,6 +1551,7 @@ class FreeplayState extends MusicBeatState
 				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
 				var poop:String = Highscore.formatSong(songLowercase, difficultySelector.curSelected);
 
+				PlayState.storyDifficulty = difficultySelector.curSelected;
 				LoadingState.setPendingSongChart(poop, songLowercase);
 				@:privateAccess
 				if (PlayState._lastLoadedModDirectory != Mods.currentModDirectory)
@@ -1683,6 +1684,8 @@ class FreeplayState extends MusicBeatState
 	function changeDifficultySelection(change:Int = 0)
 	{
 		difficultySelector.changeSelection(change);
+		curDifficulty = difficultySelector.curSelected;
+		lastDifficultyName = Difficulty.getString(curDifficulty, false);
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		#if !switch

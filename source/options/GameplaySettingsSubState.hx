@@ -24,7 +24,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			'ghostTapping', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Ghost Tapping Miss Animation', "If checked, the player will do miss animations when you press the arrows while Ghost Tapping is enabled.\nIf unchecked, the player will do normal sing animations instead.",
+		var option:Option = new Option('Ghost Tapping Miss Animation', "If checked, the player will do miss animations when you press the arrows while Ghost Tapping is enabled.",
 			'gsMiss', BOOL);
 		addOption(option);
 

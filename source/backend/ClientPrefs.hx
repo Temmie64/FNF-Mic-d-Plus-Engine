@@ -133,6 +133,7 @@ import mobile.backend.PsychJNI;
 	public var noteUnderlayOpacity:Float = 0; // Note underlay opacity (0-1)
 	public var noteUnderlayType:String = 'All-In-One'; // Note underlay type (All-In-One, By Note)
 	public var wavySustains:Bool = true; // Wiggly Note Things
+	public var iceEngineCam:Bool = true; // Moving Camera (like Ice Engine)
 
 	// Notes / modchart visuals
 	public var noteSkin:String = 'Default';

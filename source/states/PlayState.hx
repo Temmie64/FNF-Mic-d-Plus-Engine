@@ -11,6 +11,7 @@ import backend.Rating;
 import backend.AccuracyTools;
 import backend.AudioTempo;
 import backend.BotplayCPU;
+import backend.Perlin;
 
 import flixel.FlxBasic;
 import flixel.FlxObject;
@@ -299,6 +300,7 @@ class PlayState extends MusicBeatState
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 	public var luaTpadCam:FlxCamera;
+	var camUnderlay:FlxCamera;
 	#if !flash
 	var camSus:FlxCamera;
 	var sustainWiggle:shaders.WiggleEffect;
@@ -429,6 +431,8 @@ class PlayState extends MusicBeatState
 
 		startCallback = startCountdown;
 		endCallback = endSong;
+		
+		perlinCamera = new Perlin(Math.floor(Math.random() * 65535));
 
 		// for lua
 		instance = this;
@@ -468,6 +472,12 @@ class PlayState extends MusicBeatState
 		// var gameCam:FlxCamera = FlxG.camera;
 		camGame = initPsychCamera();
 		#if !flash
+		if (ClientPrefs.data.noteUnderlayOpacity > 0 && ClientPrefs.data.wavySustains && ClientPrefs.data.shaders)
+		{
+			camUnderlay = new FlxCamera();
+			camUnderlay.bgColor.alpha = 0;
+			FlxG.cameras.add(camUnderlay, false);
+		}
 		if (ClientPrefs.data.wavySustains && ClientPrefs.data.shaders)
 		{
 			camSus = new FlxCamera();
@@ -680,7 +690,7 @@ class PlayState extends MusicBeatState
 		if (ClientPrefs.data.noteUnderlayOpacity > 0)
 		{
 			noteUnderlays = new FlxTypedGroup<FlxSprite>();
-			noteUnderlays.cameras = [camHUD];
+			noteUnderlays.cameras = [camUnderlay != null ? camUnderlay : camHUD];
 			insert(members.indexOf(noteGroup), noteUnderlays);
 		}
 		noteGroup.add(strumLineNotes);
@@ -2930,6 +2940,8 @@ class PlayState extends MusicBeatState
 	var canPause:Bool = true;
 	var freezeCamera:Bool = false;
 	var allowDebugKeys:Bool = true;
+	private var perlinCamera:Perlin;
+	private var perlinElapsed:FlxPoint;
 
 	private inline function nextUnspawnNote():Note
 		return denseChartQueue ? (unspawnNoteCursor < unspawnNotes.length ? unspawnNotes[unspawnNoteCursor] : null) : unspawnNotes[0];
@@ -3009,6 +3021,9 @@ class PlayState extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
+		if (perlinElapsed == null)
+			perlinElapsed = FlxPoint.get();
+
 		#if DENSE_CHART_TEST
 		if (!denseTestWritten && Conductor.songPosition >= 172000)
 		{
@@ -3080,6 +3095,16 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		if (ClientPrefs.data.iceEngineCam)
+		{
+			// 1 - ~0.87
+			perlinElapsed.add(elapsed * (1 - Math.sqrt(3)), -elapsed * (1 - Math.sqrt(3)));
+			FlxG.camera.targetOffset.set(perlinCamera.noise2d(perlinElapsed.x, perlinElapsed.x) * 7,
+				perlinCamera.noise2d(perlinElapsed.y, perlinElapsed.y) * 7);
+		}
+		else
+			FlxG.camera.targetOffset.set(0, 0);
+
 		if(!endingSong && !inCutscene && allowDebugKeys)
 		{
 			if (controls.justPressed('debug_1'))
@@ -3142,8 +3167,18 @@ class PlayState extends MusicBeatState
 			camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, Math.exp(-elapsed * 3.125 * camZoomingDecay * playbackRate));
 		}
 		#if !flash
+		if (camUnderlay != null)
+		{
+			camUnderlay.visible = camHUD.visible;
+			camUnderlay.zoom = camHUD.zoom;
+			camUnderlay.angle = camHUD.angle;
+			camUnderlay.x = camHUD.x;
+			camUnderlay.y = camHUD.y;
+			camUnderlay.scroll.set(camHUD.scroll.x, camHUD.scroll.y);
+		}
 		if (camSus != null)
 		{
+			camSus.visible = camHUD.visible;
 			camSus.zoom = camHUD.zoom;
 			camSus.angle = camHUD.angle;
 			camSus.x = camHUD.x;
@@ -3675,8 +3710,13 @@ class PlayState extends MusicBeatState
 					if(duration > 0 && intensity != 0) {
 						targetsArray[i].shake(intensity, duration);
 						#if !flash
-						if (i == 1 && camSus != null)
-							camSus.shake(intensity, duration);
+						if (i == 1)
+						{
+							if (camSus != null)
+								camSus.shake(intensity, duration);
+							if (camUnderlay != null)
+								camUnderlay.shake(intensity, duration);
+						}
 						#end
 					}
 				}

@@ -169,6 +169,9 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Wiggly Note Sustains', 'If enabled, a wavy shader effect is applied to sustains.', 'wavySustains', BOOL);
 		addOption(option);
 
+		var option:Option = new Option('Ice Engine Camera', 'If enabled, the camera will move in a wavy pattern similar to the Ice Engine.', 'iceEngineCam', BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Smooth Health Bar', 'If checked, the health bar will move smoothly instead of instantly.', 'smoothHealthBar', BOOL);
 		addOption(option);
 
