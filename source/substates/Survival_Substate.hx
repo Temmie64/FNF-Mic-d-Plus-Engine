@@ -12,7 +12,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
 import states.MenuSurvival;
-import states.PlaySelection;
+import states.PlaySelectionState;
 
 using StringTools;
 

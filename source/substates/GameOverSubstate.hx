@@ -7,7 +7,7 @@ import flixel.FlxSubState;
 import flixel.math.FlxPoint;
 import states.StoryMenuState;
 import states.FreeplayState;
-import states.PlaySelectionState;
+import states.PlaySelectionStateState;
 import lime.ui.Haptic;
 
 class GameOverSubstate extends MusicBeatSubstate
