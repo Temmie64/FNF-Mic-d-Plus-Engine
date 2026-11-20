@@ -17,7 +17,7 @@ import flixel.math.FlxMath;
 import flixel.sound.FlxSound;
 import states.StoryMenuState;
 import states.FreeplayState;
-import states.PlaySelection;
+import states.PlaySelectionState;
 import options.OptionsState;
 import objects.Alphabet;
 import backend.ClientPrefs;
