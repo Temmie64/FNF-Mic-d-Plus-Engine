@@ -4,6 +4,8 @@ import lime.system.Clipboard;
 import flash.errors.Error;
 import flash.events.KeyboardEvent;
 import flash.geom.Rectangle;
+import flixel.addons.ui.FlxUI.NamedString;
+import flixel.addons.ui.FlxUI;
 
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
@@ -833,7 +835,19 @@ class FlxInputText extends FlxText
 		}
 		return text;
 	}
-	
+
+	private function set_params(p:Array<Dynamic>):Array<Dynamic>
+	{
+		params = p;
+		if (params == null)
+		{
+			params = [];
+		}
+		var namedValue:NamedString = {name: "value", value: text};
+		params.push(namedValue);
+		return p;
+	}
+
 	private override function set_x(X:Float):Float
 	{
 		if ((fieldBorderSprite != null) && fieldBorderThickness > 0)
