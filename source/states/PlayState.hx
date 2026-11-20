@@ -16,6 +16,7 @@ import backend.Perlin;
 import flixel.FlxBasic;
 import flixel.FlxObject;
 import flixel.FlxSubState;
+import flixel.addons.transition.FlxTransitionableState;
 import flixel.util.FlxSort;
 import flixel.util.FlxStringUtil;
 import flixel.util.FlxSave;
@@ -46,6 +47,8 @@ import states.play.WindowBorderPulse;
 
 import substates.PauseSubState;
 import substates.GameOverSubstate;
+import substates.Endless_Substate;
+import substates.Survival_GameOptions;
 
 #if !flash
 import openfl.filters.ShaderFilter;
@@ -179,7 +182,15 @@ class PlayState extends MusicBeatState
 	public static var isSurvival:Bool = false;
 	public static var storyWeek:Int = 0;
 	public static var storyPlaylist:Array<String> = [];
+	public static var difficultyPlaylist:Array<String> = [];
+	public static var storyFolderPlaylist:Array<String> = [];
 	public static var storyDifficulty:Int = 1;
+	public static var timeLeftOver:Float = 0;
+	public static var loops:Int = 0;
+	public static var speed:Float = 0;
+
+	var survivalTimer:Float = 10;
+	var survivalCountdown:FlxText;
 	public static var returnToScriptedState:String = null;
 
 	public var spawnTime:Float = 2000;
@@ -505,6 +516,9 @@ class PlayState extends MusicBeatState
 		persistentUpdate = true;
 		persistentDraw = true;
 
+		if (isSurvival && Survival_GameOptions._survivalVars != null && Survival_GameOptions._survivalVars.carryTime)
+			survivalTimer += timeLeftOver;
+
 		Conductor.mapBPMChanges(SONG);
 		Conductor.bpm = SONG.bpm;
 
@@ -514,6 +528,12 @@ class PlayState extends MusicBeatState
 
 		if (isStoryMode)
 			detailsText = Language.getPhrase('playstate.presence.story', 'Story Mode: {1}', [WeekData.getCurrentWeek().weekName]);
+		else if (isEndless)
+			detailsText = Language.getPhrase('playstate.presence.endless', 'Endless');
+		else if (isMarathon)
+			detailsText = Language.getPhrase('playstate.presence.marathon', 'Marathon');
+		else if (isSurvival)
+			detailsText = Language.getPhrase('playstate.presence.survival', 'Survival');
 		else
 			detailsText = Language.getPhrase('playstate.presence.freeplay', 'Freeplay');
 
@@ -829,6 +849,15 @@ class PlayState extends MusicBeatState
 			scoreMTxt.visible = !ClientPrefs.data.hideHud;
 			uiGroup.add(scoreMTxt);
 			updateMicUpText();
+		}
+
+		if (isSurvival)
+		{
+			survivalCountdown = new FlxText(0, ClientPrefs.data.downScroll ? FlxG.height - 80 : 80, FlxG.width, "0", 30);
+			survivalCountdown.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			survivalCountdown.scrollFactor.set();
+			survivalCountdown.visible = !ClientPrefs.data.hideHud;
+			uiGroup.add(survivalCountdown);
 		}
 
 		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, botplayLabel(), 32);
@@ -2114,6 +2143,13 @@ class PlayState extends MusicBeatState
 
 		// Song duration in a float, useful for the time left feature
 		songLength = FlxG.sound.music.length;
+		if (isSurvival && Survival_GameOptions._survivalVars != null
+			&& (timeLeftOver == 0 || Survival_GameOptions._survivalVars.addSongTimeToCurrentTime))
+		{
+			survivalTimer += songLength * (Survival_GameOptions._survivalVars.timePercentage / 100);
+			if (survivalCountdown != null)
+				FlxTween.color(survivalCountdown, 0.2, FlxColor.GREEN, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+		}
 		FlxTween.tween(timeBar, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
 		FlxTween.tween(timeTxt, {alpha: 1}, 0.5, {ease: FlxEase.circOut});
 		if (versionText != null)
@@ -2160,14 +2196,31 @@ class PlayState extends MusicBeatState
 	{
 		var generateStarted:Float = haxe.Timer.stamp();
 		// FlxG.log.add(ChartParser.parse());
-		songSpeed = PlayState.SONG.speed;
 		songSpeedType = ClientPrefs.getGameplaySetting('scrolltype');
-		switch(songSpeedType)
+		if (isEndless)
 		{
-			case "multiplicative":
-				songSpeed = SONG.speed * ClientPrefs.getGameplaySetting('scrollspeed');
-			case "constant":
-				songSpeed = ClientPrefs.getGameplaySetting('scrollspeed');
+			if (speed <= 0)
+				speed = Endless_Substate._endless != null ? Endless_Substate._endless.speed : SONG.speed;
+			switch(songSpeedType)
+			{
+				case "multiplicative":
+					songSpeed = SONG.speed * speed;
+				case "constant":
+					songSpeed = speed;
+				default:
+					songSpeed = SONG.speed * speed;
+			}
+		}
+		else
+		{
+			songSpeed = PlayState.SONG.speed;
+			switch(songSpeedType)
+			{
+				case "multiplicative":
+					songSpeed = SONG.speed * ClientPrefs.getGameplaySetting('scrollspeed');
+				case "constant":
+					songSpeed = ClientPrefs.getGameplaySetting('scrollspeed');
+			}
 		}
 
 		var songData = SONG;
@@ -3161,6 +3214,13 @@ class PlayState extends MusicBeatState
 				updateEndCountdown(curTime);
 		}
 
+		if (isSurvival && !startingSong && !paused && !endingSong)
+		{
+			survivalTimer -= elapsed * 1000;
+			if (survivalCountdown != null)
+				survivalCountdown.text = Std.string(Math.ceil(Math.max(0, survivalTimer) / 1000));
+		}
+
 		if (camZooming)
 		{
 			FlxG.camera.zoom = FlxMath.lerp(defaultCamZoom, FlxG.camera.zoom, Math.exp(-elapsed * 3.125 * camZoomingDecay * playbackRate));
@@ -3169,7 +3229,7 @@ class PlayState extends MusicBeatState
 		#if !flash
 		if (camUnderlay != null)
 		{
-			camUnderlay.visible = camHUD.visible;
+			camUnderlay.visible = camHUD.visible && noteGroup.visible;
 			camUnderlay.zoom = camHUD.zoom;
 			camUnderlay.angle = camHUD.angle;
 			camUnderlay.x = camHUD.x;
@@ -3178,7 +3238,7 @@ class PlayState extends MusicBeatState
 		}
 		if (camSus != null)
 		{
-			camSus.visible = camHUD.visible;
+			camSus.visible = camHUD.visible && noteGroup.visible;
 			camSus.zoom = camHUD.zoom;
 			camSus.angle = camHUD.angle;
 			camSus.x = camHUD.x;
@@ -3493,11 +3553,19 @@ class PlayState extends MusicBeatState
 	public var isDead:Bool = false; //Don't mess with this on Lua!!!
 	public var gameOverTimer:FlxTimer;
 	function doDeathCheck(?skipHealthCheck:Bool = false) {
-		if (((skipHealthCheck && instakillOnMiss) || health <= 0) && !practiceMode && !isDead && gameOverTimer == null)
+		var survivalExpired:Bool = isSurvival && survivalTimer <= 0 && Conductor.songPosition > 250;
+		var healthDepleted:Bool = ((skipHealthCheck && instakillOnMiss) || health <= 0) && !practiceMode;
+		if ((healthDepleted || survivalExpired) && !isDead && gameOverTimer == null)
 		{
 			var ret:Dynamic = callOnScripts('onGameOver', null, true);
 			if(ret != LuaUtils.Function_Stop)
 			{
+				if (isSurvival)
+				{
+					timeLeftOver = Math.max(0, survivalTimer);
+					Highscore.saveSurvivalScore(campaignScore + songScore, Math.max(0, survivalTimer));
+				}
+
 				FlxG.animationTimeScale = 1;
 				playerChar().stunned = true;
 				deathCounter++;
@@ -4124,7 +4192,7 @@ class PlayState extends MusicBeatState
 			#end
 			playbackRate = 1;
 
-			if (!chartingMode && !isStoryMode)
+			if (!chartingMode && !isStoryMode && !isEndless && !isMarathon && !isSurvival)
 			{
 				if (ClientPrefs.data.resultsStateAtEnd && !cpuControlled)
 				{
@@ -4318,6 +4386,59 @@ class PlayState extends MusicBeatState
 					LoadingState.loadAndSwitchState(new PlayState(), false, false);
 				}
 			}
+			else if (isEndless)
+			{
+				campaignScore += songScore;
+				Highscore.saveEndlessScore(SONG.song, campaignScore, Mods.currentModDirectory);
+				loops++;
+
+				if (Endless_Substate._endless != null && Endless_Substate._endless.ramp)
+				{
+					if (speed < 8)
+						speed = Math.min(8, speed + 0.15);
+					if (storyDifficulty < 5 && loops % 8 == 0)
+						storyDifficulty++;
+				}
+
+				var endlessSong:String = SONG.song.toLowerCase();
+				loadNextModeSong(endlessSong);
+			}
+			else if (isMarathon || isSurvival)
+			{
+				campaignScore += songScore;
+				if (isSurvival)
+					timeLeftOver = Math.max(0, survivalTimer);
+
+				if (storyPlaylist.length > 0)
+					storyPlaylist.remove(storyPlaylist[0]);
+				if (difficultyPlaylist.length > 0)
+					difficultyPlaylist.remove(difficultyPlaylist[0]);
+				if (storyFolderPlaylist.length > 0)
+					storyFolderPlaylist.remove(storyFolderPlaylist[0]);
+
+				if (isMarathon)
+					MenuMarathon.saveCurrent();
+				else
+					MenuSurvival.saveCurrent();
+
+				if (storyPlaylist.length == 0)
+				{
+					canResync = false;
+					if (isMarathon)
+						Highscore.saveMarathonScore(campaignScore);
+					else
+						Highscore.saveSurvivalScore(campaignScore, timeLeftOver);
+
+					FlxG.sound.music.stop();
+					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					if (isMarathon)
+						MusicBeatState.switchState(new MenuMarathon());
+					else
+						MusicBeatState.switchState(new MenuSurvival());
+				}
+				else
+					loadNextModeSong();
+			}
 			else
 			{
 				trace('WENT BACK TO FREEPLAY??');
@@ -4335,6 +4456,50 @@ class PlayState extends MusicBeatState
 			transitioning = true;
 		}
 		return true;
+	}
+
+	function loadNextModeSong(?songName:String):Void
+	{
+		var nextSong:String = songName;
+		if (nextSong == null)
+		{
+			if (storyPlaylist.length == 0)
+				return;
+
+			nextSong = storyPlaylist[0].toLowerCase();
+			if (difficultyPlaylist.length > 0)
+			{
+				var parsedDifficulty:Null<Int> = Std.parseInt(difficultyPlaylist[0]);
+				if (parsedDifficulty != null)
+					storyDifficulty = parsedDifficulty;
+			}
+		}
+
+		if (storyFolderPlaylist.length > 0 && storyFolderPlaylist[0] != null)
+			Mods.currentModDirectory = storyFolderPlaylist[0];
+
+		SONG = Song.loadFromJson(nextSong + modeDifficultySuffix(storyDifficulty), nextSong);
+		FlxTransitionableState.skipNextTransIn = true;
+		FlxTransitionableState.skipNextTransOut = true;
+		prevCamFollow = camFollow;
+		seenCutscene = false;
+		FlxG.sound.music.stop();
+		canResync = false;
+		LoadingState.prepareToSong();
+		LoadingState.loadAndSwitchState(new PlayState(), false, false);
+	}
+
+	static function modeDifficultySuffix(difficulty:Int):String
+	{
+		return switch (difficulty)
+		{
+			case 0: "-noob";
+			case 1: "-easy";
+			case 3: "-hard";
+			case 4: "-expert";
+			case 5: "-insane";
+			default: "";
+		};
 	}
 
 	public function KillNotes() {
@@ -5492,6 +5657,13 @@ class PlayState extends MusicBeatState
 			doDeathCheck(true);
 		}
 
+		if (isSurvival && Survival_GameOptions._survivalVars != null)
+		{
+			survivalTimer -= 500 * MenuModifiers.fakeMP * Survival_GameOptions._survivalVars.subtractTimeMultiplier * density;
+			if (survivalCountdown != null)
+				FlxTween.color(survivalCountdown, 0.2, FlxColor.RED, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+		}
+
 		var lastCombo:Int = combo;
 		combo = 0;
 
@@ -5644,6 +5816,12 @@ class PlayState extends MusicBeatState
 		if(result == LuaUtils.Function_Stop) return;
 
 		note.wasGoodHit = true;
+		if (isSurvival && !note.isSustainNote && !note.hitCausesMiss && Survival_GameOptions._survivalVars != null)
+		{
+			survivalTimer += 1000 * Survival_GameOptions._survivalVars.addTimeMultiplier * noteDensityCount(note);
+			if (survivalCountdown != null)
+				FlxTween.color(survivalCountdown, 0.2, FlxColor.GREEN, FlxColor.WHITE, {ease: FlxEase.quadInOut});
+		}
 		playHitsound(note);
 
 		#if windows

@@ -4,6 +4,7 @@ class Highscore
 {
 	public static var weekScores:Map<String, Int> = new Map();
 	public static var songScores:Map<String, Int> = new Map<String, Int>();
+	public static var endlessScores:Map<String, Int> = new Map<String, Int>();
 	public static var songRating:Map<String, Float> = new Map<String, Float>();
 
 	public static function resetSong(song:String, diff:Int = 0):Void
@@ -62,6 +63,47 @@ class Highscore
 			setWeekScore(daWeek, score);
 	}
 
+	public static function saveMarathonScore(score:Int = 0):Void
+	{
+		var previous:Null<Int> = FlxG.save.data.marathonScore;
+		if (previous == null || score > previous)
+		{
+			FlxG.save.data.marathonScore = score;
+			FlxG.save.flush();
+		}
+	}
+
+	public static function saveEndlessScore(song:String, score:Int = 0, ?folder:String):Void
+	{
+		if (song == null)
+			return;
+
+		var key:String = getEndlessScoreKey(song, folder);
+		var legacyKey:String = Paths.formatToSongPath(song);
+		var previous:Int = 0;
+		if (endlessScores.exists(key))
+			previous = endlessScores.get(key);
+		else if (folder != null && folder.length > 0 && endlessScores.exists(legacyKey))
+			previous = endlessScores.get(legacyKey);
+		if (score > previous)
+		{
+			endlessScores.set(key, score);
+			FlxG.save.data.endlessScores = endlessScores;
+			FlxG.save.flush();
+		}
+	}
+
+	public static function saveSurvivalScore(score:Int = 0, timeLeft:Float = 0):Void
+	{
+		var previous:Null<Int> = FlxG.save.data.survivalScore;
+		if (previous == null || score > previous)
+		{
+			FlxG.save.data.survivalScore = score;
+			FlxG.save.data.survivalTime = timeLeft;
+			FlxG.save.flush();
+		}
+	}
+
 	/**
 	 * YOU SHOULD FORMAT SONG WITH formatSong() BEFORE TOSSING IN SONG VARIABLE
 	 */
@@ -112,6 +154,28 @@ class Highscore
 		return weekScores.exists(daWeek) ? weekScores.get(daWeek) : 0;
 	}
 
+	public static function getEndless(song:String, ?folder:String):Int
+	{
+		if (song == null)
+			return 0;
+
+		var key:String = getEndlessScoreKey(song, folder);
+		if (endlessScores.exists(key))
+			return endlessScores.get(key);
+
+		return folder != null && folder.length > 0 && endlessScores.exists(Paths.formatToSongPath(song))
+			? endlessScores.get(Paths.formatToSongPath(song))
+			: 0;
+	}
+
+	static function getEndlessScoreKey(song:String, ?folder:String):String
+	{
+		var songKey:String = Paths.formatToSongPath(song);
+		return folder != null && folder.length > 0
+			? Paths.formatToSongPath(folder) + '::' + songKey
+			: songKey;
+	}
+
 	public static function load():Void
 	{
 		if (FlxG.save.data.weekScores != null)
@@ -119,6 +183,9 @@ class Highscore
 
 		if (FlxG.save.data.songScores != null)
 			songScores = FlxG.save.data.songScores;
+
+		if (FlxG.save.data.endlessScores != null)
+			endlessScores = FlxG.save.data.endlessScores;
 
 		if (FlxG.save.data.songRating != null)
 			songRating = FlxG.save.data.songRating;

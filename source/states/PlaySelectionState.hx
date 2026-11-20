@@ -218,17 +218,17 @@ class PlaySelectionState extends MusicBeatState
 										DiscordClient.changePresence("Going to the modifiers menu.",  null);
 										#end
 								case 'marathon':
-										MusicBeatState.switchState(new NotAvalibleState());
+										MusicBeatState.switchState(new MenuMarathon());
 										#if DISCORD_ALLOWED
 										DiscordClient.changePresence("I wanna make a marathon.",  null);
 										#end
 								case 'survival':
-										MusicBeatState.switchState(new NotAvalibleState());
+										MusicBeatState.switchState(new MenuSurvival());
 										#if DISCORD_ALLOWED
 										DiscordClient.changePresence("This feels like Total Drama Island already.",  null);
 										#end
 								case 'endless':
-										MusicBeatState.switchState(new NotAvalibleState());
+										MusicBeatState.switchState(new MenuEndless());
 										#if DISCORD_ALLOWED
 										DiscordClient.changePresence("Endless easy SMM2 moment.",  null);
 										#end
