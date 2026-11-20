@@ -131,7 +131,7 @@ class Substate_PresetSaveOK extends MusicBeatSubstate
 				if (easterImage)
 					FlxTween.tween(eggImage, {'scale.x': 0}, 0.5, {ease: FlxEase.expoIn});
 
-				FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 				new FlxTimer().start(0.5, function(tmr:FlxTimer)
 				{
 					FlxG.state.closeSubState();

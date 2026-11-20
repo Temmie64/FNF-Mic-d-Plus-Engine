@@ -262,7 +262,7 @@ class MenuMarathon extends MusicBeatState
 			{
 				substated = true;
 
-				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 
 				FlxG.state.openSubState(new Marathon_Substate());
 			}
@@ -273,7 +273,7 @@ class MenuMarathon extends MusicBeatState
 				PlayState.storyPlaylist.push(Std.string(songs[curSelected].songName.toLowerCase()));
 				PlayState.storyFolderPlaylist.push(songs[curSelected].folder);
 
-				FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 
 				saveCurrent();
 			}
@@ -339,7 +339,7 @@ class MenuMarathon extends MusicBeatState
 	function changeSelection(change:Int = 0)
 	{
 		// NGio.logEvent('Fresh');
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4 * ClientPrefs.data.soundVolume / 100);
+		FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 
 		curSelected += change;
 

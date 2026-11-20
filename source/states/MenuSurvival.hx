@@ -246,7 +246,7 @@ class MenuSurvival extends MusicBeatState
 				{
 					substated = true;
 	
-					FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+					FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 	
 					FlxG.state.openSubState(new Survival_Substate());
 				}
@@ -259,12 +259,12 @@ class MenuSurvival extends MusicBeatState
 						PlayState.storyPlaylist.push(Std.string(songs[curSelected].songName.toLowerCase()));
 						PlayState.storyFolderPlaylist.push(songs[curSelected].folder);
 		
-						FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+						FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 		
 						saveCurrent();
 					}
 					else
-						FlxG.sound.play(Paths.soundRandom('missnote', 1, 3, 'shared'), FlxG.random.float(0.5, 0.7) * ClientPrefs.data.soundVolume / 100);
+						FlxG.sound.play(Paths.soundRandom('missnote', 1, 3, 'shared'), FlxG.random.float(0.5, 0.7) * 100);
 				}
 		}
 
@@ -322,7 +322,7 @@ class MenuSurvival extends MusicBeatState
     function changeSelection(change:Int = 0)
     {
         // NGio.logEvent('Fresh');
-        FlxG.sound.play(Paths.sound('scrollMenu'), 0.4 * ClientPrefs.data.soundVolume / 100);
+        FlxG.sound.play(Paths.sound('scrollMenu'), 100);
     
         curSelected += change;
     

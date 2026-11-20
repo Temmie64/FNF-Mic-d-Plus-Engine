@@ -239,12 +239,12 @@ class MenuEndless extends MusicBeatState
 
 				DiscordClient.changePresence("Going back!", null);
 
-				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 			}
 
 			if (accepted)
 			{
-				FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 
 				Endless_Substate.song = songs[curSelected].songName.toLowerCase();
 				Endless_Substate.songFolder = songs[curSelected].folder;
@@ -268,7 +268,7 @@ class MenuEndless extends MusicBeatState
 	function changeSelection(change:Int = 0)
 	{
 		// NGio.logEvent('Fresh');
-		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4 * ClientPrefs.data.soundVolume / 100);
+		FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 
 		curSelected += change;
 

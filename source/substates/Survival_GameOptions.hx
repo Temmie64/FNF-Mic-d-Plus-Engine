@@ -141,13 +141,13 @@ class Survival_GameOptions extends MusicBeatSubstate
         {
             if (controls.UI_UP_P)
                 {
-                    FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+                    FlxG.sound.play(Paths.sound('scrollMenu'), 100);
                     changeItem(-1);
                 }
         
             if (controls.UI_DOWN_P)
                 {
-                    FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+                    FlxG.sound.play(Paths.sound('scrollMenu'), 100);
                     changeItem(1);
                 }
         
@@ -166,7 +166,7 @@ class Survival_GameOptions extends MusicBeatSubstate
             if (controls.BACK)
                 {
                     goingBack = true;
-                    FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+                    FlxG.sound.play(Paths.sound('cancelMenu'), 100);
                     FlxTween.tween(blackBarThingie, { 'scale.y': 0}, 0.5, { ease: FlxEase.expoIn});
                     FlxTween.tween(navi, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
                     FlxTween.tween(ExplainText, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
@@ -227,11 +227,11 @@ class Survival_GameOptions extends MusicBeatSubstate
 			case "carry":
 				_survivalVars.carryTime = !_survivalVars.carryTime;
 
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('scrollMenu'), 100);
             case "addTime":
 				_survivalVars.addSongTimeToCurrentTime = !_survivalVars.addSongTimeToCurrentTime;
 
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('scrollMenu'), 100);
             case "subtract":
 
                 _survivalVars.subtractTimeMultiplier += FlxMath.roundDecimal(Change / 10, 2);
@@ -242,7 +242,7 @@ class Survival_GameOptions extends MusicBeatSubstate
 
                 _survivalVars.subtractTimeMultiplier = FlxMath.roundDecimal(_survivalVars.subtractTimeMultiplier, 2);
 
-                    FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+                    FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 			case "add":
 
 				_survivalVars.addTimeMultiplier += FlxMath.roundDecimal(Change / 10, 2);
@@ -253,7 +253,7 @@ class Survival_GameOptions extends MusicBeatSubstate
 
 				_survivalVars.addTimeMultiplier = FlxMath.roundDecimal(_survivalVars.addTimeMultiplier, 2);
 
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 		}
 
         if (!_survivalVars.carryTime && !_survivalVars.addSongTimeToCurrentTime)
@@ -277,7 +277,7 @@ class Survival_GameOptions extends MusicBeatSubstate
                 if (_survivalVars.timePercentage > 150)
                     _survivalVars.timePercentage = 150;
 
-                FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+                FlxG.sound.play(Paths.sound('scrollMenu'), 100);
         }
 
         new FlxTimer().start(0.2, function(tmr:FlxTimer)

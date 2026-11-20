@@ -89,20 +89,20 @@ class Substate_Preset extends MusicBeatSubstate
         {
             if (controls.UI_LEFT_P)
             {
-                FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+                FlxG.sound.play(Paths.sound('scrollMenu'), 100);
                 changeItem(-1);
             }
     
             if (controls.UI_RIGHT_P)
             {
-                FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+                FlxG.sound.play(Paths.sound('scrollMenu'), 100);
                 changeItem(1);
             }
 
             if (controls.BACK)
                 {
                     goingBack = true;
-                    FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+                    FlxG.sound.play(Paths.sound('cancelMenu'), 100);
                     FlxTween.tween(blackBarThingie, { 'scale.y': 0}, 0.5, { ease: FlxEase.expoIn});
                     new FlxTimer().start(0.6, function(tmr:FlxTimer)
                         {
@@ -124,7 +124,7 @@ class Substate_Preset extends MusicBeatSubstate
                         FlxTween.tween(blackBarThingie, { 'scale.y': 1500}, 0.5, { ease: FlxEase.expoIn});
                         FlxTween.tween(FlxG.camera, { y: 750}, 0.5, { ease: FlxEase.expoIn});
 
-                        FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
                         new FlxTimer().start(0.6, function(tmr:FlxTimer)
                         {
                             FlxG.resetState();
@@ -136,7 +136,7 @@ class Substate_Preset extends MusicBeatSubstate
                             
                         FlxTween.tween(blackBarThingie, { 'scale.y': 1500}, 0.5, { ease: FlxEase.expoIn});
     
-                        FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
                         new FlxTimer().start(0.6, function(tmr:FlxTimer)
                         {
                             FlxG.state.openSubState(new Substate_PresetSave());
@@ -148,7 +148,7 @@ class Substate_Preset extends MusicBeatSubstate
                                 
                         FlxTween.tween(blackBarThingie, { 'scale.y': 1500, 'scale.x': 0}, 0.5, { ease: FlxEase.expoIn});
         
-                        FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
                         new FlxTimer().start(0.6, function(tmr:FlxTimer)
                         {
                             FlxG.state.openSubState(new Substate_PresetLoad());

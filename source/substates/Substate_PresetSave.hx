@@ -101,7 +101,7 @@ class Substate_PresetSave extends MusicBeatSubstate
 			if (FlxG.keys.justPressed.ESCAPE)
 			{
 				goingBack = true;
-				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 				FlxTween.tween(blackBarThingie, {'scale.x': 0}, 0.5, {ease: FlxEase.expoIn});
 				FlxTween.tween(name, {'scale.x': 0}, 0.5, {ease: FlxEase.expoIn});
 				FlxTween.tween(chooseName, {'scale.x': 0}, 0.5, {ease: FlxEase.expoIn});

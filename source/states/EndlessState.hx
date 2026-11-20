@@ -433,7 +433,7 @@ class EndlessState extends MusicBeatState
 
 			if(FlxG.mouse.wheel != 0)
 			{
-				FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100 - 0.8);
+				FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 				changeSelection(-shiftMult * FlxG.mouse.wheel, false);
 			}
 		}
@@ -457,7 +457,7 @@ class EndlessState extends MusicBeatState
 				colorTween2.cancel();
 				colorTween3.cancel();
 			}
-			FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+			FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 				DiscordClient.changePresence("Going back!", null);
 			MusicBeatState.switchState(new PlaySelection());
 				FlxTween.tween(FlxG.camera, {zoom: 0.6, alpha: -0.6}, 0.7, {ease: FlxEase.quartInOut});
@@ -506,7 +506,7 @@ class EndlessState extends MusicBeatState
 			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
 			var poop:String = Highscore.formatSong(songLowercase, curDifficulty);
 
-				FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 
 				DiscordClient.changePresence("Selecting chart types.", null);
 
@@ -560,7 +560,7 @@ class EndlessState extends MusicBeatState
 				missingText.screenCenter(Y);
 				missingText.visible = true;
 				missingTextBG.visible = true;
-				FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+				FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 
 				updateTexts(elapsed);
 				super.update(elapsed);
@@ -583,7 +583,7 @@ class EndlessState extends MusicBeatState
 		{
 			persistentUpdate = false;
 			openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter));
-			FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+			FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 			iconArray[curSelected].animation.curAnim.curFrame = 1;
 		}
 
@@ -692,7 +692,7 @@ class EndlessState extends MusicBeatState
 	function changeSelection(change:Int = 0, playSound:Bool = true)
 	{
 		_updateSongLastDifficulty();
-		if(playSound) FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100 - 0.6);
+		if(playSound) FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 
 		var lastList:Array<String> = Difficulty.list;
 		curSelected += change;

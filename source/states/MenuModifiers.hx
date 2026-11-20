@@ -257,13 +257,13 @@ class MenuModifiers extends MusicBeatState
 				if (controls.UI_LEFT_P)
 				{
 					changeItem(-1);
-					FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+					FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 				}
 	
 				if (controls.UI_RIGHT_P)
 				{
 					changeItem(1);
-					FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+					FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 				}
 
 				if (controls.UI_UP_P)
@@ -271,7 +271,7 @@ class MenuModifiers extends MusicBeatState
 					if (modifierList[curSelected].type == 'number')
 						{
 							scrollValue(modifierList[curSelected].addChange * -1);
-							FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+							FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 						}
 					else
 						toggleSelection();
@@ -282,7 +282,7 @@ class MenuModifiers extends MusicBeatState
 					if (modifierList[curSelected].type == 'number')
 					{
 						scrollValue(modifierList[curSelected].addChange);
-						FlxG.sound.play(Paths.sound('scrollMenu'), ClientPrefs.data.soundVolume / 100);
+						FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 					}
 					else
 						toggleSelection();
@@ -300,7 +300,7 @@ class MenuModifiers extends MusicBeatState
 
 					DiscordClient.changePresence("Going Back!", null);
 
-					FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+					FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 
 					goingBack = true;
 				}
@@ -309,7 +309,7 @@ class MenuModifiers extends MusicBeatState
 				{
 					substated = true;
 
-					FlxG.sound.play(Paths.sound('confirmMenu'), ClientPrefs.data.soundVolume / 100);
+					FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 
 					FlxG.state.openSubState(new Substate_Preset());
 				}
@@ -461,7 +461,7 @@ class MenuModifiers extends MusicBeatState
 	}
 
 	function toggleSelection() {
-		FlxG.sound.play(Paths.sound('cancelMenu'), ClientPrefs.data.soundVolume / 100);
+		FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 
 		checkmarks[curSelected].visible = !checkmarks[curSelected].visible;
 		modifierList[curSelected].value = checkmarks[curSelected].visible;
