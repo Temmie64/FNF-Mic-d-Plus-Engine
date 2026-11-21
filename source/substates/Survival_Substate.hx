@@ -177,7 +177,7 @@ class Survival_Substate extends MusicBeatSubstate
                         FlxG.sound.play(Paths.sound('confirmMenu'), 100);
                         new FlxTimer().start(0.6, function(tmr:FlxTimer)
                         {
-                            FlxG.switchState(new PlaySelection());
+                            FlxG.switchState(new PlaySelectionState());
                         });
                     case 'clear':
                         PlayState.storyPlaylist = [];

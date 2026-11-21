@@ -39,11 +39,11 @@ typedef ModifierData = {
 
 class MenuModifiers extends MusicBeatState
 {
-    var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('modiBG_Main'));
-	var checker = new FlxBackdrop(Paths.image('Modi_Checker'), flixel.util.FlxAxes.XY);
+    var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('MicUp/ModiBG_Main'));
+	var checker = new FlxBackdrop(Paths.image('MicUp/Modi_Checker'), flixel.util.FlxAxes.XY);
 	var gradientBar:FlxSprite = new FlxSprite(0,0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
-	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('Modi_Bottom'));
-	var arrs:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('Modi_Arrows'));
+	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Modi_Bottom'));
+	var arrs:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Modi_Arrows'));
 	var name:FlxText = new FlxText(20, 69, FlxG.width, "", 48);
 	var multi:FlxText = new FlxText(20, 69, FlxG.width, "", 48);
 	var explain:FlxText = new FlxText(20, 69, 1200, "", 48);
@@ -292,7 +292,7 @@ class MenuModifiers extends MusicBeatState
 
 				if (controls.BACK)
 				{
-					FlxG.switchState(new PlaySelection());	
+					FlxG.switchState(new PlaySelectionState());	
 
 					FlxTween.tween(FlxG.camera, { zoom:0.6, alpha:-0.6}, 0.8, { ease: FlxEase.quartInOut});
 					FlxTween.tween(bg, { alpha:0}, 0.8, { ease: FlxEase.quartInOut});

@@ -33,10 +33,10 @@ class MenuSurvival extends MusicBeatState
 {
 	public static var _survival:SurvivalVars;
 
-	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('sBG_Main'));
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('Survival_Checker'), 0.2, 0.2, true, true);
+	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('MicUp/sBG_Main'));
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/Survival_Checker'), flixel.util.FlxAxes.XY);
 	var gradientBar:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
-	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('Survival_Side'));
+	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Survival_Side'));
 
     public static var curSelected:Int = 0;
 
@@ -132,6 +132,7 @@ class MenuSurvival extends MusicBeatState
 
 		add(checker);
 		checker.scrollFactor.set(0.07, 0.07);
+		checker.velocity.set(0.2, 0.2);
 
 		side.scrollFactor.x = 0;
 		side.scrollFactor.y = 0;

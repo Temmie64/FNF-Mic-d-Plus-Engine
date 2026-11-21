@@ -25,10 +25,10 @@ using StringTools;
 
 class MenuEndless extends MusicBeatState
 {
-	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('EndBG_Main'));
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('End_Checker'), 0.2, 0.2, true, true);
+	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('MicUp/miEndBG_Main'));
+	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('MicUp/End_Checker'), flixel.util.FlxAxes.XY);
 	var gradientBar:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
-	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('End_Side'));
+	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/End_Side'));
 
 	public static var curSelected:Int = 0;
 
@@ -123,6 +123,7 @@ class MenuEndless extends MusicBeatState
 
 		add(checker);
 		checker.scrollFactor.set(0.07, 0.07);
+		checker.velocity.set(0.2, 0.2);
 
 		grpSongs = new FlxTypedGroup<Alphabet>();
 		add(grpSongs);
@@ -228,7 +229,7 @@ class MenuEndless extends MusicBeatState
 
 			if (back)
 			{
-				MusicBeatState.switchState(new PlaySelection());
+				MusicBeatState.switchState(new PlaySelectionState());
 				goingBack = true;
 				FlxTween.tween(FlxG.camera, {zoom: 0.6, alpha: -0.6}, 0.7, {ease: FlxEase.quartInOut});
 				FlxTween.tween(bg, {alpha: 0}, 0.7, {ease: FlxEase.quartInOut});

@@ -34,10 +34,10 @@ class MenuMarathon extends MusicBeatState
 {
 	public static var _marathon:MarathonVars;
 
-	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('MaraBG_Main'));
-	var checker:FlxBackdrop = new FlxBackdrop(Paths.image('Mara_Checker'), 0.2, 0.2, true, true);
+	var bg:FlxSprite = new FlxSprite(-89).loadGraphic(Paths.image('MicUp/MaraBG_Main'));
+	var checker = new FlxBackdrop(Paths.image('MicUp/Mara_Checker'), flixel.util.FlxAxes.XY);
 	var gradientBar:FlxSprite = new FlxSprite(0, 0).makeGraphic(FlxG.width, 300, 0xFFAA00AA);
-	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('Mara_Bottom'));
+	var side:FlxSprite = new FlxSprite(0).loadGraphic(Paths.image('MicUp/Mara_Bottom'));
 
 	public static var curSelected:Int = 0;
 
@@ -137,6 +137,7 @@ class MenuMarathon extends MusicBeatState
 
 		add(checker);
 		checker.scrollFactor.set(0.07, 0.07);
+		checker.velocity.set(0.2, 0.2);
 
 		grpSongs = new FlxTypedGroup<Alphabet>();
 		add(grpSongs);
