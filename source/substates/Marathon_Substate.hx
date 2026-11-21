@@ -1,290 +1,168 @@
 package substates;
 
-import sys.FileSystem;
-import flixel.util.FlxTimer;
-import flixel.tweens.FlxEase;
-import flixel.tweens.FlxTween;
+import backend.Mods;
+import backend.Song;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
-import flixel.util.FlxColor;
-import backend.Mods;
 import states.MenuMarathon;
-import backend.Song;
-
-using StringTools;
+import sys.FileSystem;
 
 class Marathon_Substate extends MusicBeatSubstate
 {
-    var menuItems:FlxTypedGroup<FlxSprite>;
-    var optionShit:Array<String>;
-    public static var curSelected:Int = 0;
+	public static var curSelected:Int = 0;
+	public static var presets:Array<String>;
 
-    var goingBack:Bool = false;
+	var menuItems:FlxTypedGroup<FlxSprite>;
+	var optionNames:Array<String>;
+	var selectable:Bool = false;
+	var closing:Bool = false;
 
-    var camLerp:Float = 0.16;
+	public function new()
+	{
+		super();
+		if (!FileSystem.isDirectory('presets/marathon'))
+			FileSystem.createDirectory('presets/marathon');
 
-    public static var presets:Array<String>;
-
-    var blackBarThingie:FlxSprite = new FlxSprite().makeGraphic(1, FlxG.height, FlxColor.BLACK);
-
-    var canLoad:String;
-    var canPlay:String;
-    var canEdit:String;
-
-    public function new()
-    {
-        super();
-
-		add(blackBarThingie);
-        blackBarThingie.scrollFactor.set();
-        blackBarThingie.scale.x = 0;
-        FlxTween.tween(blackBarThingie, { 'scale.x': 300}, 0.5, { ease: FlxEase.expoOut});
-
-        presets = FileSystem.readDirectory('presets/marathon');
-        presets.remove('current');
-
-        trace(presets);
-
-        if (PlayState.storyPlaylist.length > 0 && PlayState.difficultyPlaylist.length > 0)
-            {
-                canPlay = 'play';
-                canEdit = 'edit';
-            }
-        else
-            {
-                canPlay = 'no';
-                canEdit = 'no';
-            }
-
-        if (presets.length > 0)
-            canLoad = 'load';
-        else
-            canLoad = 'no';
-
-        optionShit = [canPlay, canEdit, 'clear', 'save', canLoad, 'exit'];
-        if (curSelected < 0 || curSelected >= optionShit.length)
-            curSelected = 0;
-
-        menuItems = new FlxTypedGroup<FlxSprite>();
-        add(menuItems);
-        
-		var tex = Paths.getSparrowAtlas('Modi_Buttons');
-
-		for (i in 0...optionShit.length)
+		presets = [];
+		try
 		{
-			var menuItem:FlxSprite = new FlxSprite(0, 0);
-			menuItem.frames = tex;
-            menuItem.animation.addByPrefix('standard', optionShit[i], 24, true);
-			menuItem.animation.play('standard');
-			menuItem.ID = i;
-			menuItems.add(menuItem);
-			menuItem.scrollFactor.set();
-            menuItem.antialiasing = true;
-            menuItem.scrollFactor.x = 0;
-            menuItem.scrollFactor.y = 0;
+			presets = FileSystem.readDirectory('presets/marathon');
+			presets.remove('current');
+		}
+		catch (_:Dynamic) {}
 
-            menuItem.y = 40 +  i * 90;
-            menuItem.screenCenter(X);
-            menuItem.scale.set(0,0);
-        }
+		var canPlay:String = PlayState.storyPlaylist.length > 0 && PlayState.difficultyPlaylist.length > 0 ? 'play' : 'no';
+		var canEdit:String = PlayState.storyPlaylist.length > 0 ? 'edit' : 'no';
+		optionNames = [canPlay, canEdit, 'clear', 'save', presets.length > 0 ? 'load' : 'no', 'exit'];
+		curSelected = Std.int(FlxMath.bound(curSelected, 0, optionNames.length - 1));
 
-        new FlxTimer().start(0.1, function(tmr:FlxTimer)
-			{
-				selectable = true;
-			});
-    }
+		menuItems = new FlxTypedGroup<FlxSprite>();
+		add(menuItems);
+		var atlas = Paths.getSparrowAtlas('MicUp/Modi_Buttons');
+		for (i in 0...optionNames.length)
+		{
+			var item:FlxSprite = new FlxSprite(0, 20 + (i * 105));
+			item.frames = atlas;
+			item.animation.addByPrefix('idle', optionNames[i], 24, true);
+			item.animation.play('idle');
+			item.ID = i;
+			item.scrollFactor.set();
+			item.antialiasing = true;
+			item.screenCenter(X);
+			menuItems.add(item);
+		}
+		selectable = true;
+	}
 
-    var selectable:Bool = false;
+	override function update(elapsed:Float)
+	{
+		super.update(elapsed);
+		if (!selectable || closing)
+			return;
 
-    override function update(elapsed:Float)
-    {
-        super.update(elapsed);
+		if (controls.UI_UP_P)
+		{
+			changeItem(-1);
+			FlxG.sound.play(Paths.sound('scrollMenu'), 100);
+		}
+		if (controls.UI_DOWN_P)
+		{
+			changeItem(1);
+			FlxG.sound.play(Paths.sound('scrollMenu'), 100);
+		}
+		if (controls.BACK)
+		{
+			closing = true;
+			FlxG.sound.play(Paths.sound('cancelMenu'), 100);
+			FlxG.state.closeSubState();
+			MenuMarathon.substated = false;
+		}
+		if (controls.ACCEPT)
+			acceptOption();
 
-        blackBarThingie.screenCenter();
+		for (item in menuItems.members)
+		{
+			item.scale.set(FlxMath.lerp(item.scale.x, item.ID == curSelected ? 1.2 : 0.4, 0.16),
+				FlxMath.lerp(item.scale.y, item.ID == curSelected ? 1.2 : 0.4, 0.16));
+			item.screenCenter(X);
+			item.y = 20 + (item.ID * 105);
+		}
+	}
 
-        if (selectable && !goingBack)
-        {
-            if (controls.UI_UP_P)
-            {
-                FlxG.sound.play(Paths.sound('scrollMenu'), 100);
-                changeItem(-1);
-            }
-    
-            if (controls.UI_DOWN_P)
-            {
-                FlxG.sound.play(Paths.sound('scrollMenu'), 100);
-                changeItem(1);
-            }
+	function changeItem(change:Int):Void
+	{
+		curSelected += change;
+		if (curSelected < 0)
+			curSelected = optionNames.length - 1;
+		if (curSelected >= optionNames.length)
+			curSelected = 0;
+	}
 
-            if (controls.BACK)
-                {
-                    goingBack = true;
-                    FlxG.sound.play(Paths.sound('cancelMenu'), 100);
-                    FlxTween.tween(blackBarThingie, { 'scale.x': 0}, 0.5, { ease: FlxEase.expoIn});
-                    new FlxTimer().start(0.6, function(tmr:FlxTimer)
-                        {
-                            FlxG.state.closeSubState();
-                            MenuMarathon.substated = false;
-                        });
-                }
-        
-            if (controls.ACCEPT)
-            {
-                switch (optionShit[curSelected])
-                {
-                    case 'play':
-                        if (PlayState.storyPlaylist.length > 0 && PlayState.difficultyPlaylist.length > 0)
-                        {
-                            var diffic:String = "";
+	function acceptOption():Void
+	{
+		switch (optionNames[curSelected])
+		{
+			case 'play':
+				if (PlayState.storyPlaylist.length > 0 && PlayState.difficultyPlaylist.length > 0)
+				{
+					var suffix:String = difficultySuffix(Std.parseInt(PlayState.difficultyPlaylist[0]));
+					PlayState.storyDifficulty = Std.parseInt(PlayState.difficultyPlaylist[0]);
+					Mods.currentModDirectory = PlayState.storyFolderPlaylist.length > 0
+						? PlayState.storyFolderPlaylist[0]
+						: '';
+					var songName:String = PlayState.storyPlaylist[0].toLowerCase();
+					if (Song.loadFromJson(songName + suffix, songName) != null)
+					{
+						closing = true;
+						PlayState.campaignScore = 0;
+						FlxG.sound.play(Paths.sound('confirmMenu'), 100);
+						FlxG.state.closeSubState();
+						FlxG.state.openSubState(new ChartType());
+						MenuMarathon.no = true;
+					}
+					else
+						FlxG.sound.play(Paths.sound('cancelMenu'), 100);
+				}
+			case 'edit':
+				closing = true;
+				FlxG.state.closeSubState();
+				FlxG.state.openSubState(new Marathon_Edit());
+			case 'clear':
+				PlayState.storyPlaylist = [];
+				PlayState.difficultyPlaylist = [];
+				PlayState.storyFolderPlaylist = [];
+				MenuMarathon.saveCurrent();
+				FlxG.state.closeSubState();
+				FlxG.state.openSubState(new Marathon_Substate());
+			case 'save':
+				closing = true;
+				Substate_PresetSave.coming = 'Marathon';
+				FlxG.state.closeSubState();
+				FlxG.state.openSubState(new Substate_PresetSave());
+			case 'load':
+				closing = true;
+				Substate_PresetLoad.coming = 'Marathon';
+				FlxG.state.closeSubState();
+				FlxG.state.openSubState(new Substate_PresetLoad());
+			case 'exit':
+				closing = true;
+				FlxG.sound.play(Paths.sound('confirmMenu'), 100);
+				MusicBeatState.switchState(new PlaySelectionState());
+		}
+	}
 
-                            switch (PlayState.difficultyPlaylist[0])
-                            {
-                                case '0':
-                                    diffic = '-noob';
-                                case '1':
-                                    diffic = '-easy';
-                                case '3':
-                                    diffic = '-hard';
-                                case '4':
-                                    diffic = '-expert';
-                                case '5':
-                                    diffic = '-insane';
-                            }
-                            PlayState.storyDifficulty = Std.parseInt(PlayState.difficultyPlaylist[0]);
-                            Mods.currentModDirectory = PlayState.storyFolderPlaylist.length > 0
-                                ? PlayState.storyFolderPlaylist[0]
-                                : '';
-                            var songName:String = PlayState.storyPlaylist[0].toLowerCase();
-                            if (Song.loadFromJson(songName + diffic, songName) != null)
-                            {
-                                goingBack = true;
-                                DiscordClient.changePresence("Selecting chart types.", null);
-                                PlayState.campaignScore = 0;
-
-                                FlxTween.tween(blackBarThingie, { 'scale.y': 1500, 'scale.x': 1500}, 0.5, { ease: FlxEase.expoIn});
-                                FlxG.sound.play(Paths.sound('confirmMenu'), 100);
-                                new FlxTimer().start(0.6, function(tmr:FlxTimer)
-                                {
-                                    FlxG.state.openSubState(new substates.ChartType());
-                                    MenuMarathon.no = true;
-                                });
-                            }
-                            else
-                                FlxG.sound.play(Paths.sound('cancelMenu'), 100);
-                        }
-                    case 'exit':
-                        goingBack = true;
-                                
-                        FlxTween.tween(blackBarThingie, { 'scale.y': 1500, 'scale.x': 1500}, 0.5, { ease: FlxEase.expoIn});
-                        FlxTween.tween(FlxG.camera, { 'zoom': 0.6, 'alpha': 0}, 0.5, { ease: FlxEase.expoIn});
-        
-                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
-                        new FlxTimer().start(0.6, function(tmr:FlxTimer)
-                        {
-                            FlxG.switchState(new states.PlaySelectionState());
-                        });
-                    case 'clear':
-                        PlayState.storyPlaylist = [];
-                        PlayState.difficultyPlaylist = [];
-                        PlayState.storyFolderPlaylist = [];
-                        MenuMarathon.saveCurrent();
-
-                        canPlay = 'no';
-                        canEdit = 'no';
-
-                        optionShit = [canPlay, canEdit, 'clear', 'save', canLoad, 'exit'];
-
-                        menuItems.clear();
-
-                        var tex = Paths.getSparrowAtlas('Modi_Buttons');
-                        for (i in 0...optionShit.length)
-                            {
-                                var menuItem:FlxSprite = new FlxSprite(0, 0);
-                                menuItem.frames = tex;
-                                menuItem.animation.addByPrefix('standard', optionShit[i], 24, true);
-                                menuItem.animation.play('standard');
-                                menuItem.ID = i;
-                                menuItems.add(menuItem);
-                                menuItem.scrollFactor.set();
-                                menuItem.antialiasing = true;
-                                menuItem.scrollFactor.x = 0;
-                                menuItem.scrollFactor.y = 0;
-                    
-                                menuItem.y = 40 +  i * 90;
-                                menuItem.screenCenter(X);
-                                menuItem.scale.set(0,0);
-                            }
-
-                        FlxG.camera.flash(0xFFFF0000, 0.4, null, true);
-
-                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
-                    case 'save':
-                        goingBack = true;
-                        Substate_PresetSave.coming = "Marathon";
-                            
-                        FlxTween.tween(blackBarThingie, { 'scale.x': 1500}, 0.5, { ease: FlxEase.expoIn});
-    
-                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
-                        new FlxTimer().start(0.6, function(tmr:FlxTimer)
-                        {
-                            FlxG.state.openSubState(new Substate_PresetSave());
-                            FlxG.state.closeSubState();
-                        });
-                    case 'load':
-                        goingBack = true;
-                        Substate_PresetLoad.coming = "Marathon";
-                                
-                        FlxTween.tween(blackBarThingie, { 'scale.y': 1500, 'scale.x': 0}, 0.5, { ease: FlxEase.expoIn});
-        
-                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
-                        new FlxTimer().start(0.6, function(tmr:FlxTimer)
-                        {
-                            FlxG.state.openSubState(new Substate_PresetLoad());
-                            FlxG.state.closeSubState();
-                        });
-                    case 'edit':
-                        goingBack = true;
-                                    
-                        FlxTween.tween(blackBarThingie, { 'scale.y': 1500, 'scale.x': 0}, 0.5, { ease: FlxEase.expoIn});
-            
-                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
-                        new FlxTimer().start(0.6, function(tmr:FlxTimer)
-                        {
-                            FlxG.state.openSubState(new Marathon_Edit());
-                            FlxG.state.closeSubState();
-                        });
-                }
-            }
-        }
-
-        menuItems.forEach(function(spr:FlxSprite)
-            {
-                if (!goingBack)
-                {
-                    spr.screenCenter(X);
-                    spr.y = 20 +  spr.ID * 105;
-                    spr.scale.set(FlxMath.lerp(spr.scale.x, 0.4, camLerp/(ClientPrefs.data.framerate / 60)), FlxMath.lerp(spr.scale.y, 0.4, 0.4/(ClientPrefs.data.framerate / 60)));
-    
-                    if (spr.ID == curSelected)
-                        spr.scale.set(FlxMath.lerp(spr.scale.x, 1.2, camLerp/(ClientPrefs.data.framerate / 60)), FlxMath.lerp(spr.scale.y, 1.2, 0.4/(ClientPrefs.data.framerate / 60)));
-                }
-                else
-                    spr.scale.set(FlxMath.lerp(spr.scale.x, 0, camLerp/(ClientPrefs.data.framerate / 60)), FlxMath.lerp(spr.scale.y, 0, 0.4/(ClientPrefs.data.framerate / 60)));
-            });
-    }
-
-    function changeItem(huh:Int = 0)
-        {
-            if (optionShit.length == 0)
-                return;
-
-            curSelected += huh;
-        
-            if (curSelected >= menuItems.length)
-                curSelected = 0;
-            if (curSelected < 0)
-                curSelected = menuItems.length - 1;
-        }
+	function difficultySuffix(diff:Int):String
+	{
+		return switch (diff)
+		{
+			case 0: '-noob';
+			case 1: '-easy';
+			case 3: '-hard';
+			case 4: '-expert';
+			case 5: '-insane';
+			default: '';
+		}
+	}
 }
