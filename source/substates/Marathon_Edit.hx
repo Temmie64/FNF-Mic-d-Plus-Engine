@@ -99,10 +99,11 @@ class Marathon_Edit extends MusicBeatSubstate
                         });
                 }
         
-            if (controls.ACCEPT)
+            if (controls.ACCEPT && curSelected >= 0 && curSelected < PlayState.storyPlaylist.length)
             {
                 PlayState.storyPlaylist.remove(PlayState.storyPlaylist[curSelected]);
-                PlayState.difficultyPlaylist.remove(PlayState.difficultyPlaylist[curSelected]);
+                if (curSelected < PlayState.difficultyPlaylist.length)
+                    PlayState.difficultyPlaylist.remove(PlayState.difficultyPlaylist[curSelected]);
                 if (PlayState.storyFolderPlaylist.length > curSelected)
                     PlayState.storyFolderPlaylist.remove(PlayState.storyFolderPlaylist[curSelected]);
 
@@ -120,6 +121,11 @@ class Marathon_Edit extends MusicBeatSubstate
 
     function changeSelection(change:Int = 0)
         {
+            if (PlayState.storyPlaylist.length == 0)
+            {
+                curSelected = 0;
+                return;
+            }
     
             // NGio.logEvent('Fresh');
             FlxG.sound.play(Paths.sound('scrollMenu'), 100);
@@ -179,7 +185,9 @@ class Marathon_Edit extends MusicBeatSubstate
                 sprDifficulty.animation.addByPrefix('hell', 'HELL');
                 sprDifficulty.animation.addByPrefix('remix', 'REMIX');
 
-                var difficulty:String = PlayState.difficultyPlaylist[i];
+                var difficulty:String = i < PlayState.difficultyPlaylist.length
+                    ? PlayState.difficultyPlaylist[i]
+                    : '2';
                 var animationName:String = difficulty.toLowerCase();
                 switch (animationName)
                 {

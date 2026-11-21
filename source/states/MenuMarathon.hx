@@ -53,6 +53,7 @@ class MenuMarathon extends MusicBeatState
 	public static var curDifficulty:Int = 2;
 
 	var scoreText:FlxText;
+	var emptyText:FlxText;
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
 
@@ -118,6 +119,8 @@ class MenuMarathon extends MusicBeatState
 			if (!alreadyListed)
 				songs.push(new SongTitles(songName, folder));
 		}
+		if (curSelected < 0 || curSelected >= songs.length)
+			curSelected = 0;
 
 		bg.scrollFactor.x = 0;
 		bg.scrollFactor.y = 0.03;
@@ -195,6 +198,15 @@ class MenuMarathon extends MusicBeatState
 		tracksUsed.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
 		add(tracksUsed);
 
+		if (songs.length == 0)
+		{
+			emptyText = new FlxText(0, 0, FlxG.width, "NO SONGS AVAILABLE", 32);
+			emptyText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
+			emptyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 4, 1);
+			emptyText.screenCenter();
+			add(emptyText);
+		}
+
 		changeSelection();
 		changeDiff();
 
@@ -246,10 +258,13 @@ class MenuMarathon extends MusicBeatState
 
 		if (!substated && selectable)
 		{
-			if (upP)
-				changeSelection(-1);
-			if (downP)
-				changeSelection(1);
+			if (songs.length > 0)
+			{
+				if (upP)
+					changeSelection(-1);
+				if (downP)
+					changeSelection(1);
+			}
 
 			if (controls.UI_LEFT_P)
 				changeDiff(-1);
@@ -265,7 +280,7 @@ class MenuMarathon extends MusicBeatState
 				FlxG.state.openSubState(new Marathon_Substate());
 			}
 
-			if (accepted)
+			if (accepted && songs.length > 0)
 			{
 				PlayState.difficultyPlaylist.push(Std.string(curDifficulty));
 				PlayState.storyPlaylist.push(Std.string(songs[curSelected].songName.toLowerCase()));
@@ -336,6 +351,13 @@ class MenuMarathon extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
+		if (songs.length == 0)
+		{
+			curSelected = 0;
+			intendedScore = 0;
+			return;
+		}
+
 		// NGio.logEvent('Fresh');
 		FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 

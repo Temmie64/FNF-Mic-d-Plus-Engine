@@ -34,6 +34,8 @@ class Endless_Substate extends MusicBeatSubstate
     var sprDifficulty:FlxSprite;
     var textSpeed:FlxText;
     var textRamp:FlxText;
+    var chartSpeed:Float = 0;
+    var chartAvailable:Bool = false;
 
     public static var curSelected:Int = 0;
     public static var curDifficulty:Int = 2;
@@ -69,7 +71,7 @@ class Endless_Substate extends MusicBeatSubstate
         menuItems = new FlxTypedGroup<FlxSprite>();
         add(menuItems);
         
-		var tex = Paths.getSparrowAtlas('Endless_Buttons');
+		var tex = Paths.getSparrowAtlas('MicUp/Endless_Buttons');
 
         for (i in 0...optionShit.length)
             {
@@ -140,7 +142,7 @@ class Endless_Substate extends MusicBeatSubstate
         super.update(elapsed);
 
         blackBarThingie.y = 360 - blackBarThingie.height/2;
-        textSpeed.text = Std.string(_endless.speed)+" ("+PlayState.SONG.speed+")";
+        textSpeed.text = chartAvailable ? Std.string(_endless.speed) + " (" + chartSpeed + ")" : "CHART UNAVAILABLE";
         textRamp.text = Std.string(_endless.ramp).toUpperCase();
 
         if (selectable && !goingBack)
@@ -201,7 +203,7 @@ class Endless_Substate extends MusicBeatSubstate
                         });
                 }
         
-            if (controls.ACCEPT)
+            if (controls.ACCEPT && chartAvailable)
             {
 				DiscordClient.changePresence("Selecting chart types.", null);
 
@@ -289,7 +291,6 @@ class Endless_Substate extends MusicBeatSubstate
             FlxTween.tween(sprDifficulty, {y: 151, alpha: 1}, 0.04);
 
             updateSong();
-            loadCurrent(song, curDifficulty);
         }
     
     function updateSong()
@@ -311,10 +312,18 @@ class Endless_Substate extends MusicBeatSubstate
 		}
         
         Mods.currentModDirectory = songFolder != null ? songFolder : '';
-        PlayState.SONG = Song.loadFromJson(song+diffic, song);
-        _endless.speed = PlayState.SONG.speed;
+        var loadedSong = Song.loadFromJson(song+diffic, song);
+        chartAvailable = loadedSong != null;
+        if (!chartAvailable)
+        {
+            chartSpeed = 0;
+            _endless.speed = 0;
+            return;
+        }
 
-        trace(_endless.speed);
+        chartSpeed = loadedSong.speed;
+        _endless.speed = chartSpeed;
+        loadCurrent(song, curDifficulty);
     }
 
     public static function loadCurrent(songTitle:String, difficulty:Int)
@@ -340,6 +349,9 @@ class Endless_Substate extends MusicBeatSubstate
 
     public static function saveCurrent(songTitle:String, difficulty:Int)
         {
+            if (!FileSystem.isDirectory('presets/endless'))
+                FileSystem.createDirectory('presets/endless');
+
             File.saveContent(getPresetPath(songTitle, difficulty), Json.stringify(_endless, null, '    '));
         }
 

@@ -56,6 +56,7 @@ class MenuSurvival extends MusicBeatState
 	public static var no:Bool = false;
 
 	var tracksUsed:FlxText;
+	var emptyText:FlxText;
 
     override function create()
     {
@@ -116,6 +117,8 @@ class MenuSurvival extends MusicBeatState
 			if (!alreadyListed)
 				songs.push(new SongTitlesS(songName, folder));
 		}
+		if (curSelected < 0 || curSelected >= songs.length)
+			curSelected = 0;
 
 		bg.scrollFactor.x = 0;
 		bg.scrollFactor.y = 0.03;
@@ -169,6 +172,15 @@ class MenuSurvival extends MusicBeatState
 		tracksUsed.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
 		tracksUsed.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
 		add(tracksUsed);
+
+		if (songs.length == 0)
+		{
+			emptyText = new FlxText(0, 0, FlxG.width, "NO SONGS AVAILABLE", 32);
+			emptyText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
+			emptyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 4, 1);
+			emptyText.screenCenter();
+			add(emptyText);
+		}
 
 		var diffTex = Paths.getSparrowAtlas('difficulties');
 		sprDifficulty = new FlxSprite(130, 0);
@@ -233,10 +245,13 @@ class MenuSurvival extends MusicBeatState
 
 		if (selectable && !substated)
 		{
-			if (upP)
-				changeSelection(-1);
-			if (downP)
-				changeSelection(1);
+			if (songs.length > 0)
+			{
+				if (upP)
+					changeSelection(-1);
+				if (downP)
+					changeSelection(1);
+			}
 
 			if (controls.UI_LEFT_P)
 				changeDiff(-1);
@@ -252,7 +267,7 @@ class MenuSurvival extends MusicBeatState
 					FlxG.state.openSubState(new Survival_Substate());
 				}
 
-			if (accepted)
+			if (accepted && songs.length > 0)
 				{
 					if (PlayState.difficultyPlaylist.length < 5)
 					{
@@ -322,6 +337,12 @@ class MenuSurvival extends MusicBeatState
 
     function changeSelection(change:Int = 0)
     {
+		if (songs.length == 0)
+		{
+			curSelected = 0;
+			return;
+		}
+
         // NGio.logEvent('Fresh');
         FlxG.sound.play(Paths.sound('scrollMenu'), 100);
     

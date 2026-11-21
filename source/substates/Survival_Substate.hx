@@ -48,7 +48,7 @@ class Survival_Substate extends MusicBeatSubstate
 
         trace(presets);
 
-        if (PlayState.storyPlaylist.length > 0)
+        if (PlayState.storyPlaylist.length > 0 && PlayState.difficultyPlaylist.length > 0)
             {
                 canPlay = 'play';
                 canEdit = 'edit';
@@ -65,6 +65,8 @@ class Survival_Substate extends MusicBeatSubstate
             canLoad = 'no';
 
         optionShit = [canPlay, canEdit, 'clear', 'save', canLoad, 'options', 'exit'];
+        if (curSelected < 0 || curSelected >= optionShit.length)
+            curSelected = 0;
 
         menuItems = new FlxTypedGroup<FlxSprite>();
         add(menuItems);
@@ -134,40 +136,45 @@ class Survival_Substate extends MusicBeatSubstate
                 switch (optionShit[curSelected])
                 {
                     case 'play':
-                        goingBack = true;
-
-						DiscordClient.changePresence("Selecting chart types.", null);
-
-                        var diffic:String = "";
-
-                        switch (PlayState.difficultyPlaylist[0])
-			            {
-			            	case '0':
-			            		diffic = '-noob';
-			            	case '1':
-			            		diffic = '-easy';
-			            	case '3':
-			            		diffic = '-hard';
-			            	case '4':
-			            		diffic = '-expert';
-			            	case '5':
-			            		diffic = '-insane';
-			            }
-                        PlayState.storyDifficulty = Std.parseInt(PlayState.difficultyPlaylist[0]);
-                        // PlayState.gameplayArea = "Survival";
-			            if (PlayState.storyFolderPlaylist.length > 0 && PlayState.storyFolderPlaylist[0] != null)
-			                Mods.currentModDirectory = PlayState.storyFolderPlaylist[0];
-			            PlayState.SONG = Song.loadFromJson(PlayState.storyPlaylist[0].toLowerCase() + diffic, PlayState.storyPlaylist[0].toLowerCase());
-                        PlayState.campaignScore = 0;
-                                
-                        FlxTween.tween(blackBarThingie, { 'scale.y': 1500, 'scale.x': 1500}, 0.5, { ease: FlxEase.expoIn});
-        
-                        FlxG.sound.play(Paths.sound('confirmMenu'), 100);
-                        new FlxTimer().start(0.6, function(tmr:FlxTimer)
+                        if (PlayState.storyPlaylist.length > 0 && PlayState.difficultyPlaylist.length > 0)
                         {
-                            FlxG.state.openSubState(new ChartType());
-                            MenuSurvival.no = true;
-                        });
+                            var diffic:String = "";
+
+                            switch (PlayState.difficultyPlaylist[0])
+                            {
+                                case '0':
+                                    diffic = '-noob';
+                                case '1':
+                                    diffic = '-easy';
+                                case '3':
+                                    diffic = '-hard';
+                                case '4':
+                                    diffic = '-expert';
+                                case '5':
+                                    diffic = '-insane';
+                            }
+                            PlayState.storyDifficulty = Std.parseInt(PlayState.difficultyPlaylist[0]);
+                            Mods.currentModDirectory = PlayState.storyFolderPlaylist.length > 0
+                                ? PlayState.storyFolderPlaylist[0]
+                                : '';
+                            var songName:String = PlayState.storyPlaylist[0].toLowerCase();
+                            if (Song.loadFromJson(songName + diffic, songName) != null)
+                            {
+                                goingBack = true;
+                                DiscordClient.changePresence("Selecting chart types.", null);
+                                PlayState.campaignScore = 0;
+
+                                FlxTween.tween(blackBarThingie, { 'scale.y': 1500, 'scale.x': 1500}, 0.5, { ease: FlxEase.expoIn});
+                                FlxG.sound.play(Paths.sound('confirmMenu'), 100);
+                                new FlxTimer().start(0.6, function(tmr:FlxTimer)
+                                {
+                                    FlxG.state.openSubState(new ChartType());
+                                    MenuSurvival.no = true;
+                                });
+                            }
+                            else
+                                FlxG.sound.play(Paths.sound('cancelMenu'), 100);
+                        }
                     case 'exit':
                         goingBack = true;
                                 
@@ -282,6 +289,9 @@ class Survival_Substate extends MusicBeatSubstate
 
     function changeItem(huh:Int = 0)
         {
+            if (optionShit.length == 0)
+                return;
+
             curSelected += huh;
         
             if (curSelected >= menuItems.length)

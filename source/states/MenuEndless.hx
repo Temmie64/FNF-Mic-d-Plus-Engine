@@ -43,6 +43,7 @@ class MenuEndless extends MusicBeatState
 	var songs:Array<SongTitlesE> = [];
 
 	var scoreText:FlxText;
+	var emptyText:FlxText;
 	var lerpScore:Int = 0;
 	var intendedScore:Int = 0;
 
@@ -104,6 +105,8 @@ class MenuEndless extends MusicBeatState
 			if (!alreadyListed)
 				songs.push(new SongTitlesE(songName, folder));
 		}
+		if (curSelected < 0 || curSelected >= songs.length)
+			curSelected = 0;
 
 		bg.scrollFactor.x = 0;
 		bg.scrollFactor.y = 0.03;
@@ -165,6 +168,15 @@ class MenuEndless extends MusicBeatState
 
 		FlxTween.tween(scoreText, {alpha: 1}, 0.5, {ease: FlxEase.quartInOut});
 
+		if (songs.length == 0)
+		{
+			emptyText = new FlxText(0, 0, FlxG.width, "NO SONGS AVAILABLE", 32);
+			emptyText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
+			emptyText.setBorderStyle(OUTLINE, FlxColor.BLACK, 4, 1);
+			emptyText.screenCenter();
+			add(emptyText);
+		}
+
 		changeSelection();
 
 		new FlxTimer().start(0.7, function(tmr:FlxTimer)
@@ -217,12 +229,15 @@ class MenuEndless extends MusicBeatState
 		var accepted = controls.ACCEPT;
 		var back = controls.BACK;
 
-		if (!substated && selectable && !goingBack && !substated)
+		if (!substated && selectable && !goingBack)
 		{
-			if (upP)
-				changeSelection(-1);
-			if (downP)
-				changeSelection(1);
+			if (songs.length > 0)
+			{
+				if (upP)
+					changeSelection(-1);
+				if (downP)
+					changeSelection(1);
+			}
 
 			if (back)
 			{
@@ -240,7 +255,7 @@ class MenuEndless extends MusicBeatState
 				FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 			}
 
-			if (accepted)
+			if (accepted && songs.length > 0)
 			{
 				FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 
@@ -265,6 +280,13 @@ class MenuEndless extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
+		if (songs.length == 0)
+		{
+			curSelected = 0;
+			intendedScore = 0;
+			return;
+		}
+
 		// NGio.logEvent('Fresh');
 		FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 
