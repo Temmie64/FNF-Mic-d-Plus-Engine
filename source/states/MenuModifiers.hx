@@ -72,9 +72,6 @@ class MenuModifiers extends MusicBeatState
     {
 		substated = false;
 
-        transIn = FlxTransitionableState.defaultTransIn;
-		transOut = FlxTransitionableState.defaultTransOut;
-
 		persistentUpdate = persistentDraw = true;
 
 		menuItems = new FlxTypedGroup<FlxSprite>();

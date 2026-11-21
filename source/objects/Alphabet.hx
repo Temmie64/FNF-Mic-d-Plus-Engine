@@ -20,6 +20,7 @@ class Alphabet extends FlxSpriteGroup
 
 	public var isMenuItem:Bool = false;
 	public var targetY:Int = 0;
+	public var targetX:Int = 0;
 	public var changeX:Bool = true;
 	public var changeY:Bool = true;
 
@@ -27,6 +28,8 @@ class Alphabet extends FlxSpriteGroup
 	public var scaleX(default, set):Float = 1;
 	public var scaleY(default, set):Float = 1;
 	public var rows:Int = 0;
+
+	public var itemType:String = "";
 
 	public var distancePerItem:FlxPoint = new FlxPoint(20, 120);
 	public var startPosition:FlxPoint = new FlxPoint(0, 0); // for the calculations

@@ -63,9 +63,6 @@ class MenuEndless extends MusicBeatState
 		PlayState.isFreeplay = false;
 		PlayState.isSurvival = false;
 
-		transIn = FlxTransitionableState.defaultTransIn;
-		transOut = FlxTransitionableState.defaultTransOut;
-
 		persistentUpdate = persistentDraw = true;
 
 		Mods.loadTopMod();

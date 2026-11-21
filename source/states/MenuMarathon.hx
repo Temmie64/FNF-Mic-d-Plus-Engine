@@ -78,9 +78,6 @@ class MenuMarathon extends MusicBeatState
 
 		no = false;
 
-		transIn = FlxTransitionableState.defaultTransIn;
-		transOut = FlxTransitionableState.defaultTransOut;
-
 		persistentUpdate = persistentDraw = true;
 
 		WeekData.reloadWeekFiles(false);
