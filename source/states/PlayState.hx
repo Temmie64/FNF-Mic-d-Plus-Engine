@@ -560,7 +560,7 @@ class PlayState extends MusicBeatState
 			}
 
 			if (restoreName.length > 0)
-				SONG = Song.loadFromJson(restoreName, endlessSongFolder);
+				SONG = Song.loadFromJson(restoreName, endlessSongName);
 		}
 
 		if (isEndless && SONG == null)
@@ -4557,6 +4557,7 @@ class PlayState extends MusicBeatState
 				? endlessSongFolder
 				: Mods.currentModDirectory;
 			Mods.currentModDirectory = endlessFolder;
+			var previousSong = SONG;
 
 			var baseSong:String = Paths.formatToSongPath(endlessSongName != null && endlessSongName.length > 0
 				? endlessSongName
@@ -4566,14 +4567,15 @@ class PlayState extends MusicBeatState
 			if (diffName != null && Paths.formatToSongPath(diffName) != Paths.formatToSongPath(Difficulty.getDefault()))
 				chartName += '-' + Paths.formatToSongPath(diffName);
 
-			SONG = Song.loadFromJson(chartName, endlessFolder);
+			SONG = Song.loadFromJson(chartName, baseSong);
 			if (SONG == null)
 			{
-				SONG = Song.loadFromJson(baseSong, endlessFolder);
+				SONG = Song.loadFromJson(baseSong, baseSong);
 				chartName = baseSong;
 			}
 			if (SONG == null)
 			{
+				SONG = previousSong;
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				MusicBeatState.switchState(new MenuEndless());
 				return;
