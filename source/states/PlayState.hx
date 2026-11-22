@@ -188,6 +188,9 @@ class PlayState extends MusicBeatState
 	public static var timeLeftOver:Float = 0;
 	public static var loops:Int = 0;
 	public static var speed:Float = 0;
+	public static var endlessSongName:String = '';
+	public static var endlessSongFolder:String = '';
+	public static var endlessChartName:String = '';
 
 	var survivalTimer:Float = 10;
 	var survivalCountdown:FlxText;
@@ -538,6 +541,34 @@ class PlayState extends MusicBeatState
 
 		if (isSurvival && Survival_GameOptions._survivalVars != null && Survival_GameOptions._survivalVars.carryTime)
 			survivalTimer += timeLeftOver;
+
+		if (isEndless && SONG == null)
+		{
+			if (endlessSongFolder != null && endlessSongFolder.length > 0)
+				Mods.currentModDirectory = endlessSongFolder;
+
+			var restoreName:String = endlessChartName;
+			if (restoreName == null || restoreName.length == 0)
+			{
+				restoreName = endlessSongName != null ? endlessSongName : '';
+				if (restoreName.length > 0)
+				{
+					var diffName:String = Difficulty.getString(storyDifficulty, false);
+					if (diffName != null && Paths.formatToSongPath(diffName) != Paths.formatToSongPath(Difficulty.getDefault()))
+						restoreName += '-' + Paths.formatToSongPath(diffName);
+				}
+			}
+
+			if (restoreName.length > 0)
+				SONG = Song.loadFromJson(restoreName, endlessSongFolder);
+		}
+
+		if (isEndless && SONG == null)
+		{
+			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			MusicBeatState.switchState(new MenuEndless());
+			return;
+		}
 
 		Conductor.mapBPMChanges(SONG);
 		Conductor.bpm = SONG.bpm;
@@ -4520,7 +4551,43 @@ class PlayState extends MusicBeatState
 		if (storyFolderPlaylist.length > 0 && storyFolderPlaylist[0] != null)
 			Mods.currentModDirectory = storyFolderPlaylist[0];
 
-		SONG = Song.loadFromJson(nextSong + modeDifficultySuffix(storyDifficulty), nextSong);
+		if (isEndless)
+		{
+			var endlessFolder:String = endlessSongFolder != null && endlessSongFolder.length > 0
+				? endlessSongFolder
+				: Mods.currentModDirectory;
+			Mods.currentModDirectory = endlessFolder;
+
+			var baseSong:String = Paths.formatToSongPath(endlessSongName != null && endlessSongName.length > 0
+				? endlessSongName
+				: nextSong);
+			var diffName:String = Difficulty.getString(storyDifficulty, false);
+			var chartName:String = baseSong;
+			if (diffName != null && Paths.formatToSongPath(diffName) != Paths.formatToSongPath(Difficulty.getDefault()))
+				chartName += '-' + Paths.formatToSongPath(diffName);
+
+			SONG = Song.loadFromJson(chartName, endlessFolder);
+			if (SONG == null)
+			{
+				SONG = Song.loadFromJson(baseSong, endlessFolder);
+				chartName = baseSong;
+			}
+			if (SONG == null)
+			{
+				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				MusicBeatState.switchState(new MenuEndless());
+				return;
+			}
+
+			endlessSongName = baseSong;
+			endlessSongFolder = endlessFolder;
+			endlessChartName = chartName;
+		}
+		else
+		{
+			SONG = Song.loadFromJson(nextSong + modeDifficultySuffix(storyDifficulty), nextSong);
+		}
+
 		FlxTransitionableState.skipNextTransIn = true;
 		FlxTransitionableState.skipNextTransOut = true;
 		prevCamFollow = camFollow;

@@ -43,6 +43,7 @@ class Endless_Substate extends MusicBeatSubstate
 	var chartAvailable:Bool = false;
 	var selectable:Bool = false;
 	var closing:Bool = false;
+	var goingBack:Bool = false;
 	var camLerp:Float = 0.16;
     var initSpeed:Float = 0.16;
     var blackBarThingie:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, 1, FlxColor.BLACK);
@@ -50,6 +51,8 @@ class Endless_Substate extends MusicBeatSubstate
 	public function new()
 	{
 		super();
+		closing = false;
+		goingBack = false;
 		_endless = {speed: 0, ramp: true};
 		Mods.currentModDirectory = songFolder != null ? songFolder : '';
 
@@ -64,7 +67,7 @@ class Endless_Substate extends MusicBeatSubstate
 		var atlas = Paths.getSparrowAtlas('MicUp/Endless_Buttons');
 		for (i in 0...optionNames.length)
 		{
-			var item:FlxSprite = new FlxSprite(40, 40 + (i * 90));
+			var item:FlxSprite = new FlxSprite(0, 0);
 			item.frames = atlas;
 			item.animation.addByPrefix('idle', optionNames[i], 24, true);
 			item.animation.play('idle');
@@ -72,9 +75,13 @@ class Endless_Substate extends MusicBeatSubstate
 			item.scrollFactor.set();
 			item.antialiasing = true;
 			menuItems.add(item);
+
+			item.y = 40 +  i * 90;
+            item.x = 40;
+            item.scale.set(0,0);
 		}
 
-		difficultyIcon = new FlxSprite(900, 151);
+		difficultyIcon = new FlxSprite(130, 0);
 		difficultyIcon.frames = Paths.getSparrowAtlas('MicUp/difficulties');
 		difficultyIcon.animation.addByPrefix('noob', 'NOOB');
 		difficultyIcon.animation.addByPrefix('easy', 'EASY');
@@ -89,6 +96,8 @@ class Endless_Substate extends MusicBeatSubstate
 		difficultyIcon.animation.addByPrefix('remix', 'REMIX');
 		difficultyIcon.scrollFactor.set();
 		difficultyIcon.antialiasing = true;
+		difficultyIcon.x = 900;
+        difficultyIcon.y = 151;
 		add(difficultyIcon);
 
 		diffText = new FlxText(900, 151, 320, '', 32);
@@ -98,7 +107,23 @@ class Endless_Substate extends MusicBeatSubstate
 		add(diffText);
 
 		speedText = makeText(910, 283);
+		speedText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
+		speedText.alignment = CENTER;
+		speedText.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
+		speedText.x = 910;
+		speedText.y = difficultyIcon.y+120+12;
+        speedText.alpha = 0;
+
 		rampText = makeText(910, 403);
+		rampText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
+		rampText.alignment = CENTER;
+		rampText.setBorderStyle(OUTLINE, 0xFF000000, 5, 1);
+		rampText.x = 910;
+		rampText.y = speedText.y+120;
+        rampText.alpha = 0;
+
+		FlxTween.tween(speedText, { alpha:1}, 0.5, { ease: FlxEase.quartInOut});
+        FlxTween.tween(rampText, { alpha:1}, 0.5, { ease: FlxEase.quartInOut});
 
 		curSelected = Std.int(FlxMath.bound(curSelected, 0, optionNames.length - 1));
 		loadDifficulties();
@@ -125,81 +150,120 @@ class Endless_Substate extends MusicBeatSubstate
 		speedText.text = chartAvailable ? Std.string(_endless.speed) : 'CHART UNAVAILABLE';
 		rampText.text = Std.string(_endless.ramp).toUpperCase();
 
-		if (!selectable || closing)
+		if (!selectable)
 			return;
 
-		if (controls.UI_UP_P)
+		if (!closing)
 		{
-			changeItem(-1);
-			FlxG.sound.play(Paths.sound('scrollMenu'), 100);
-		}
-		if (controls.UI_DOWN_P)
-		{
-			changeItem(1);
-			FlxG.sound.play(Paths.sound('scrollMenu'), 100);
-		}
-
-		if (controls.UI_LEFT_P)
-			changeOption(-1);
-		if (controls.UI_RIGHT_P)
-			changeOption(1);
-
-		if (controls.BACK)
-		{
-			closing = true;
-			FlxG.sound.play(Paths.sound('cancelMenu'), 100);
-			closeAndReset();
-		}
-
-		if (controls.ACCEPT)
-		{
-			if (!chartAvailable)
+			if (controls.UI_UP_P)
 			{
-				FlxG.sound.play(Paths.sound('cancelMenu'), 100);
-				return;
+				changeItem(-1);
+				FlxG.sound.play(Paths.sound('scrollMenu'), 100);
+			}
+			if (controls.UI_DOWN_P)
+			{
+				changeItem(1);
+				FlxG.sound.play(Paths.sound('scrollMenu'), 100);
 			}
 
-			PlayState.storyDifficulty = curDifficulty;
-			PlayState.loops = 0;
-			PlayState.speed = _endless.speed;
-			PlayState.campaignScore = 0;
-			PlayState.campaignMisses = 0;
-			PlayState.campaignFlawlesss = 0;
-			PlayState.campaignSicks = 0;
-			PlayState.campaignGoods = 0;
-			PlayState.campaignBads = 0;
-			PlayState.campaignShits = 0;
-			PlayState.campaignMaxCombo = 0;
-			PlayState.campaignTotalNotes = 0;
-			PlayState.campaignAccuracySum = 0;
-			PlayState.campaignSongsCount = 0;
-			PlayState.endlessCombo = 0;
-			PlayState.endlessTotalPlayed = 0;
-			PlayState.endlessTotalNotesHit = 0;
-			PlayState.endlessTotalNotes = 0;
-			PlayState.endlessBonusLimit = AccuracyTools.BONUS_MAX;
-			closing = true;
-			FlxG.sound.play(Paths.sound('confirmMenu'), 100);
+			if (controls.UI_LEFT_P)
+				changeOption(-1);
+			if (controls.UI_RIGHT_P)
+				changeOption(1);
 
-			new FlxTimer().start(0.15, function(_)
+			if (controls.BACK)
 			{
-				MenuEndless.no = true;
-				FlxG.state.closeSubState();
-				FlxG.state.openSubState(new ChartType());
-			});
+				closing = true;
+				goingBack = true;
+				FlxG.sound.play(Paths.sound('cancelMenu'), 100);
+				closeAndReset();
+			}
+
+			if (controls.ACCEPT)
+			{
+				if (!chartAvailable)
+				{
+					FlxG.sound.play(Paths.sound('cancelMenu'), 100);
+					return;
+				}
+
+				PlayState.storyDifficulty = curDifficulty;
+				PlayState.loops = 0;
+				PlayState.speed = _endless.speed;
+				PlayState.endlessSongName = song;
+				PlayState.endlessSongFolder = songFolder != null ? songFolder : '';
+				PlayState.endlessChartName = chartRequestName(Difficulty.getString(curDifficulty, false));
+				PlayState.campaignScore = 0;
+				PlayState.campaignMisses = 0;
+				PlayState.campaignFlawlesss = 0;
+				PlayState.campaignSicks = 0;
+				PlayState.campaignGoods = 0;
+				PlayState.campaignBads = 0;
+				PlayState.campaignShits = 0;
+				PlayState.campaignMaxCombo = 0;
+				PlayState.campaignTotalNotes = 0;
+				PlayState.campaignAccuracySum = 0;
+				PlayState.campaignSongsCount = 0;
+				PlayState.endlessCombo = 0;
+				PlayState.endlessTotalPlayed = 0;
+				PlayState.endlessTotalNotesHit = 0;
+				PlayState.endlessTotalNotes = 0;
+				PlayState.endlessBonusLimit = AccuracyTools.BONUS_MAX;
+				closing = true;
+				goingBack = true;
+				FlxG.sound.play(Paths.sound('confirmMenu'), 100);
+				FlxTween.tween(blackBarThingie, { 'scale.y': 780}, 0.5, { ease: FlxEase.expoIn});
+				FlxTween.tween(difficultyIcon, { 'scale.y': 0}, 0.5, { ease: FlxEase.expoIn});
+				FlxTween.tween(diffText, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
+				FlxTween.tween(speedText, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
+				FlxTween.tween(rampText, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
+
+				new FlxTimer().start(0.6, function(_)
+				{
+					MenuEndless.no = true;
+					FlxG.state.closeSubState();
+					FlxG.state.openSubState(new ChartType());
+				});
+			}
 		}
 
-		for (item in menuItems.members)
+		menuItems.forEach(function(spr:FlxSprite)
 		{
-			var selected:Bool = item.ID == curSelected;
-			item.scale.set(FlxMath.lerp(item.scale.x, selected ? 1.1 : 0.5, 0.16 / (ClientPrefs.data.framerate / 60)),
-				FlxMath.lerp(item.scale.y, selected ? 1.1 : 0.5, 0.16 / (ClientPrefs.data.framerate / 60)));
-		}
+			if (!goingBack)
+			{
+				spr.x = FlxMath.lerp(spr.x, 20, camLerp/(ClientPrefs.data.framerate / 60));
+				spr.y = 110 + spr.ID * 120;
+				spr.scale.set(
+					FlxMath.lerp(spr.scale.x, 0.5, camLerp/(ClientPrefs.data.framerate / 60)),
+					FlxMath.lerp(spr.scale.y, 0.5, 0.4/(ClientPrefs.data.framerate / 60)));
+
+				if (spr.ID == curSelected)
+				{
+					spr.scale.set(
+						FlxMath.lerp(spr.scale.x, 1.3, camLerp/(ClientPrefs.data.framerate / 60)),
+						FlxMath.lerp(spr.scale.y, 1.3, 0.4/(ClientPrefs.data.framerate / 60)));
+					spr.x = FlxMath.lerp(spr.x, 250, camLerp/(ClientPrefs.data.framerate / 60));
+				}
+			}
+			else
+			{
+				spr.scale.set(
+					FlxMath.lerp(spr.scale.x, 0, camLerp/(ClientPrefs.data.framerate / 60)),
+					FlxMath.lerp(spr.scale.y, 0, 0.4/(ClientPrefs.data.framerate / 60)));
+				spr.x = FlxMath.lerp(spr.x, 1500, camLerp/(ClientPrefs.data.framerate / 60));
+			}
+		});
 	}
 
 	function closeAndReset():Void
 	{
-		new FlxTimer().start(0.15, function(_)
+		FlxTween.tween(blackBarThingie, { 'scale.y': 0}, 0.5, { ease: FlxEase.expoIn});
+        FlxTween.tween(difficultyIcon, { 'scale.y': 0}, 0.5, { ease: FlxEase.expoIn});
+        FlxTween.tween(diffText, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
+        FlxTween.tween(speedText, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
+        FlxTween.tween(rampText, { alpha: 0}, 0.5, { ease: FlxEase.expoIn});
+
+		new FlxTimer().start(0.6, function(_)
 		{
 			FlxG.state.closeSubState();
 			MenuEndless.substated = false;
