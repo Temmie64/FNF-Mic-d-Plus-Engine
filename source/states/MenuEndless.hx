@@ -12,6 +12,7 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import flixel.tweens.FlxEase;
+import flixel.util.FlxGradient;
 import flixel.tweens.FlxTween;
 import substates.Endless_Substate;
 
