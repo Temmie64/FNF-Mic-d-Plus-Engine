@@ -26,6 +26,7 @@ class MenuEndless extends MusicBeatState
 	var songs:Array<SongTitlesE> = [];
 	var grpSongs:FlxTypedGroup<Alphabet>;
 	var bg:FlxSprite;
+	var gradientBar:FlxSprite;
 	var checker:FlxBackdrop;
 	var side:FlxSprite;
 	var scoreText:FlxText;
@@ -73,6 +74,12 @@ class MenuEndless extends MusicBeatState
 		bg.screenCenter();
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
+
+		gradientBar = FlxGradient.createGradientFlxSprite(Math.round(FlxG.width), 512,
+			[0x00ff0000, 0x5576D3FF, 0xAAFFDCFF], 1, 90, true);
+		gradientBar.y = FlxG.height - gradientBar.height;
+		gradientBar.scrollFactor.set();
+		add(gradientBar);
 
 		checker = new FlxBackdrop(Paths.image('MicUp/End_Checker'), flixel.util.FlxAxes.XY);
 		checker.scrollFactor.set();
