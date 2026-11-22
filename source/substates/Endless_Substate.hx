@@ -2,6 +2,7 @@ package substates;
 
 import backend.Mods;
 import backend.Song;
+import backend.AccuracyTools;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
@@ -9,6 +10,8 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import haxe.Json;
 import sys.FileSystem;
 import sys.io.File;
@@ -29,21 +32,31 @@ class Endless_Substate extends MusicBeatSubstate
 	public static var _endless:EndlessVars;
 	public static var song:String = '';
 	public static var songFolder:String = '';
+	public static var difficulties:String = '';
 
 	var optionNames:Array<String> = ['difficulty', 'speed', 'ramp', 'play'];
 	var menuItems:FlxTypedGroup<FlxSprite>;
 	var difficultyIcon:FlxSprite;
+	var diffText:FlxText;
 	var speedText:FlxText;
 	var rampText:FlxText;
 	var chartAvailable:Bool = false;
 	var selectable:Bool = false;
 	var closing:Bool = false;
+	var camLerp:Float = 0.16;
+    var initSpeed:Float = 0.16;
+    var blackBarThingie:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, 1, FlxColor.BLACK);
 
 	public function new()
 	{
 		super();
 		_endless = {speed: 0, ramp: true};
 		Mods.currentModDirectory = songFolder != null ? songFolder : '';
+
+		add(blackBarThingie);
+        blackBarThingie.scrollFactor.set();
+        blackBarThingie.scale.y = 0;
+        FlxTween.tween(blackBarThingie, { 'scale.y': 500}, 0.5, { ease: FlxEase.expoOut});
 
 		menuItems = new FlxTypedGroup<FlxSprite>();
 		add(menuItems);
@@ -62,22 +75,33 @@ class Endless_Substate extends MusicBeatSubstate
 		}
 
 		difficultyIcon = new FlxSprite(900, 151);
-		difficultyIcon.frames = Paths.getSparrowAtlas('difficulties');
+		difficultyIcon.frames = Paths.getSparrowAtlas('MicUp/difficulties');
 		difficultyIcon.animation.addByPrefix('noob', 'NOOB');
 		difficultyIcon.animation.addByPrefix('easy', 'EASY');
 		difficultyIcon.animation.addByPrefix('normal', 'NORMAL');
 		difficultyIcon.animation.addByPrefix('hard', 'HARD');
 		difficultyIcon.animation.addByPrefix('expert', 'EXPERT');
 		difficultyIcon.animation.addByPrefix('insane', 'INSANE');
+		difficultyIcon.animation.addByPrefix('crazy', 'CRAZY');
+		difficultyIcon.animation.addByPrefix('flip', 'FLIP');
+		difficultyIcon.animation.addByPrefix('fucked', 'FUCKED');
+		difficultyIcon.animation.addByPrefix('hell', 'HELL');
+		difficultyIcon.animation.addByPrefix('remix', 'REMIX');
 		difficultyIcon.scrollFactor.set();
 		difficultyIcon.antialiasing = true;
 		add(difficultyIcon);
+
+		diffText = new FlxText(900, 151, 320, '', 32);
+		diffText.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, CENTER);
+		diffText.setBorderStyle(OUTLINE, FlxColor.BLACK, 5, 1);
+		diffText.scrollFactor.set();
+		add(diffText);
 
 		speedText = makeText(910, 283);
 		rampText = makeText(910, 403);
 
 		curSelected = Std.int(FlxMath.bound(curSelected, 0, optionNames.length - 1));
-		curDifficulty = Std.int(FlxMath.bound(curDifficulty, 0, 5));
+		loadDifficulties();
 		changeDifficulty(0);
 
 		new FlxTimer().start(0.1, function(_) selectable = true);
@@ -97,6 +121,7 @@ class Endless_Substate extends MusicBeatSubstate
 	{
 		super.update(elapsed);
 
+		blackBarThingie.y = 360 - blackBarThingie.height/2;
 		speedText.text = chartAvailable ? Std.string(_endless.speed) : 'CHART UNAVAILABLE';
 		rampText.text = Std.string(_endless.ramp).toUpperCase();
 
@@ -138,6 +163,21 @@ class Endless_Substate extends MusicBeatSubstate
 			PlayState.loops = 0;
 			PlayState.speed = _endless.speed;
 			PlayState.campaignScore = 0;
+			PlayState.campaignMisses = 0;
+			PlayState.campaignFlawlesss = 0;
+			PlayState.campaignSicks = 0;
+			PlayState.campaignGoods = 0;
+			PlayState.campaignBads = 0;
+			PlayState.campaignShits = 0;
+			PlayState.campaignMaxCombo = 0;
+			PlayState.campaignTotalNotes = 0;
+			PlayState.campaignAccuracySum = 0;
+			PlayState.campaignSongsCount = 0;
+			PlayState.endlessCombo = 0;
+			PlayState.endlessTotalPlayed = 0;
+			PlayState.endlessTotalNotesHit = 0;
+			PlayState.endlessTotalNotes = 0;
+			PlayState.endlessBonusLimit = AccuracyTools.BONUS_MAX;
 			closing = true;
 			FlxG.sound.play(Paths.sound('confirmMenu'), 100);
 
@@ -192,39 +232,104 @@ class Endless_Substate extends MusicBeatSubstate
 
 	function changeDifficulty(change:Int):Void
 	{
+		if (Difficulty.list == null || Difficulty.list.length == 0)
+			loadDifficulties();
+		if (Difficulty.list.length == 0)
+			Difficulty.list = ['Normal'];
+
 		curDifficulty += change;
 		if (curDifficulty < 0)
-			curDifficulty = 5;
-		if (curDifficulty > 5)
+			curDifficulty = Difficulty.list.length - 1;
+		if (curDifficulty >= Difficulty.list.length)
 			curDifficulty = 0;
 
-		switch (curDifficulty)
-		{
-			case 0: difficultyIcon.animation.play('noob');
-			case 1: difficultyIcon.animation.play('easy');
-			case 2: difficultyIcon.animation.play('normal');
-			case 3: difficultyIcon.animation.play('hard');
-			case 4: difficultyIcon.animation.play('expert');
-			case 5: difficultyIcon.animation.play('insane');
-		}
+		PlayState.storyDifficulty = curDifficulty;
+		playDifficultyAnimation(Difficulty.getString(curDifficulty));
 
 		updateSong();
 	}
 
-	function updateSong():Void
+	function loadDifficulties():Void
 	{
-		var suffix:String = '';
-		switch (curDifficulty)
+		var candidates:Array<String> = [];
+		if (difficulties != null && difficulties.trim().length > 0)
 		{
-			case 0: suffix = '-noob';
-			case 1: suffix = '-easy';
-			case 3: suffix = '-hard';
-			case 4: suffix = '-expert';
-			case 5: suffix = '-insane';
+			for (diff in difficulties.trim().split(','))
+			{
+				diff = diff.trim();
+				if (diff.length > 0 && !candidates.contains(diff))
+					candidates.push(diff);
+			}
+		}
+		if (Difficulty.list == null)
+			Difficulty.resetList();
+		for (diff in Difficulty.list)
+			if (diff != null && diff.length > 0 && !candidates.contains(diff))
+				candidates.push(diff);
+		for (diff in Difficulty.defaultList)
+			if (!candidates.contains(diff))
+				candidates.push(diff);
+
+		for (diff in ['Noob', 'Expert', 'Insane', 'Crazy', 'Flip', 'Fucked', 'Hell', 'Remix', 'Erect', 'Nightmare'])
+			if (!candidates.contains(diff))
+				candidates.push(diff);
+
+		var available:Array<String> = [];
+		for (diff in candidates)
+		{
+			var request:String = chartRequestName(diff);
+			if (Song.resolveChartPath(request, song) != null)
+				available.push(diff);
 		}
 
+		if (available.length == 0)
+		{
+			var baseRequest:String = Paths.formatToSongPath(song);
+			if (Song.resolveChartPath(baseRequest, song) != null)
+				available.push(Difficulty.getDefault());
+			else
+				available.push(Difficulty.getDefault());
+		}
+
+		Difficulty.copyFrom(available);
+		var defaultIndex:Int = Difficulty.list.indexOf(Difficulty.getDefault());
+		curDifficulty = defaultIndex >= 0 ? defaultIndex : 0;
+	}
+
+	function chartRequestName(diff:String):String
+	{
+		var formatted:String = Paths.formatToSongPath(diff);
+		if (formatted == Paths.formatToSongPath(Difficulty.getDefault()))
+			return Paths.formatToSongPath(song);
+		return Paths.formatToSongPath(song) + '-' + formatted;
+	}
+
+	function playDifficultyAnimation(difficulty:String):Void
+	{
+		var animationName:String = difficulty.toLowerCase();
+		switch (animationName)
+		{
+			case 'noob', 'easy', 'normal', 'hard', 'expert', 'insane', 'crazy', 'flip', 'fucked', 'hell', 'remix':
+				difficultyIcon.animation.play(animationName);
+				difficultyIcon.visible = true;
+				diffText.alpha = 0;
+			default:
+				difficultyIcon.visible = false;
+				diffText.alpha = 1;
+				diffText.alignment = CENTER;
+				diffText.setBorderStyle(OUTLINE, FlxColor.BLACK, 5, 1);
+				diffText.text = Difficulty.list.length > 1
+					? '< ' + difficulty.toUpperCase() + ' >'
+					: difficulty.toUpperCase();
+		}
+	}
+
+	function updateSong():Void
+	{
 		Mods.currentModDirectory = songFolder != null ? songFolder : '';
-		var loaded:SwagSong = Song.loadFromJson(song + suffix, song);
+		var diffName:String = Difficulty.getString(curDifficulty, false);
+		var request:String = chartRequestName(diffName);
+		var loaded:SwagSong = Song.loadFromJson(request, song);
 		chartAvailable = loaded != null;
 		if (!chartAvailable)
 		{

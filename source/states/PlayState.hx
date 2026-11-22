@@ -361,6 +361,11 @@ class PlayState extends MusicBeatState
 	public static var campaignSongsPlayed:Array<String> = [];
 	public static var campaignAccuracySum:Float = 0;
 	public static var campaignSongsCount:Int = 0;
+	public static var endlessCombo:Int = 0;
+	public static var endlessTotalPlayed:Int = 0;
+	public static var endlessTotalNotesHit:Float = 0;
+	public static var endlessTotalNotes:Int = 0;
+	public static var endlessBonusLimit:Float = AccuracyTools.BONUS_MAX;
 	public static var seenCutscene:Bool = false;
 	public static var deathCounter:Int = 0;
 
@@ -431,6 +436,21 @@ class PlayState extends MusicBeatState
 		//trace('Playback Rate: ' + playbackRate);
 		gameplayStateGuard = new backend.GameplayStateGuard();
 		_lastLoadedModDirectory = Mods.currentModDirectory;
+
+		if (isEndless)
+		{
+			if (loops > 0)
+			{
+				combo = endlessCombo;
+				maxCombo = campaignMaxCombo;
+			}
+			else
+			{
+				combo = 0;
+				maxCombo = 0;
+			}
+		}
+
 		NoteSplash.clearCache();
 		Paths.clearStoredMemory();
 		if(nextReloadAll)
@@ -1909,18 +1929,20 @@ class PlayState extends MusicBeatState
 		}
 
 		var str:String = Language.getPhrase('rating_$ratingName', ratingName);
-		if(totalPlayed != 0)
+		if(totalPlayed != 0 || (isEndless && endlessTotalPlayed != 0))
 		{
 			str += ' (${AccuracyTools.format(ratingPercent)}) - ' + Language.getPhrase(ratingFC);
 		}
 
 		var tempScore:String;
-		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(songScore) : Std.string(songScore);
+		var displayScore:Int = isEndless ? campaignScore + songScore : songScore;
+		var displayMisses:Int = isEndless ? campaignMisses + songMisses : songMisses;
+		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(displayScore) : Std.string(displayScore);
 
 		if(ClientPrefs.data.psychScoreText)
 		{
 			if(!instakillOnMiss) tempScore = Language.getPhrase('playstate.hud.score.psych',
-				Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [score, songMisses, str]), [score, songMisses, str]);
+				Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [score, displayMisses, str]), [score, displayMisses, str]);
 			else tempScore = Language.getPhrase('playstate.hud.score.psych_instakill',
 				Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [score, str]), [score, str]);
 		}
@@ -1929,7 +1951,7 @@ class PlayState extends MusicBeatState
 			var tps:String = Std.string(getTPS());
 			if(!instakillOnMiss) tempScore = Language.getPhrase('playstate.hud.score.plus',
 				Language.getPhrase('score_text_plus', 'Score: {1} | Misses: {2} | Combo: {3} | TPS: {4} | Rating: {5}',
-					[score, songMisses, combo, tps, str]), [score, songMisses, combo, tps, str]);
+					[score, displayMisses, combo, tps, str]), [score, displayMisses, combo, tps, str]);
 			else tempScore = Language.getPhrase('playstate.hud.score.plus_instakill',
 				Language.getPhrase('score_text_plus_instakill', 'Score: {1} | Combo: {2} | TPS: {3} | Rating: {4}', [score, combo, tps, str]),
 				[score, combo, tps, str]);
@@ -1939,13 +1961,15 @@ class PlayState extends MusicBeatState
 
 	function updateMicUpText():Void
 	{
-		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(songScore) : Std.string(songScore);
+		var displayScore:Int = isEndless ? campaignScore + songScore : songScore;
+		var displayMisses:Int = isEndless ? campaignMisses + songMisses : songMisses;
+		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(displayScore) : Std.string(displayScore);
 		var rating:String = Language.getPhrase('rating_$ratingName', ratingName);
-		if(totalPlayed != 0)
+		if(totalPlayed != 0 || (isEndless && endlessTotalPlayed != 0))
 			rating += ' (${AccuracyTools.format(ratingPercent)}) - ' + Language.getPhrase(ratingFC);
 
 		scoreLabelMTxt.text = Language.getPhrase('playstate.hud.mic_up.score', 'Score: {1}', [score]);
-		missTxt.text = Language.getPhrase('playstate.hud.mic_up.misses', 'Misses: {1}', [songMisses]);
+		missTxt.text = Language.getPhrase('playstate.hud.mic_up.misses', 'Misses: {1}', [displayMisses]);
 		accuracyTxt.text = Language.getPhrase('playstate.hud.mic_up.accuracy', 'Accuracy: {1}%',
 			[CoolUtil.floorDecimal(ratingPercent * 100, 2)]);
 		npsTxt.text = Language.getPhrase('playstate.hud.mic_up.tps', 'TPS: {1}', [getTPS()]);
@@ -2028,16 +2052,17 @@ class PlayState extends MusicBeatState
 		var goods:Int = ratingsData[1].hits;
 		var bads:Int = ratingsData[2].hits;
 		var shits:Int = ratingsData[3].hits;
+		var cumulativeMisses:Int = isEndless ? campaignMisses + songMisses : songMisses;
 
 		ratingFC = "";
-		if(songMisses == 0)
+		if(cumulativeMisses == 0)
 		{
 			if (bads > 0 || shits > 0) ratingFC = 'FC';
 			else if (goods > 0) ratingFC = 'GFC';
 			else if (sicks > 0) ratingFC = 'SFC';
 		}
 		else {
-			if (songMisses < 10) ratingFC = 'SDCB';
+			if (cumulativeMisses < 10) ratingFC = 'SDCB';
 			else ratingFC = 'Clear';
 		}
 	}
@@ -4389,6 +4414,23 @@ class PlayState extends MusicBeatState
 			else if (isEndless)
 			{
 				campaignScore += songScore;
+				campaignMisses += songMisses;
+				campaignFlawlesss += Rating.getHits(ratingsData, 'flawless');
+				campaignSicks += Rating.getHits(ratingsData, 'sick');
+				campaignGoods += Rating.getHits(ratingsData, 'good');
+				campaignBads += Rating.getHits(ratingsData, 'bad');
+				campaignShits += Rating.getHits(ratingsData, 'shit');
+				if (maxCombo > campaignMaxCombo)
+					campaignMaxCombo = maxCombo;
+				campaignAccuracySum += Math.isNaN(ratingPercent) ? 0 : ratingPercent;
+				campaignSongsCount++;
+				campaignTotalNotes += totalNotes;
+
+				endlessTotalPlayed += totalPlayed;
+				endlessTotalNotesHit += totalNotesHit;
+				endlessTotalNotes += totalNotes;
+				endlessBonusLimit = AccuracyTools.progress(endlessTotalPlayed, endlessTotalNotes);
+				endlessCombo = combo;
 				Highscore.saveEndlessScore(SONG.song, campaignScore, Mods.currentModDirectory);
 				loops++;
 
@@ -6508,10 +6550,21 @@ class PlayState extends MusicBeatState
 		if(ret != LuaUtils.Function_Stop)
 		{
 			ratingName = '?';
-			if(totalPlayed != 0) //Prevent divide by 0
+			var effectivePlayed:Int = totalPlayed;
+			var effectiveNotesHit:Float = totalNotesHit;
+			var effectiveTotalNotes:Int = totalNotes;
+			var effectiveBonusLimit:Float = bonusLimit;
+			if (isEndless)
+			{
+				effectivePlayed += endlessTotalPlayed;
+				effectiveNotesHit += endlessTotalNotesHit;
+				effectiveTotalNotes += endlessTotalNotes;
+				effectiveBonusLimit = endlessBonusLimit;
+			}
+			if(effectivePlayed != 0) //Prevent divide by 0
 			{
 				// Rating Percent
-				ratingPercent = AccuracyTools.withBonus(totalNotesHit / totalPlayed, totalPlayed, totalNotes, bonusLimit);
+				ratingPercent = AccuracyTools.withBonus(effectiveNotesHit / effectivePlayed, effectivePlayed, effectiveTotalNotes, effectiveBonusLimit);
 				//trace((totalNotesHit / totalPlayed) + ', Total: ' + totalPlayed + ', notes hit: ' + totalNotesHit);
 
 				// Rating Name
