@@ -2,6 +2,8 @@ package states;
 
 import backend.Mods;
 import backend.WeekData;
+import backend.Difficulty;
+import backend.ModeDifficulty;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.addons.display.FlxBackdrop;
@@ -30,6 +32,7 @@ class MenuSurvival extends MusicBeatState
 	public static var _survival:SurvivalVars;
 	public static var curSelected:Int = 0;
 	public static var curDifficulty:Int = 2;
+	public static var lastDifficultyName:String = 'Normal';
 	public static var substated:Bool = false;
 	public static var no:Bool = false;
 
@@ -39,6 +42,7 @@ class MenuSurvival extends MusicBeatState
 	var checker:FlxBackdrop;
 	var side:FlxSprite;
 	var difficultyIcon:FlxSprite;
+	var diffText:FlxText;
 	var tracksUsed:FlxText;
 	var emptyText:FlxText;
 	var selectable:Bool = false;
@@ -60,6 +64,7 @@ class MenuSurvival extends MusicBeatState
 		loadCurrent();
 		Survival_GameOptions.load();
 		buildSongList();
+		validatePlaylist();
 		if (curSelected < 0 || curSelected >= songs.length)
 			curSelected = 0;
 
@@ -102,17 +107,28 @@ class MenuSurvival extends MusicBeatState
 		add(tracksUsed);
 
 		difficultyIcon = new FlxSprite();
-		difficultyIcon.frames = Paths.getSparrowAtlas('difficulties');
+		difficultyIcon.frames = Paths.getSparrowAtlas('MicUp/difficulties');
 		difficultyIcon.animation.addByPrefix('noob', 'NOOB');
 		difficultyIcon.animation.addByPrefix('easy', 'EASY');
 		difficultyIcon.animation.addByPrefix('normal', 'NORMAL');
 		difficultyIcon.animation.addByPrefix('hard', 'HARD');
 		difficultyIcon.animation.addByPrefix('expert', 'EXPERT');
 		difficultyIcon.animation.addByPrefix('insane', 'INSANE');
+		difficultyIcon.animation.addByPrefix('crazy', 'CRAZY');
+		difficultyIcon.animation.addByPrefix('flip', 'FLIP');
+		difficultyIcon.animation.addByPrefix('fucked', 'FUCKED');
+		difficultyIcon.animation.addByPrefix('hell', 'HELL');
+		difficultyIcon.animation.addByPrefix('remix', 'REMIX');
 		difficultyIcon.antialiasing = true;
 		difficultyIcon.x = 1240 - difficultyIcon.width;
 		difficultyIcon.y = tracksUsed.y - difficultyIcon.height - 8;
 		add(difficultyIcon);
+
+		diffText = new FlxText(0, 0, FlxG.width, '', 24);
+		diffText.setFormat(Paths.font('vcr.ttf'), 24, FlxColor.WHITE, CENTER);
+		diffText.setBorderStyle(OUTLINE, FlxColor.BLACK, 4, 1);
+		diffText.alignment = CENTER;
+		add(diffText);
 
 		if (songs.length == 0)
 		{
@@ -123,7 +139,6 @@ class MenuSurvival extends MusicBeatState
 			add(emptyText);
 		}
 
-		changeDifficulty(0);
 		changeSelection(0);
 		new FlxTimer().start(0.35, function(_) selectable = true);
 		super.create();
@@ -144,7 +159,10 @@ class MenuSurvival extends MusicBeatState
 				continue;
 			WeekData.setDirectoryFromWeek(week);
 			for (song in week.songs)
-				songs.push(new SongTitlesS(song[0], Mods.currentModDirectory != null ? Mods.currentModDirectory : ''));
+			{
+				var folder:String = Mods.currentModDirectory != null ? Mods.currentModDirectory : '';
+				songs.push(new SongTitlesS(song[0], folder, ModeDifficulty.available(song[0], week.difficulties)));
+			}
 		}
 
 		Mods.loadTopMod();
@@ -152,6 +170,7 @@ class MenuSurvival extends MusicBeatState
 		var listFolder:String = Paths.getModFolderNameFromPath(listPath);
 		if (listFolder == null)
 			listFolder = '';
+		Mods.currentModDirectory = listFolder;
 		for (entry in CoolUtil.coolTextFile(listPath))
 		{
 			var name:String = entry.split(':')[0];
@@ -162,8 +181,54 @@ class MenuSurvival extends MusicBeatState
 				if (song.folder == listFolder && Paths.formatToSongPath(song.songName) == Paths.formatToSongPath(name))
 					exists = true;
 			if (!exists)
-				songs.push(new SongTitlesS(name.trim(), listFolder));
+				songs.push(new SongTitlesS(name.trim(), listFolder, ModeDifficulty.available(name.trim())));
 		}
+		Mods.loadTopMod();
+	}
+
+	function validatePlaylist():Void
+	{
+		var invalid:Bool = PlayState.storyPlaylist.length != PlayState.difficultyPlaylist.length
+			|| PlayState.storyPlaylist.length != PlayState.storyFolderPlaylist.length;
+		var changed:Bool = false;
+		if (!invalid)
+		{
+			for (i in 0...PlayState.storyPlaylist.length)
+			{
+				var songName:String = PlayState.storyPlaylist[i];
+				var folder:String = PlayState.storyFolderPlaylist[i];
+				var difficulty:String = ModeDifficulty.fromPlaylist(PlayState.difficultyPlaylist[i]);
+				var matchedDifficulty:Null<String> = null;
+				for (song in songs)
+				{
+					if (song.folder == folder && Paths.formatToSongPath(song.songName) == Paths.formatToSongPath(songName))
+					{
+						matchedDifficulty = ModeDifficulty.findAvailable(song.difficulties, difficulty);
+						break;
+					}
+				}
+				if (matchedDifficulty == null)
+				{
+					invalid = true;
+					break;
+				}
+				if (PlayState.difficultyPlaylist[i] != matchedDifficulty)
+				{
+					PlayState.difficultyPlaylist[i] = matchedDifficulty;
+					changed = true;
+				}
+			}
+		}
+
+		if (invalid)
+		{
+			PlayState.storyPlaylist = [];
+			PlayState.difficultyPlaylist = [];
+			PlayState.storyFolderPlaylist = [];
+			saveCurrent();
+		}
+		else if (changed)
+			saveCurrent();
 	}
 
 	override function update(elapsed:Float)
@@ -207,9 +272,9 @@ class MenuSurvival extends MusicBeatState
 			}
 			if (controls.ACCEPT && songs.length > 0)
 			{
-				if (PlayState.difficultyPlaylist.length < 5)
+				if (PlayState.difficultyPlaylist.length < 5 && songs[curSelected].difficulties.length > 0)
 				{
-					PlayState.difficultyPlaylist.push(Std.string(curDifficulty));
+					PlayState.difficultyPlaylist.push(songs[curSelected].difficulties[curDifficulty]);
 					PlayState.storyPlaylist.push(songs[curSelected].songName.toLowerCase());
 					PlayState.storyFolderPlaylist.push(songs[curSelected].folder);
 					saveCurrent();
@@ -226,6 +291,7 @@ class MenuSurvival extends MusicBeatState
 			checker.visible = false;
 			side.visible = false;
 			difficultyIcon.visible = false;
+			diffText.visible = false;
 			tracksUsed.visible = false;
 			grpSongs.visible = false;
 		}
@@ -236,6 +302,7 @@ class MenuSurvival extends MusicBeatState
 		if (songs.length == 0)
 		{
 			curSelected = 0;
+			updateDifficultyDisplay();
 			return;
 		}
 		curSelected += change;
@@ -245,26 +312,53 @@ class MenuSurvival extends MusicBeatState
 			curSelected = 0;
 		if (change != 0)
 			FlxG.sound.play(Paths.sound('scrollMenu'), 100);
+		Difficulty.copyFrom(songs[curSelected].difficulties);
+		var defaultIndex:Int = Difficulty.list.indexOf(Difficulty.getDefault());
+		var matchingLast:Null<String> = ModeDifficulty.findAvailable(Difficulty.list, lastDifficultyName);
+		var lastIndex:Int = matchingLast != null ? Difficulty.list.indexOf(matchingLast) : -1;
+		curDifficulty = lastIndex >= 0 ? lastIndex : (defaultIndex >= 0 ? defaultIndex : 0);
+		updateDifficultyDisplay();
 	}
 
 	function changeDifficulty(change:Int = 0):Void
 	{
-		curDifficulty += change;
-		if (curDifficulty < 0)
-			curDifficulty = 5;
-		if (curDifficulty > 5)
-			curDifficulty = 0;
-		switch (curDifficulty)
+		if (songs.length == 0 || songs[curSelected].difficulties.length == 0)
+			return;
+		Difficulty.copyFrom(songs[curSelected].difficulties);
+		curDifficulty = FlxMath.wrap(curDifficulty + change, 0, Difficulty.list.length - 1);
+		updateDifficultyDisplay();
+	}
+
+	function updateDifficultyDisplay():Void
+	{
+		if (songs.length == 0 || songs[curSelected].difficulties.length == 0)
 		{
-			case 0: difficultyIcon.animation.play('noob');
-			case 1: difficultyIcon.animation.play('easy');
-			case 2: difficultyIcon.animation.play('normal');
-			case 3: difficultyIcon.animation.play('hard');
-			case 4: difficultyIcon.animation.play('expert');
-			case 5: difficultyIcon.animation.play('insane');
+			difficultyIcon.visible = false;
+			diffText.visible = false;
+			return;
+		}
+
+		Difficulty.copyFrom(songs[curSelected].difficulties);
+		curDifficulty = Std.int(FlxMath.bound(curDifficulty, 0, Difficulty.list.length - 1));
+		var difficulty:String = Difficulty.getString(curDifficulty, false);
+		lastDifficultyName = difficulty;
+		switch (difficulty.toLowerCase())
+		{
+			case 'noob', 'easy', 'normal', 'hard', 'expert', 'insane', 'crazy', 'flip', 'fucked', 'hell', 'remix':
+				difficultyIcon.animation.play(difficulty.toLowerCase());
+				difficultyIcon.visible = true;
+				diffText.visible = false;
+			default:
+				difficultyIcon.visible = false;
+				diffText.visible = true;
+				diffText.text = Difficulty.list.length > 1
+					? '< ' + difficulty.toUpperCase() + ' >'
+					: difficulty.toUpperCase();
 		}
 		difficultyIcon.x = 1240 - difficultyIcon.width;
 		difficultyIcon.y = tracksUsed.y - difficultyIcon.height - 8;
+		diffText.x = difficultyIcon.x + (difficultyIcon.width - diffText.width) / 2;
+		diffText.y = difficultyIcon.y + (difficultyIcon.height - diffText.height) / 2;
 	}
 
 	function weekIsLocked(name:String):Bool
@@ -351,9 +445,11 @@ class SongTitlesS
 {
 	public var songName:String;
 	public var folder:String;
-	public function new(song:String, folder:String)
+	public var difficulties:Array<String>;
+	public function new(song:String, folder:String, difficulties:Array<String>)
 	{
 		songName = song;
 		this.folder = folder;
+		this.difficulties = difficulties;
 	}
 }

@@ -4,7 +4,9 @@ import sys.thread.Thread;
 import backend.Highscore;
 import backend.StageData;
 import backend.WeekData;
+import backend.Difficulty;
 import backend.Song;
+import backend.ModeDifficulty;
 import backend.SongLoadPlan;
 import backend.SongLoadMetrics;
 import backend.Rating;
@@ -4587,7 +4589,26 @@ class PlayState extends MusicBeatState
 		}
 		else
 		{
-			SONG = Song.loadFromJson(nextSong + modeDifficultySuffix(storyDifficulty), nextSong);
+			var previousSong = SONG;
+			var difficultyName:String = difficultyPlaylist.length > 0
+				? ModeDifficulty.fromPlaylist(difficultyPlaylist[0])
+				: Difficulty.getString(storyDifficulty, false);
+			var availableDifficulties:Array<String> = ModeDifficulty.available(nextSong, null, difficultyName);
+			if (availableDifficulties.length > 0)
+				Difficulty.copyFrom(availableDifficulties);
+			storyDifficulty = ModeDifficulty.indexOf(difficultyName);
+			SONG = Song.loadFromJson(ModeDifficulty.chartName(nextSong, difficultyName), nextSong);
+			if (SONG == null)
+			{
+				SONG = previousSong;
+				trace('Could not load $difficultyName chart for $nextSong in $Mods.currentModDirectory');
+				FlxG.sound.playMusic(Paths.music('freakyMenu'));
+				if (isMarathon)
+					MusicBeatState.switchState(new MenuMarathon());
+				else
+					MusicBeatState.switchState(new MenuSurvival());
+				return;
+			}
 		}
 
 		FlxTransitionableState.skipNextTransIn = true;
@@ -4598,19 +4619,6 @@ class PlayState extends MusicBeatState
 		canResync = false;
 		LoadingState.prepareToSong();
 		LoadingState.loadAndSwitchState(new PlayState(), false, false);
-	}
-
-	static function modeDifficultySuffix(difficulty:Int):String
-	{
-		return switch (difficulty)
-		{
-			case 0: "-noob";
-			case 1: "-easy";
-			case 3: "-hard";
-			case 4: "-expert";
-			case 5: "-insane";
-			default: "";
-		};
 	}
 
 	public function KillNotes() {

@@ -1,6 +1,7 @@
 package substates;
 
 import backend.Mods;
+import backend.ModeDifficulty;
 import flixel.util.FlxTimer;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
@@ -186,7 +187,7 @@ class Survival_Edit extends MusicBeatSubstate
                 sprDifficulty.animation.addByPrefix('remix', 'REMIX');
 
                 var difficulty:String = i < PlayState.difficultyPlaylist.length
-                    ? PlayState.difficultyPlaylist[i]
+                    ? ModeDifficulty.fromPlaylist(PlayState.difficultyPlaylist[i])
                     : '2';
                 var animationName:String = difficulty.toLowerCase();
                 switch (animationName)

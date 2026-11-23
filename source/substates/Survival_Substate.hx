@@ -2,10 +2,13 @@ package substates;
 
 import backend.Mods;
 import backend.Song;
+import backend.Difficulty;
+import backend.ModeDifficulty;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
+import flixel.util.FlxTimer;
 import states.MenuSurvival;
 import states.PlaySelectionState;
 import sys.FileSystem;
@@ -54,7 +57,7 @@ class Survival_Substate extends MusicBeatSubstate
 			item.screenCenter(X);
 			menuItems.add(item);
 		}
-		selectable = true;
+		new FlxTimer().start(0.1, function(_) selectable = true);
 	}
 
 	override function update(elapsed:Float)
@@ -79,6 +82,7 @@ class Survival_Substate extends MusicBeatSubstate
 			FlxG.sound.play(Paths.sound('cancelMenu'), 100);
 			FlxG.state.closeSubState();
 			MenuSurvival.substated = false;
+			return;
 		}
 		if (controls.ACCEPT)
 			acceptOption();
@@ -106,17 +110,17 @@ class Survival_Substate extends MusicBeatSubstate
 		switch (optionNames[curSelected])
 		{
 			case 'play':
-				if (PlayState.storyPlaylist.length > 0 && PlayState.difficultyPlaylist.length > 0)
+				if (validatePlaylist())
 				{
-					var diff:Int = Std.parseInt(PlayState.difficultyPlaylist[0]);
-					var suffix:String = difficultySuffix(diff);
-					PlayState.storyDifficulty = diff;
-					Mods.currentModDirectory = PlayState.storyFolderPlaylist.length > 0
-						? PlayState.storyFolderPlaylist[0]
-						: '';
 					var songName:String = PlayState.storyPlaylist[0].toLowerCase();
-					if (Song.loadFromJson(songName + suffix, songName) != null)
+					var diffName:String = ModeDifficulty.fromPlaylist(PlayState.difficultyPlaylist[0]);
+					Mods.currentModDirectory = PlayState.storyFolderPlaylist[0];
+					var available:Array<String> = ModeDifficulty.available(songName, null, diffName);
+					Difficulty.copyFrom(available);
+					PlayState.storyDifficulty = ModeDifficulty.indexOf(diffName);
+					if (Song.loadFromJson(ModeDifficulty.chartName(songName, diffName), songName) != null)
 					{
+						PlayState.difficultyPlaylist[0] = diffName;
 						closing = true;
 						PlayState.campaignScore = 0;
 						FlxG.sound.play(Paths.sound('confirmMenu'), 100);
@@ -125,7 +129,7 @@ class Survival_Substate extends MusicBeatSubstate
 						MenuSurvival.no = true;
 					}
 					else
-						FlxG.sound.play(Paths.sound('cancelMenu'), 100);
+						resetUnavailablePlaylist();
 				}
 			case 'edit':
 				closing = true;
@@ -159,16 +163,39 @@ class Survival_Substate extends MusicBeatSubstate
 		}
 	}
 
-	function difficultySuffix(diff:Int):String
+	function validatePlaylist():Bool
 	{
-		return switch (diff)
+		if (PlayState.storyPlaylist.length == 0
+			|| PlayState.storyPlaylist.length != PlayState.difficultyPlaylist.length
+			|| PlayState.storyPlaylist.length != PlayState.storyFolderPlaylist.length)
+			return resetUnavailablePlaylist();
+
+		var changed:Bool = false;
+		for (i in 0...PlayState.storyPlaylist.length)
 		{
-			case 0: '-noob';
-			case 1: '-easy';
-			case 3: '-hard';
-			case 4: '-expert';
-			case 5: '-insane';
-			default: '';
+			Mods.currentModDirectory = PlayState.storyFolderPlaylist[i];
+			var songName:String = PlayState.storyPlaylist[i].toLowerCase();
+			var difficulty:String = ModeDifficulty.fromPlaylist(PlayState.difficultyPlaylist[i]);
+			if (Song.resolveChartPath(ModeDifficulty.chartName(songName, difficulty), songName) == null)
+				return resetUnavailablePlaylist();
+			if (PlayState.difficultyPlaylist[i] != difficulty)
+				changed = true;
+			PlayState.difficultyPlaylist[i] = difficulty;
 		}
+		if (changed)
+			MenuSurvival.saveCurrent();
+		return true;
+	}
+
+	function resetUnavailablePlaylist():Bool
+	{
+		PlayState.storyPlaylist = [];
+		PlayState.difficultyPlaylist = [];
+		PlayState.storyFolderPlaylist = [];
+		MenuSurvival.saveCurrent();
+		closing = true;
+		FlxG.state.closeSubState();
+		FlxG.state.openSubState(new Survival_Substate());
+		return false;
 	}
 }

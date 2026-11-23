@@ -56,7 +56,7 @@ class Survival_GameOptions extends MusicBeatSubstate
         blackBarThingie.scale.y = 0;
         FlxTween.tween(blackBarThingie, { 'scale.y': 500}, 0.5, { ease: FlxEase.expoOut});
 
-        var nTex = Paths.getSparrowAtlas('Options_Navigation');
+        var nTex = Paths.getSparrowAtlas('MicUp/Options_Navigation');
 		navi = new FlxSprite();
 		navi.frames = nTex;
 		navi.animation.addByPrefix('arrow', "navigation_arrows", 24, true);
@@ -70,7 +70,7 @@ class Survival_GameOptions extends MusicBeatSubstate
         menuItems = new FlxTypedGroup<FlxSprite>();
         add(menuItems);
         
-		var tex = Paths.getSparrowAtlas('Survival_OptionButtons');
+		var tex = Paths.getSparrowAtlas('MicUp/Survival_OptionButtons');
 
         for (i in 0...optionShit.length)
             {
