@@ -142,8 +142,7 @@ class MenuSurvival extends MusicBeatState
 		FlxTween.tween(bg, {alpha: 1}, 0.8, {ease: FlxEase.quartInOut});
 		FlxTween.tween(side, {x: 0}, 0.8, {ease: FlxEase.quartInOut});
 		FlxG.camera.zoom = 0.6;
-		FlxG.camera.alpha = 0;
-		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.7, {ease: FlxEase.quartInOut});
+		FlxTween.tween(FlxG.camera, {zoom: 1}, 0.7, {ease: FlxEase.quartInOut});
 
 		changeSelection(0);
 		new FlxTimer().start(0.35, function(_) selectable = true);
