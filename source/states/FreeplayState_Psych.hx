@@ -535,6 +535,10 @@ class FreeplayState_Psych extends MusicBeatState
 				FlxTween.tween(disc, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(innerDiscTop, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
 				FlxTween.tween(innerDiscBottom, {alpha: 0, 'scale.x': 0}, 0.3, {ease: FlxEase.quartInOut});
+				for (item in grpSongs.members)
+				{
+					FlxTween.tween(item, {alpha: 0}, 0.9, {ease: FlxEase.quartInOut});
+				}
 			}
 		}
 

@@ -139,6 +139,12 @@ class MenuSurvival extends MusicBeatState
 			add(emptyText);
 		}
 
+		FlxTween.tween(bg, {alpha: 1}, 0.8, {ease: FlxEase.quartInOut});
+		FlxTween.tween(side, {x: 0}, 0.8, {ease: FlxEase.quartInOut});
+		FlxG.camera.zoom = 0.6;
+		FlxG.camera.alpha = 0;
+		FlxTween.tween(FlxG.camera, {zoom: 1, alpha: 1}, 0.7, {ease: FlxEase.quartInOut});
+
 		changeSelection(0);
 		new FlxTimer().start(0.35, function(_) selectable = true);
 		super.create();
@@ -237,7 +243,13 @@ class MenuSurvival extends MusicBeatState
 		checker.x -= -0.67 / (ClientPrefs.data.framerate / 60);
 		checker.y -= 0.2 / (ClientPrefs.data.framerate / 60);
 
-		tracksUsed.text = PlayState.storyPlaylist.length + '/5 TRACKS USED';
+		var bestScore:Null<Int> = FlxG.save.data.survivalScore;
+		var bestTime:Null<Float> = FlxG.save.data.survivalTime;
+		var bestMilliseconds:Int = bestTime != null ? Std.int((bestTime / 10) % 100) : 0;
+		var bestSeconds:Int = bestTime != null ? Std.int((bestTime / 1000) % 60) : 0;
+		var bestMinutes:Int = bestTime != null ? Std.int(bestTime / 60000) : 0;
+		tracksUsed.text = PlayState.storyPlaylist.length + '/5 TRACKS USED\nPERSONAL BEST: '
+			+ bestMinutes + ':' + bestSeconds + ':' + bestMilliseconds + ' - ' + (bestScore != null ? bestScore : 0);
 		tracksUsed.x = 1240 - tracksUsed.width;
 
 		for (i in 0...grpSongs.members.length)

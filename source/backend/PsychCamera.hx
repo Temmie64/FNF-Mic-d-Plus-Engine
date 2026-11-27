@@ -12,6 +12,8 @@ class PsychCamera extends FlxCamera
 	var _debugFilterChanges:Int = 0;
 	var _debugSlowFrames:Int = 0;
 	var _debugTimer:Float = 0;
+	public var additionalFollowOffsetX:Float = 0;
+	public var additionalFollowOffsetY:Float = 0;
 
 	override public function update(elapsed:Float):Void
 	{
@@ -99,13 +101,15 @@ class PsychCamera extends FlxCamera
 		{
 			target.getMidpoint(_point);
 			_point.addPoint(targetOffset);
+			_point.x += additionalFollowOffsetX;
+			_point.y += additionalFollowOffsetY;
 			_scrollTarget.set(_point.x - width * 0.5, _point.y - height * 0.5);
 		}
 		else
 		{
 			var edge:Float;
-			var targetX:Float = target.x + targetOffset.x;
-			var targetY:Float = target.y + targetOffset.y;
+			var targetX:Float = target.x + targetOffset.x + additionalFollowOffsetX;
+			var targetY:Float = target.y + targetOffset.y + additionalFollowOffsetY;
 
 			if (style == SCREEN_BY_SCREEN)
 			{

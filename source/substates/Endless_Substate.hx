@@ -147,7 +147,7 @@ class Endless_Substate extends MusicBeatSubstate
 		super.update(elapsed);
 
 		blackBarThingie.y = 360 - blackBarThingie.height/2;
-		speedText.text = chartAvailable ? Std.string(_endless.speed) : 'CHART UNAVAILABLE';
+		speedText.text = chartAvailable ? Std.string(_endless.speed)+" ("+PlayState.SONG.speed+")" : 'CHART UNAVAILABLE';
 		rampText.text = Std.string(_endless.ramp).toUpperCase();
 
 		if (!selectable)

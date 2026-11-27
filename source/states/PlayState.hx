@@ -3210,11 +3210,16 @@ class PlayState extends MusicBeatState
 		{
 			// 1 - ~0.87
 			perlinElapsed.add(elapsed * (1 - Math.sqrt(3)), -elapsed * (1 - Math.sqrt(3)));
-			FlxG.camera.targetOffset.set(perlinCamera.noise2d(perlinElapsed.x, perlinElapsed.x) * 7,
-				perlinCamera.noise2d(perlinElapsed.y, perlinElapsed.y) * 7);
+			var perlinOffsetX:Float = perlinCamera.noise2d(perlinElapsed.x, perlinElapsed.x) * 7;
+			var perlinOffsetY:Float = perlinCamera.noise2d(perlinElapsed.y, perlinElapsed.y) * 7;
+			cast(camGame, backend.PsychCamera).additionalFollowOffsetX = perlinOffsetX;
+			cast(camGame, backend.PsychCamera).additionalFollowOffsetY = perlinOffsetY;
 		}
 		else
-			FlxG.camera.targetOffset.set(0, 0);
+		{
+			cast(camGame, backend.PsychCamera).additionalFollowOffsetX = 0;
+			cast(camGame, backend.PsychCamera).additionalFollowOffsetY = 0;
+		}
 
 		if(!endingSong && !inCutscene && allowDebugKeys)
 		{
